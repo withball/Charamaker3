@@ -1,0 +1,225 @@
+[Script]{//yoshino taiki
+float tt=60,sp=6;
+res.addmove(RotateToLim(tt,"head",0,sp),false);
+res.addmove(RotateToLim(tt,"hair",0,sp),false);
+res.addmove(RotateToLim(tt,"neck",0,sp),false);
+res.addmove(RotateToLim(tt,"body",0,sp),false);
+res.addmove(RotateToLim(tt,"waist",0,sp),false);
+////////////////////////////////////////////////////////////////////
+res.addmove(RotateToLim(tt,"larm",45,sp),false);
+res.addmove(RotateToLim(tt,"lhand",-90,sp),false);
+res.addmove(RotateToLim(tt,"lwep",190,sp),false);
+res.addmove(RotateToLim(tt,"yumi",0,sp),false);
+
+res.addmove(RotateToLim(tt,"rarm",-42,sp),false);
+res.addmove(RotateToLim(tt,"rhand",82,sp),false);
+res.addmove(RotateToLim(tt,"rwep",0,sp),false);
+///////////////////////////////////////////////////////////////////
+res.addmove(RotateToLim(tt,"lleg",0,sp),false);
+res.addmove(RotateToLim(tt,"lfoot",0,sp),false);
+
+res.addmove(RotateToLim(tt,"rleg",0,sp),false);
+res.addmove(RotateToLim(tt,"rfoot",0,sp),false);
+
+}[Motion]{
+[type]{Charamaker3.Motion}[name]{}
+[time]{60}
+[afters]{
+ 
+}
+[loop]{False}[speed]{1}[cs]{
+ [0:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{head}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [1:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{hair}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [2:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{neck}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [3:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{body}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [4:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{waist}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [5:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{larm}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{45}
+  [_DX]{0}[_DY]{0}
+ }
+ [6:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{lhand}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{-90}
+  [_DX]{0}[_DY]{0}
+ }
+ [7:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{lwep}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{190}
+  [_DX]{0}[_DY]{0}
+ }
+ [8:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{yumi}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [9:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{rarm}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{-42}
+  [_DX]{0}[_DY]{0}
+ }
+ [10:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{rhand}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{82}
+  [_DX]{0}[_DY]{0}
+ }
+ [11:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{rwep}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [12:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{lleg}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [13:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{lfoot}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [14:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{rleg}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ [15:False]{
+  [type]{Charamaker3.CharaModel.EntityMove}[name]{rfoot}
+  [time]{60}
+  [afters]{
+   
+  }
+  
+  [GO]{0}[_X]{0}[_Y]{0}
+  [SO]{-1}[_W]{0}[_H]{0}[_TX]{0}[_TY]{0}
+  [RO]{1}[RP]{0}[degreeSpeedLimit]{6}[_DEGREE]{0}
+  [_DX]{0}[_DY]{0}
+ }
+ 
+}
+}

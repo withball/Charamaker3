@@ -1,0 +1,172 @@
+﻿!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!
+・シーン
+・テキストリソース読み込み
+・アニメエンジン
+
+・インプットの変換システム
+->そろそろボタン式じゃなくて、名付け式にするか？
+作らないとFPも完成しない
+~~~~~~~~~~~~~~~~~~~~
+Characterとかの管理！
+シーン！
+音！
+AnimeEngine
+背景
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+モーションの作成の際、いろいろあったらいろいろ疑う
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Entity, Componentを新しく継承するときは、CopyとTos.ToSave,ToLoad
+TOsave,Toloadはcopyといっちさせるように！type項目を忘れずに！
+あと空のコンストラクタ。
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+・Entity  Done
+worldと関連するところ Done
+~~~Cloneの方針について~~~
+Cloneはコンポーネントまでコピーなんてしない？
+そもそも、ラムダ式で書いたコンポーネントがあれば、こぴーなんてでけへんやないか
+だから、それぞれのコンポーネント目線でのコピーを行うしかない。
+というか、ComponentはもうすでにEntityの一部だから頑張るしかない。
+～～～～～～～～～～～～～～～～～
+
+・EntityManager (world) Done
+
+・component ほぼOK 
+いろんなコンポーネント、Characterとか作る際に機能を追加。
+あと、ataris機能が未実装
+
+・Character 
+もう、木構造じゃない！！！
+C2Cからの移植 Done!
+mirrorに対応、
+kijyunどうする？
+コピー ->なんかずれる。　Characterコピーの問題か、そもそもEntityでの問題か？
+↑ gettxで調査した座標はおんなじのくせに、めっちゃずれよる
+正解は、先頭に無駄なジョイントが挿入されており、corejointであるbodyジョイントをコピーした先の
+ジョイントのparendがonadd時に正しく追加されなかった。です。
+！！！いまresetkijyunみたいなのは今後はモーションで基準と等しくすることで実現する。！！！
+
+
+・motion!!!
+モーションとは何か？？？？
+複数のComponentを一つにまとめる機能である。
+まとめることによっていい感じの範囲でループさせたり、同時に削除することができる。
+motion専用のremove方法2つ。
+1.aftersを全て無効にしてremove;
+2.aftersがなくなるまでremove;
+ループも可能。
+ループがおかしい！！！ speedを変えた時も、変えてないときも。<-OK!原因は resettimerが呼び出されてなかったことと、時間経過が0でloopにはいれなかったこと
+ただ、基本はOKかな。
+
+
+とりあえず、ノードとなる動きを作ってしまわないか？
+ま、Characterのミラー/基準はまた後で。
+
+・EntityMove OK
+EntityMoveTO 目的の値になるまで一定速度で移動する奴
+関節も動かせるキャラクター専用のやつー＞やっぱ関節は常に割合で考えよう。そっちのが楽。
+EntityMOveのrotateOption.joint<-まだ
+
+・EntityMirror たぶんOK
+1.ミラーをするとき、角度も回転する。
+2.一瞬ではないミラー
+w->0 0->w w->0になった瞬間にmirrorする。
+Baseはmirror=falseであることを想定
+
+・DrawableMove 多分おk！
+1.color
+2.texture
+3.z
+リセットもできる 
+
+・背景
+
+・Mathf OK後は追加するだけ
+
+・Supersort Done
+
+・fileman
+テクスチャ読み込み OK
+
+・camera OKか。
+Draw部分。 
+ カメラ物体回転＝OK
+ アスペクト比による変形を書く。 -> おそらくOK ただ、-になることでバグる
+ カメラ解像度 ->　アスペクト比による変形？   w,hがマイナスになることでバグるんじゃないですか？
+ ディスプレイ解像度= OK カメラ解像度との関係でバグるかも？
+あと直接書かないタイプのカメラも書く。
+カメラはワールドを見る者だけ。
+カメラがワールドの中にライブ映像として存在する場合、カメラの描画した時どうなるかは1フレーム前の物を参照することになるだろう。
+作る部分と最後の画面に描画する部分
+！！！！Bitmaprendertargetの廃棄がメモリリークしそう。！！！！
+カメラ反転の肝心なとこは適用の順番でした。mirrorのみはOK xyもOK
+・スクリーンショット機能 
+
+・drawable->コンポーネントか！！！！！！！
+とりあえずrectangleOK
+w*=-1でおかしい mirrorの時点でもダメ。 mirrorはoK左上で反転すればいい。 W*=-1でもOK
+
+
+・picture
+テクスチャ読み込み OK
+
+
+・display
+Render登録部分　Done
+このクラスからカメラが生成する部分
+スクショ可能！ ->またエラー起きたらSHarpGenのバージョンを確認。
+
+・Shape 多分OK！バグは知らん。
+描画の所に疑義あり。
+全部degreeにした時のバグは？
+radseiki2->st360
+radseiki->st180
+radkatamuki->st90
+Pi->180
+順次直す
+double rad=float degree
+hosenもdegreeだからfloat だし
+settxyとsetcxyを統合。
+
+・Text
+Font-> サイズとかいろいろ。特に重要なのはテキストボックスの範囲もこれで指定する点。
+TextRenderer 二次元メモリアロケータによって確保されたテキスト描画領域。
+↑これはdisplayから借り受ける。
+
+
+・atari
+・buturi
+
+
+・input
+Camera->worldへ
+TODO:w,hが-,mirrorの時おかしくなるかも。
+
+
+・Charamaker
+複数のキャラクターを選択できるOK
+
+ROOTのエンテティをいじるときは骨格もいじれる。OK
+REEFのエンテティをいじるときはJOINT+ENTITYをいじれる OK
+ENTITYをいじれるってことは、DRAWABLEもいじれるってこと OK
+joint px->倍数地ではなく、じっすちに。->無理やりできました。 OK
+F5したときにカーソルの位置が戻らないように OK
+セーブロード削除基準 OK
+キャラクターの関節を追加したり OK
+
+モーション
+とりあえず作れる OK
+マニュアル まあまあ
+各種ボタン Mirror,DegreeReset,TextureReset,SizeReset OK!
+EntityMoveはusing static Charamaker3.CharaModel.DrawableMove;で省略♡
+
+
+・旧あっせと
+
+モーションは廃棄。編集できないし。
+
+setumageman=>RotateToLim;
+radtoman=>RotateToLim;

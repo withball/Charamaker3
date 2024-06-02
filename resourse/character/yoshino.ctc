@@ -1,0 +1,1466 @@
+[type]{Charamaker3.Entity}[name]{}
+[x]{-10}[y]{-33}
+[w]{20}[h]{66}
+[tx]{10}[ty]{33}
+[degree]{0}
+[mirror]{False}
+
+[components]{
+ [0]{
+  [type]{Charamaker3.CharaModel.Character}[name]{}
+  [time]{-1}
+  [afters]{
+   
+  }
+  [joints]{
+  [0]{
+  [parentName]{}[name]{bodyJOI}
+  [dx]{10}[dy]{18.58}
+  [pw]{20}[ph]{66}
+  
+  [childs]{
+   [body]{
+    [type]{Charamaker3.Entity}[name]{body}
+    [x]{-10}[y]{-15.596471}
+    [w]{20}[h]{17}
+    [tx]{10}[ty]{1.176471}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/body}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [1]{
+  [parentName]{body}[name]{neckJOI}
+  [dx]{11}[dy]{2}
+  [pw]{20}[ph]{17}
+  
+  [childs]{
+   [neck]{
+    [type]{Charamaker3.Entity}[name]{neck}
+    [x]{-1.4000001}[y]{-16.59647}
+    [w]{4.8}[h]{4}
+    [tx]{2.4}[ty]{3}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.2}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/neck}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [2]{
+  [parentName]{neck}[name]{headJOI}
+  [dx]{3.3}[dy]{-6.1}
+  [pw]{4.8}[ph]{4}
+  
+  [childs]{
+   [head]{
+    [type]{Charamaker3.Entity}[name]{head}
+    [x]{-10.161871}[y]{-35.043198}
+    [w]{21.36942}[h]{20.89453}
+    [tx]{12.061871}[ty]{12.34673}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.1}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/head}
+       [sleepy]{yoshino/headsleepy}
+       [ganba]{yoshino/headganba}
+       [itai]{yoshino/headitai}
+       [odoroki]{yoshino/headodoroki}
+       [sleep]{yoshino/headsleep}
+       [turai1]{yoshino/headturai1}
+       [turai2]{yoshino/headturai2}
+       [happy]{yoshino/headhappy}
+       [talk]{yoshino/headtalk}
+       [nerai]{yoshino/headnerai}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [3]{
+  [parentName]{head}[name]{hairJOI}
+  [dx]{12.06187}[dy]{10.447271}
+  [pw]{21.36942}[ph]{20.89453}
+  
+  [childs]{
+   [hair]{
+    [type]{Charamaker3.Entity}[name]{hair}
+    [x]{-10.161872}[y]{-35.043198}
+    [w]{21.36942}[h]{20.89453}
+    [tx]{12.061871}[ty]{10.44727}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.3}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/hair}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [4]{
+  [parentName]{body}[name]{waistJOI}
+  [dx]{12}[dy]{16}
+  [pw]{20}[ph]{17}
+  
+  [childs]{
+   [waist]{
+    [type]{Charamaker3.Entity}[name]{waist}
+    [x]{-9}[y]{-0.59647083}
+    [w]{19}[h]{22}
+    [tx]{11}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.1}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/waist}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [5]{
+  [parentName]{waist}[name]{hipJOI}
+  [dx]{11}[dy]{1}
+  [pw]{19}[ph]{22}
+  
+  [childs]{
+   [hip]{
+    [type]{Charamaker3.Entity}[name]{hip}
+    [x]{-9}[y]{-0.59647083}
+    [w]{19}[h]{22}
+    [tx]{11}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.2}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/hip}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [6]{
+  [parentName]{waist}[name]{rlegJOI}
+  [dx]{15.5}[dy]{7.5}
+  [pw]{19}[ph]{22}
+  
+  [childs]{
+   [rleg]{
+    [type]{Charamaker3.Entity}[name]{rleg}
+    [x]{4.5}[y]{5.903529}
+    [w]{6}[h]{16}
+    [tx]{2}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.2}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/rleg}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [7]{
+  [parentName]{rleg}[name]{rfootJOI}
+  [dx]{1}[dy]{12}
+  [pw]{6}[ph]{16}
+  
+  [childs]{
+   [rfoot]{
+    [type]{Charamaker3.Entity}[name]{rfoot}
+    [x]{4.5}[y]{16.90353}
+    [w]{5}[h]{16}
+    [tx]{1}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.1}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/rfoot}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [8]{
+  [parentName]{waist}[name]{llegJOI}
+  [dx]{5.5}[dy]{7.5}
+  [pw]{19}[ph]{22}
+  
+  [childs]{
+   [lleg]{
+    [type]{Charamaker3.Entity}[name]{lleg}
+    [x]{-8.5}[y]{5.903529}
+    [w]{7}[h]{16}
+    [tx]{5}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.38}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/lleg}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [9]{
+  [parentName]{lleg}[name]{lfootJOI}
+  [dx]{5}[dy]{12}
+  [pw]{7}[ph]{16}
+  
+  [childs]{
+   [lfoot]{
+    [type]{Charamaker3.Entity}[name]{lfoot}
+    [x]{-6.5}[y]{16.90353}
+    [w]{6}[h]{16}
+    [tx]{3}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.3}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/lfoot}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [10]{
+  [parentName]{body}[name]{rarmJOI}
+  [dx]{18.3}[dy]{5}
+  [pw]{20}[ph]{17}
+  
+  [childs]{
+   [rarm]{
+    [type]{Charamaker3.Entity}[name]{rarm}
+    [x]{6.299999}[y]{-12.596471}
+    [w]{4}[h]{14}
+    [tx]{2}[ty]{2}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.4}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/rarm}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [11]{
+  [parentName]{rarm}[name]{rhandJOI}
+  [dx]{3}[dy]{14}
+  [pw]{4}[ph]{14}
+  
+  [childs]{
+   [rhand]{
+    [type]{Charamaker3.Entity}[name]{rhand}
+    [x]{5.299999}[y]{0.40352917}
+    [w]{7}[h]{14}
+    [tx]{4}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{-0.3}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/rhand}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [12]{
+  [parentName]{rhand}[name]{rwepJOI}
+  [dx]{4}[dy]{11.9}
+  [pw]{7}[ph]{14}
+  
+  [childs]{
+   [rwep]{
+    [type]{Charamaker3.Entity}[name]{rwep}
+    [x]{-14.200001}[y]{4.803529}
+    [w]{39}[h]{15}
+    [tx]{23.5}[ty]{7.5}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.1}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{trans}
+      [textures]{
+       [trans]{transbit}
+       [def]{yoshino/viorin}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [13]{
+  [parentName]{body}[name]{larmJOI}
+  [dx]{3}[dy]{5}
+  [pw]{20}[ph]{17}
+  
+  [childs]{
+   [larm]{
+    [type]{Charamaker3.Entity}[name]{larm}
+    [x]{-10}[y]{-12.596471}
+    [w]{4}[h]{14}
+    [tx]{3}[ty]{2}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.4}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/larm}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [14]{
+  [parentName]{larm}[name]{lhandJOI}
+  [dx]{1.7}[dy]{14}
+  [pw]{4}[ph]{14}
+  
+  [childs]{
+   [lhand]{
+    [type]{Charamaker3.Entity}[name]{lhand}
+    [x]{-12.3}[y]{0.40352917}
+    [w]{7}[h]{14}
+    [tx]{4}[ty]{1}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.6}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/lhand}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [15]{
+  [parentName]{lhand}[name]{lwepJOI}
+  [dx]{3}[dy]{12}
+  [pw]{7}[ph]{14}
+  
+  [childs]{
+   [lwep]{
+    [type]{Charamaker3.Entity}[name]{lwep}
+    [x]{-25.3}[y]{5.403529}
+    [w]{64}[h]{14}
+    [tx]{16}[ty]{7}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.39}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{def}
+      [textures]{
+       [def]{yoshino/onsa}
+       [trans]{transbit}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  [16]{
+  [parentName]{lwep}[name]{yumiJOI}
+  [dx]{16}[dy]{7}
+  [pw]{64}[ph]{14}
+  
+  [childs]{
+   [yumi]{
+    [type]{Charamaker3.Entity}[name]{yumi}
+    [x]{-23.699999}[y]{11.00353}
+    [w]{57.6}[h]{2.8}
+    [tx]{14.4}[ty]{1.4}
+    [degree]{0}
+    [mirror]{False}
+    
+    [components]{
+     [0]{
+      [type]{Charamaker3.Texture}[name]{}
+      [time]{-1}
+      [afters]{
+       
+      }
+      
+      [z]{0.39}
+      [r]{1}[g]{1}[b]{1}[opa]{1}
+      [texname]{trans}
+      [textures]{
+       [def]{yoshino/viorinyumi}
+       [trans]{transbit}
+       
+      }
+      
+     }
+     
+     
+    }
+    
+   }
+   
+   
+  }
+  }
+  
+  }
+  
+  [BaseCharacter]{
+  [type]{Charamaker3.Entity}[name]{}
+  [x]{-40}[y]{-132}
+  [w]{20}[h]{66}
+  [tx]{10}[ty]{33}
+  [degree]{0}
+  [mirror]{False}
+  
+  [components]{
+   [0]{
+    [type]{Charamaker3.CharaModel.Character}[name]{}
+    [time]{-1}
+    [afters]{
+     
+    }
+    [joints]{
+    [0]{
+    [parentName]{}[name]{bodyJOI}
+    [dx]{10}[dy]{18.58}
+    [pw]{20}[ph]{66}
+    
+    [childs]{
+     [body]{
+      [type]{Charamaker3.Entity}[name]{body}
+      [x]{-40}[y]{-114.596466}
+      [w]{20}[h]{17}
+      [tx]{10}[ty]{1.176471}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/body}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [1]{
+    [parentName]{body}[name]{neckJOI}
+    [dx]{11}[dy]{2}
+    [pw]{20}[ph]{17}
+    
+    [childs]{
+     [neck]{
+      [type]{Charamaker3.Entity}[name]{neck}
+      [x]{-31.4}[y]{-115.596466}
+      [w]{4.8}[h]{4}
+      [tx]{2.4}[ty]{3}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.2}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/neck}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [2]{
+    [parentName]{neck}[name]{headJOI}
+    [dx]{3.3}[dy]{-6.1}
+    [pw]{4.8}[ph]{4}
+    
+    [childs]{
+     [head]{
+      [type]{Charamaker3.Entity}[name]{head}
+      [x]{-40.161873}[y]{-134.0432}
+      [w]{21.36942}[h]{20.89453}
+      [tx]{12.061871}[ty]{12.34673}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.1}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/head}
+         [sleepy]{yoshino/headsleepy}
+         [ganba]{yoshino/headganba}
+         [itai]{yoshino/headitai}
+         [odoroki]{yoshino/headodoroki}
+         [sleep]{yoshino/headsleep}
+         [turai1]{yoshino/headturai1}
+         [turai2]{yoshino/headturai2}
+         [happy]{yoshino/headhappy}
+         [talk]{yoshino/headtalk}
+         [nerai]{yoshino/headnerai}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [3]{
+    [parentName]{head}[name]{hairJOI}
+    [dx]{12.06187}[dy]{10.447271}
+    [pw]{21.36942}[ph]{20.89453}
+    
+    [childs]{
+     [hair]{
+      [type]{Charamaker3.Entity}[name]{hair}
+      [x]{-40.161873}[y]{-134.0432}
+      [w]{21.36942}[h]{20.89453}
+      [tx]{12.061871}[ty]{10.44727}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.3}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/hair}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [4]{
+    [parentName]{body}[name]{waistJOI}
+    [dx]{12}[dy]{16}
+    [pw]{20}[ph]{17}
+    
+    [childs]{
+     [waist]{
+      [type]{Charamaker3.Entity}[name]{waist}
+      [x]{-39}[y]{-99.596466}
+      [w]{19}[h]{22}
+      [tx]{11}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.1}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/waist}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [5]{
+    [parentName]{waist}[name]{hipJOI}
+    [dx]{11}[dy]{1}
+    [pw]{19}[ph]{22}
+    
+    [childs]{
+     [hip]{
+      [type]{Charamaker3.Entity}[name]{hip}
+      [x]{-39}[y]{-99.596466}
+      [w]{19}[h]{22}
+      [tx]{11}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.2}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/hip}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [6]{
+    [parentName]{waist}[name]{rlegJOI}
+    [dx]{15.5}[dy]{7.5}
+    [pw]{19}[ph]{22}
+    
+    [childs]{
+     [rleg]{
+      [type]{Charamaker3.Entity}[name]{rleg}
+      [x]{-25.5}[y]{-93.096466}
+      [w]{6}[h]{16}
+      [tx]{2}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.2}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/rleg}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [7]{
+    [parentName]{rleg}[name]{rfootJOI}
+    [dx]{1}[dy]{12}
+    [pw]{6}[ph]{16}
+    
+    [childs]{
+     [rfoot]{
+      [type]{Charamaker3.Entity}[name]{rfoot}
+      [x]{-25.5}[y]{-82.096466}
+      [w]{5}[h]{16}
+      [tx]{1}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.1}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/rfoot}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [8]{
+    [parentName]{waist}[name]{llegJOI}
+    [dx]{5.5}[dy]{7.5}
+    [pw]{19}[ph]{22}
+    
+    [childs]{
+     [lleg]{
+      [type]{Charamaker3.Entity}[name]{lleg}
+      [x]{-38.5}[y]{-93.096466}
+      [w]{7}[h]{16}
+      [tx]{5}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.38}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/lleg}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [9]{
+    [parentName]{lleg}[name]{lfootJOI}
+    [dx]{5}[dy]{12}
+    [pw]{7}[ph]{16}
+    
+    [childs]{
+     [lfoot]{
+      [type]{Charamaker3.Entity}[name]{lfoot}
+      [x]{-36.5}[y]{-82.096466}
+      [w]{6}[h]{16}
+      [tx]{3}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.3}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/lfoot}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [10]{
+    [parentName]{body}[name]{rarmJOI}
+    [dx]{18.3}[dy]{5}
+    [pw]{20}[ph]{17}
+    
+    [childs]{
+     [rarm]{
+      [type]{Charamaker3.Entity}[name]{rarm}
+      [x]{-23.7}[y]{-111.596466}
+      [w]{4}[h]{14}
+      [tx]{2}[ty]{2}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.4}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/rarm}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [11]{
+    [parentName]{rarm}[name]{rhandJOI}
+    [dx]{3}[dy]{14}
+    [pw]{4}[ph]{14}
+    
+    [childs]{
+     [rhand]{
+      [type]{Charamaker3.Entity}[name]{rhand}
+      [x]{-24.7}[y]{-98.596466}
+      [w]{7}[h]{14}
+      [tx]{4}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{-0.3}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/rhand}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [12]{
+    [parentName]{rhand}[name]{rwepJOI}
+    [dx]{4}[dy]{11.9}
+    [pw]{7}[ph]{14}
+    
+    [childs]{
+     [rwep]{
+      [type]{Charamaker3.Entity}[name]{rwep}
+      [x]{-44.2}[y]{-94.196465}
+      [w]{39}[h]{15}
+      [tx]{23.5}[ty]{7.5}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.1}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{trans}
+        [textures]{
+         [trans]{transbit}
+         [def]{yoshino/viorin}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [13]{
+    [parentName]{body}[name]{larmJOI}
+    [dx]{3}[dy]{5}
+    [pw]{20}[ph]{17}
+    
+    [childs]{
+     [larm]{
+      [type]{Charamaker3.Entity}[name]{larm}
+      [x]{-40}[y]{-111.596466}
+      [w]{4}[h]{14}
+      [tx]{3}[ty]{2}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.4}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/larm}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [14]{
+    [parentName]{larm}[name]{lhandJOI}
+    [dx]{1.7}[dy]{14}
+    [pw]{4}[ph]{14}
+    
+    [childs]{
+     [lhand]{
+      [type]{Charamaker3.Entity}[name]{lhand}
+      [x]{-42.3}[y]{-98.596466}
+      [w]{7}[h]{14}
+      [tx]{4}[ty]{1}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.6}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/lhand}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [15]{
+    [parentName]{lhand}[name]{lwepJOI}
+    [dx]{3}[dy]{12}
+    [pw]{7}[ph]{14}
+    
+    [childs]{
+     [lwep]{
+      [type]{Charamaker3.Entity}[name]{lwep}
+      [x]{-55.3}[y]{-93.596466}
+      [w]{64}[h]{14}
+      [tx]{16}[ty]{7}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.39}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{def}
+        [textures]{
+         [def]{yoshino/onsa}
+         [trans]{transbit}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    [16]{
+    [parentName]{lwep}[name]{yumiJOI}
+    [dx]{16}[dy]{7}
+    [pw]{64}[ph]{14}
+    
+    [childs]{
+     [yumi]{
+      [type]{Charamaker3.Entity}[name]{yumi}
+      [x]{-53.699997}[y]{-87.99647}
+      [w]{57.6}[h]{2.8}
+      [tx]{14.4}[ty]{1.4}
+      [degree]{0}
+      [mirror]{False}
+      
+      [components]{
+       [0]{
+        [type]{Charamaker3.Texture}[name]{}
+        [time]{-1}
+        [afters]{
+         
+        }
+        
+        [z]{0.39}
+        [r]{1}[g]{1}[b]{1}[opa]{1}
+        [texname]{trans}
+        [textures]{
+         [def]{yoshino/viorinyumi}
+         [trans]{transbit}
+         
+        }
+        
+       }
+       
+       
+      }
+      
+     }
+     
+     
+    }
+    }
+    
+    }
+    
+    
+   }
+   
+   
+  }
+  }
+  
+ }
+ 
+ 
+}
