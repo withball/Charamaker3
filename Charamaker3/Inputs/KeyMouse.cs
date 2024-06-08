@@ -34,27 +34,12 @@ namespace Charamaker3.Inputs
     /// 入力が完成する。
     /// </summary>
     [Serializable]
-    public class KeyMouse
+    public class KeyMouse<T>
+        where T:IButton
     {
-
-        /// <summary>
-        /// ナマの入力を保存するためのやつ。キーコンフィグのときとかに使う
-        /// </summary>
-        [NonSerialized]
-        static public KeyMouse raw = new KeyMouse();
-
-
-
-        /// <summary>
-        /// ナマの変換
-        /// </summary>
-        [NonSerialized]
-        static public List<IPC> rawconv = new List<IPC>();
-
-        List<Keys> k = new List<Keys>();
-        List<MouseButtons> m = new List<MouseButtons>();
-        List<Keys> pk = new List<Keys>();
-        List<MouseButtons> pm = new List<MouseButtons>();
+        static public KeyMouse<T> raw = new KeyMouse<T>();
+        List<T> k = new List<T>();
+        List<T> pk = new List<T>();
         /// <summary>
         /// 空のコンストラクタ
         /// </summary>
@@ -65,44 +50,11 @@ namespace Charamaker3.Inputs
         public float x = 0, y = 0;
      
         /// <summary>
-        /// ナマでキーを押す。
-        /// </summary>
-        /// <param name="i">押すキー</param>
-        public void down(Keys i)
-        {
-            down(i, rawconv);
-        }
-        /// <summary>
-        /// ナマでマウスのボタンを押す
-        /// </summary>
-        /// <param name="i">押すボタン</param>
-        public void down(MouseButtons i)
-        {
-            down(i, rawconv);
-        }
-        /// <summary>
-        /// ナマでキーを離す
-        /// </summary>
-        /// <param name="i">離すキー</param>
-        public void up(Keys i)
-        {
-            up(i, rawconv);
-        }
-        /// <summary>
-        /// ナマでマウスのボタンを離す
-        /// </summary>
-        /// <param name="i">離すボタン</param>
-        public void up(MouseButtons i)
-        {
-            up(i, rawconv);
-        }
-        /// <summary>
         /// 今の全てのボタンを上げる
         /// </summary>
         public void upall()
         {
             this.k.Clear();
-            this.m.Clear();
         }
         /// <summary>
         /// 前の全てのボタンを上げる
@@ -110,155 +62,37 @@ namespace Charamaker3.Inputs
         public void preupall()
         {
             this.pk.Clear();
-            this.pm.Clear();
         }
         /// <summary>
-        /// 変換器をもとにキーを押す。変換器にない入力はそのままになる。
+        /// キーを押す
         /// </summary>
         /// <param name="i">押すキー</param>
-        /// <param name="converts">変換器</param>
-        public void down(Keys i, List<IPC> converts)
+        public void down(T i)
         {
-
-            foreach (var b in converts)
-            {
-                if (b.getin(i))
-                {
-                    if (b.KO != Keys.None)
-                    {
-                        if (!k.Contains(b.KO))
-                        {
-                            k.Add(b.KO);
-                        }
-                        return;
-
-                    }
-                    if (b.MO != MouseButtons.None)
-                    {
-                        if (!m.Contains(b.MO))
-                        {
-                            m.Add(b.MO);
-                        }
-
-                        return;
-
-                    }
-
-                }
-
-            }
-            if (!k.Contains(i))
+            if (!IButton.Contains<T>(i,k))
             {
                 k.Add(i);
             }
 
         }
         /// <summary>
-        /// 変換器をもとにマウスのボタンを押す。変換器にない入力はそのままになる。
-        /// </summary>
-        /// <param name="i">押すボタン</param>
-        /// <param name="converts">変換器</param>
-        public void down(MouseButtons i, List<IPC> converts)
-        {
-            foreach (var b in converts)
-            {
-                if (b.getin(i))
-                {
-                    if (b.KO != Keys.None)
-                    {
-                        if (!k.Contains(b.KO))
-                        {
-                            k.Add(b.KO);
-                        }
-                        return;
-
-                    }
-                    if (b.MO != MouseButtons.None)
-                    {
-                        if (!m.Contains(b.MO))
-                        {
-                            m.Add(b.MO);
-                        }
-
-                        return;
-
-                    }
-
-                }
-
-            }
-            if (!m.Contains(i))
-            {
-                m.Add(i);
-            }
-        }
-        /// <summary>
-        /// 変換器をもとにキーを離す。変換器にない入力はそのままになる。
+        /// キーを離す
         /// </summary>
         /// <param name="i">離すキー</param>
-        /// <param name="converts">変換器</param>
-        public void up(Keys i, List<IPC> converts)
+        public void up(T i)
         {
-            foreach (var b in converts)
-            {
-                if (b.getin(i))
-                {
-                    if (b.KO != Keys.None)
-                    {
-                        k.Remove(b.KO);
-                        return;
-
-                    }
-                    if (b.MO != MouseButtons.None)
-                    {
-                        m.Remove(b.MO);
-
-                        return;
-
-                    }
-
-                }
-
-            }
-            k.Remove(i);
-        }
-        /// <summary>
-        /// 変換器をもとにマウスのボタンを離す。変換器にない入力はそのままになる。
-        /// </summary>
-        /// <param name="i">離すボタン</param>
-        /// <param name="converts">変換器</param>
-        public void up(MouseButtons i, List<IPC> converts)
-        {
-            foreach (var b in converts)
-            {
-                if (b.getin(i))
-                {
-                    if (b.KO != Keys.None)
-                    {
-                        k.Remove(b.KO);
-                        return;
-
-                    }
-                    if (b.MO != MouseButtons.None)
-                    {
-                        m.Remove(b.MO);
-                        return;
-
-                    }
-
-                }
-
-            }
-            m.Remove(i);
+            IButton.Remove<T>(i,k);
         }
         /// <summary>
         /// 入力を過去のものとする。ゲームのティックに伴って呼び出す。さもなくばitypeが機能しない
         /// </summary>
         public void topre()
         {
-            pk = new List<Keys>(k);
-            pm = new List<MouseButtons>(m);
-
+            pk.Clear();
+            foreach (T i in k)
+            {
+                pk.Add((T)i.Clone());
+            }
         }
         /// <summary>
         /// 生の入力から座標をもらってくる。UI座標の時使え
@@ -348,23 +182,15 @@ namespace Charamaker3.Inputs
                 case itype.down:
                     foreach (var a in k)
                     {
-                        if (!pk.Contains(a)) return true;
-                    }
-                    foreach (var a in m)
-                    {
-                        if (!pm.Contains(a)) return true;
+                        if (!IButton.Contains(a,pk)) return true;
                     }
                     return false;
                 case itype.ing:
-                    return k.Count > 0 || pk.Count > 0 || m.Count > 0 || pm.Count > 0;
+                    return k.Count > 0 || pk.Count > 0 ;
                 case itype.up:
                     foreach (var a in pk)
                     {
-                        if (!k.Contains(a)) return true;
-                    }
-                    foreach (var a in pm)
-                    {
-                        if (!m.Contains(a)) return true;
+                        if (!IButton.Contains(a,k)) return true;
                     }
                     return false;
                 default:
@@ -378,415 +204,52 @@ namespace Charamaker3.Inputs
         /// <param name="i">そのキー</param>
         /// <param name="t">押されたり仕方のタイプ</param>
         /// <returns>押されたりしているか</returns>
-        public bool ok(Keys i, itype t)
+        public bool ok(T i, itype t)
         {
+
             switch (t)
             {
                 case itype.down:
 
-                    return k.Contains(i) && !pk.Contains(i);
+                    return IButton.Contains(i,k) && !IButton.Contains(i,pk);
 
                 case itype.ing:
-                    return k.Contains(i);
+                    return IButton.Contains(i, k);
                 case itype.up:
-                    return !k.Contains(i) && pk.Contains(i);
+                    return !IButton.Contains(i, k) && IButton.Contains(i, pk);
                 default:
                     return false;
             }
 
         }
-        /// <summary>
-        /// 特定のマウスのボタンが押されたりしているか判定する
-        /// </summary>
-        /// <param name="i">そのボタン</param>
-        /// <param name="t">押されたり仕方のタイプ</param>
-        /// <returns>押されたりしているか</returns>
-        public bool ok(MouseButtons i, itype t)
-        {
-            switch (t)
-            {
-                case itype.down:
-
-                    return m.Contains(i) && !pm.Contains(i);
-
-                case itype.ing:
-                    return m.Contains(i);
-                case itype.up:
-                    return !m.Contains(i) && pm.Contains(i);
-                default:
-                    return false;
-
-            }
-
-        }
+     
         /// <summary>
         /// 現在押されているキーを取得する
         /// </summary>
         /// <returns>キーの列のコピー</returns>
-        public List<Keys> getdownkey()
+        public List<T> getdownkey()
         {
-            return new List<Keys>(k);
-        }
-        /// <summary>
-        /// 現在押されているマウスのボタンを取得する
-        /// </summary>
-        /// <returns>マウスのボタンの列のコピー</returns>
-        public List<MouseButtons> getdownbutton()
-        {
-            return new List<MouseButtons>(m);
+            var res=new List<T>();
+            foreach (var a in k) 
+            {
+                res.Add((T)a.Clone());
+            }
+            return res;
         }
         /// <summary>
         /// 過去押されていたキーを取得する
         /// </summary>
         /// <returns>キーの列のコピー</returns>
-        public List<Keys> getupkey()
+        public List<T> getupkey()
         {
-            return new List<Keys>(k);
-        }
-        /// <summary>
-        /// 過去押されていたマウスのボタンを取得する
-        /// </summary>
-        /// <returns>マウスのボタンの列のコピー</returns>
-        public List<MouseButtons> getupbutton()
-        {
-            return new List<MouseButtons>(m);
-        }
-        /// <summary>
-        /// キー列から変換されていないキーを削除し変換されているキーを取得しようとする。
-        /// </summary>
-        /// <param name="k">キー列</param>
-        /// <param name="converts">変換器</param>
-        /// <returns>変換されているキー列</returns>
-        public List<Keys> getNCdownkey(List<Keys> k, List<IPC> converts)
-        {
-            var res = new List<Keys>(k);
-            for (int i = res.Count - 1; i >= 0; i--)
+            var res = new List<T>();
+            foreach (var a in pk)
             {
-
-                foreach (var b in converts)
-                {
-                    if (b.getin(res[i]))
-                    {
-                        //Console.WriteLine(res[i] + "  rmv");
-                        res.RemoveAt(i);
-                        break;
-                    }
-                }
+                res.Add((T)a.Clone());
             }
             return res;
         }
-        /// <summary>
-        /// マウスのボタン列から変換されていないボタンを削除し変換されているボタンを取得しようとする。
-        /// </summary>
-        /// <param name="m">ボタン列</param>
-        /// <param name="converts">変換器</param>
-        /// <returns>変換されているボタン列</returns>
-        public List<MouseButtons> getNCdownbutton(List<MouseButtons> m, List<IPC> converts)
-        {
-            var res = new List<MouseButtons>(m);
 
-            for (int i = res.Count - 1; i >= 0; i--)
-            {
-
-                foreach (var b in converts)
-                {
-                    if (b.getin(res[i]))
-                    {
-
-                        res.RemoveAt(i);
-                        break;
-                    }
-                }
-            }
-            return res;
-        }
-        
-        /// <summary>
-        /// 変換する前の入力キー・ボタンをテキストとして取得しようとする
-        /// </summary>
-        /// <param name="k">そのキー</param>
-        /// <param name="converts">変換IPC列</param>
-        /// <returns>Key: OR Mouse: OR None</returns>
-        static public string getConvertmaeinput(Keys k, List<IPC> converts)
-        {
-            bool onin = false;
-            foreach (var a in converts)
-            {
-                if (k == a.KO)
-                {
-                    if (a.KI != Keys.None)
-                    {
-                        return "Key:" + a.KI.ToString();
-                    }
-                    else
-                    {
-                        return "Mus:" + a.MI.ToString();
-                    }
-                }
-                if (k == a.KI)
-                {
-                    onin = true;
-                }
-            }
-            if (onin)
-            {
-                return "Nul:None";
-            }
-            else
-            {
-                return "Key:" + k.ToString();
-            }
-        }
-
-        /// <summary>
-        /// 変換する前の入力キー・ボタンをテキストとして取得しようとする
-        /// </summary>
-        /// <param name="m">そのボタン</param>
-        /// <param name="converts">変換IPC列</param>
-        /// <returns>Key: OR Mouse: OR None</returns>
-        static public string getConvertmaeinput(MouseButtons m, List<IPC> converts)
-        {
-            bool onin = false;
-            foreach (var a in converts)
-            {
-                if (m == a.MO)
-                {
-                    if (a.KI != Keys.None)
-                    {
-
-                        return "Key:" + a.KI.ToString();
-                    }
-                    else
-                    {
-                        return "Mus:" + a.MI.ToString();
-                    }
-                }
-                if (m == a.MI)
-                {
-                    onin = true;
-                }
-            }
-            if (onin)
-            {
-                return "Nul:None";
-            }
-            else
-            {
-                return "Mus:" + m.ToString();
-            }
-
-        }
-
-    }
-    /// <summary>
-    /// インプットを変換するための器具。
-    /// 
-    /// </summary>
-    [Serializable]
-    public class IPC
-    {
-        MouseButtons m = MouseButtons.None, mo = MouseButtons.None;
-        Keys k = Keys.None, ko = Keys.None;
-
-        /// <summary>
-        /// 出力キー
-        /// </summary>
-        public Keys KO { get { return ko; } }
-        /// <summary>
-        /// 出力マウスボタン
-        /// </summary>
-        public MouseButtons MO { get { return mo; } }
-        /// <summary>
-        /// 入力キー
-        /// </summary>
-        public Keys KI { get { return k; } }
-        /// <summary>
-        /// 入力マウスボタン 
-        /// </summary>
-        public MouseButtons MI { get { return m; } }
-        /// <summary>
-        /// 変換器を作る
-        /// </summary>
-        /// <param name="i">入力</param>
-        /// <param name="o">出力</param>
-        public IPC(Keys i, Keys o)
-        {
-            k = i;
-            ko = o;
-        }
-        /// <summary>
-        /// 変換器をコピーする
-        /// </summary>
-        /// <param name="i">変換器</param>
-        public IPC(IPC i)
-        {
-            k = i.k;
-            ko = i.ko;
-            m = i.m;
-            mo = i.mo;
-        }
-        /// <summary>
-        /// 変換器を作る
-        /// </summary>
-        /// <param name="i">入力</param>
-        /// <param name="o">出力</param>
-        public IPC(Keys i, MouseButtons o)
-        {
-            k = i;
-            mo = o;
-        }
-        /// <summary>
-        /// 変換器を作る
-        /// </summary>
-        /// <param name="i">入力</param>
-        /// <param name="o">出力</param>
-        public IPC(MouseButtons i, Keys o)
-        {
-            m = i;
-            ko = o;
-        }
-        /// <summary>
-        /// 変換器を作る
-        /// </summary>
-        /// <param name="i">入力</param>
-        /// <param name="o">出力</param>
-        public IPC(MouseButtons i, MouseButtons o)
-        {
-            m = i;
-            mo = o;
-        }
-
-        /// <summary>
-        /// 入力と出力を入れ替える
-        /// </summary>
-        public void flip()
-        {
-            var aas = k;
-            var oos = m;
-            k = ko;
-            m = mo;
-            mo = oos;
-            ko = aas;
-        }
-        /// <summary>
-        /// 入力が等しいかを判断する
-        /// </summary>
-        /// <param name="i">その入力</param>
-        /// <returns>等しい</returns>
-        public bool getin(Keys i)
-        {
-            return k == i;
-        }
-        /// <summary>
-        /// 入力が等しいかを判断する
-        /// </summary>
-        /// <param name="i">その入力</param>
-        /// <returns>等しい</returns>
-        public bool getin(MouseButtons i)
-        {
-            return m == i;
-        }
-        /// <summary>
-        /// 出力が等しいかを判断する
-        /// </summary>
-        /// <param name="i">その出力</param>
-        /// <returns>等しい</returns>
-        public bool getout(Keys i)
-        {
-            return ko == i;
-        }
-        /// <summary>
-        /// 出力が等しいかを判断する
-        /// </summary>
-        /// <param name="i">その出力</param>
-        /// <returns>等しい</returns>
-        public bool getout(MouseButtons i)
-        {
-            return mo == i;
-        }
-
-        /// <summary>
-        /// 入力を入れ替える
-        /// </summary>
-        /// <param name="i">入れ替え先の入力</param>
-        /// <returns>入れ替えて変化したか</returns>
-        public bool changein(Keys i)
-        {
-            if (k == i) return false;
-            k = i;
-            m = MouseButtons.None;
-            return true;
-        }
-        /// <summary>
-        /// 入力を入れ替える
-        /// </summary>
-        /// <param name="i">入れ替え先の入力</param>
-        /// <returns>入れ替えて変化したか</returns>
-        public bool changein(MouseButtons i)
-        {
-            if (m == i) return false;
-            k = Keys.None;
-            m = i;
-            return true;
-        }
-        /// <summary>
-        /// 何をどう変換しているのかを文字列で表す
-        /// </summary>
-        /// <returns>入力 => 出力</returns>
-        public string getString()
-        {
-            string aas = "";
-            aas += getinString();
-            aas += " => ";
-
-
-            aas += getoutString();
-
-            return aas;
-        }
-        /// <summary>
-        /// 出力のストリングを返す
-        /// </summary>
-        /// <returns>出力</returns>
-        public string getoutString()
-        {
-            string aas = "";
-
-
-            if (ko != Keys.None) aas += "Key:" + ko.ToString();
-            if (mo != MouseButtons.None) aas += "Mus:" + mo.ToString();
-
-            return aas;
-        }
-        /// <summary>
-        /// 入力のストリングを返す
-        /// </summary>
-        /// <returns>入力</returns>
-        public string getinString()
-        {
-            string aas = "";
-            if (k != Keys.None) aas += "Key:" + k.ToString();
-            if (m != MouseButtons.None) aas += "Mus:" + m.ToString();
-
-
-            return aas;
-        }
-        /// <summary>
-        /// 文章の中に含まれてる入力([Key:Left],[Mus:Right])[]必要！を変換する
-        /// </summary>
-        /// <param name="ipss">変換器共</param>
-        /// <param name="mo">変換する文字列</param>
-        /// <returns>変換した文字列</returns>
-        static public string convertstringinput(List<IPC> ipss, string mo)
-        {
-
-            foreach (var a in ipss)
-            {
-                mo = mo.Replace("[" + a.getoutString() + "]", a.getinString());
-
-            }
-            return mo;
-        }
     }
 }
 

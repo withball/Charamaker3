@@ -2,6 +2,7 @@ using Charamaker3;
 using Rectangle = Charamaker3.Rectangle;
 using Charamaker3.CharaModel;
 using Charamaker3.Inputs;
+using Charamaker3.ParameterFile;
 namespace Test
 {
 
@@ -10,13 +11,22 @@ namespace Test
         Display display;
         World w = new World();
         Camera cam;
-        KeyMouse km=new KeyMouse();
+        KeyMouse<IButton> km=new KeyMouse<IButton>();
         System.Drawing.Size BaseSize = new Size(1600, 900);
+
+        NameInput<IButton> inp ;
 
         Texture SLP, TXYP;
         public Charamaker()
         {
             InitializeComponent();
+
+            FP.l.seting(textsn:new List<string> {@"texts\text" });
+
+            inp = new NameInput<IButton>(km);
+            inp.Bind("CamSlide",new IButton(MouseButtons.XButton1));
+            inp.Bind("SelSlide", new IButton(MouseButtons.XButton2));
+
             ClientSize = BaseSize;
 
             display = new Display(this,1f);
@@ -69,23 +79,15 @@ namespace Test
 
             }
 
-                new Text(10, new ColorC(0, 1, 0, 1), "ザ・ネコ・チャン"
-                    , new FontC(16, 16*5,16*2, isBold: false)).add(SLP.e);
-
-            new Text(10, new ColorC(0, 0, 0, 1), "ザ・ワン・チャン"
-               , new FontC(16, 16*20, 16 * 15, isBold: false)).add(cam.watchRect);
-
-
-            new Text(10, new ColorC(0, 0, 0, 1), "ザ・ワン・チェン"
-               , new FontC(16, 16 * 20, 16 * 15, isBold: false, alignment: FontC.alignment.center)).add(cam.watchRect);
-
+           
 
             var text=new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
-               , new FontC(16, 16 * 20, 16 * 15, isBold: false,alignment:FontC.alignment.right));
+               , new FontC(16, 16 * 20, 16 * 15, isBold: false,alignment:FontC.alignment.left));
             text.add(cam.watchRect);
+
             text.updated += (aa, bb) =>
             {
-                text.text = FileMan.whrandhani(10) + "";
+                text.text=inp.Replace(FP.l.GT("CamSlide"))+"\n"+ inp.Replace(FP.l.GT("SelSlide"));
             };
 
             w.classifyed += (aa, bb) => 
@@ -119,7 +121,7 @@ namespace Test
 
             FileMan.SoundUpdate(1);
             //SEのテスト
-            if (km.ok(MouseButtons.Left, itype.down)) 
+            if (km.ok(new IButton(MouseButtons.Left), itype.down)) 
             {
 
                 var sc =SoundComponent.MakeSE(FileMan.SoundEffect,@"TB\jett", 1);
@@ -128,7 +130,7 @@ namespace Test
                 //FileMan.SoundEffect.playoto(@"TB\jett");
             }
             //BGMのテスト
-            if (km.ok(MouseButtons.Left, itype.down))
+            if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
                 var newbgm= SoundComponent.MakeBGM(FileMan.BGM, @"BGM\inami2", 0.5f, 30, 30);
@@ -158,7 +160,7 @@ namespace Test
                 //FileMan.BGM.playoto(@"inami2");
             }
             //BGMのテスト
-            if (km.ok(MouseButtons.Right, itype.down))
+            if (km.ok(new IButton(MouseButtons.Right), itype.down))
             {
                 var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\tim", 0.5f, 30, 30);
                 var lis = w.staticEntity.getcompos<SoundComponent>(SoundComponent.BGMname);
@@ -197,7 +199,7 @@ namespace Test
         }
         void selectCharacter()
         {
-            if (km.ok(MouseButtons.Left, itype.down))
+            if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
                 sel.selectbyPoint(km.x, km.y);
                 if (sel.e == null)
@@ -226,16 +228,16 @@ namespace Test
         FXY startcursorC=new FXY(0,0),startCameraFXY=new FXY(0,0);
         void moveCamera() 
         {
-            if (km.ok(MouseButtons.XButton1, itype.ing))
+            if (inp.ok("CamSlide", itype.ing))
             {
-                if (km.ok(MouseButtons.XButton1, itype.down))
+                if (inp.ok("CamSlide", itype.down))
                 {
-                    startcursorC = new FXY(KeyMouse.raw.x, KeyMouse.raw.y);
+                    startcursorC = new FXY(KeyMouse<IButton>.raw.x, KeyMouse<IButton>.raw.y);
                     startCameraFXY = cam.watchRect.gettxy();
                 }
-                if (km.ok(MouseButtons.XButton1, itype.ing))
+                if (inp.ok("CamSlide", itype.ing))
                 {
-                    var d = new FXY(KeyMouse.raw.x, KeyMouse.raw.y) - startcursorC;
+                    var d = new FXY(KeyMouse<IButton>.raw.x, KeyMouse<IButton>.raw.y) - startcursorC;
                     cam.watchRect.settxy(startCameraFXY
                         , (d.x + 0.5f) * cam.e.w, (d.y + 0.5f) * cam.e.h);
 
@@ -245,7 +247,7 @@ namespace Test
         }
         void moveSelected()
         {
-            if (km.ok(MouseButtons.XButton2, itype.ing))
+            if (inp.ok("SelSlide", itype.ing))
             {
                 sel.c.e.settxy(km.x,km.y);
                 Select();
@@ -345,9 +347,9 @@ namespace Test
 
         private void loadB_Click(object sender, EventArgs e)
         {
-            if (km.ok(MouseButtons.Right, itype.ing))
+            if (km.ok(new IButton(MouseButtons.Right), itype.ing))
             {
-                km.up(MouseButtons.Right);
+                km.up(new IButton(MouseButtons.Right));
                 var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".c3c");
                 var newe = Character.ToloadC2(d).e;
                 if (!float.IsNaN(newe.x))
@@ -430,18 +432,18 @@ namespace Test
 
         private void OnMouseUp(object sender, MouseEventArgs e)
         {
-            km.up(e.Button);
+            km.up(new IButton(e.Button));
         }
 
 
         private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            km.down(e.KeyCode);
+            km.down(new IButton(e.KeyCode));
         }
 
         private void OnKeyUp(object sender, KeyEventArgs e)
         {
-            km.up(e.KeyCode);
+            km.up(new IButton(e.KeyCode));
         }
 
         private void screenshotB_Click(object sender, EventArgs e)
@@ -451,7 +453,7 @@ namespace Test
 
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
-            km.down(e.Button);
+            km.down(new IButton(e.Button));
         }
         private void Resized(object sender, EventArgs e)
         {

@@ -330,6 +330,7 @@
     <Compile Include="Entity.cs" />
     <Compile Include="FileMan.cs" />
     <Compile Include="Inputs\KeyMouse.cs" />
+    <Compile Include="Inputs\NameInput.cs" />
     <Compile Include="Mathf.cs" />
     <Compile Include="ParameterFile\FP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

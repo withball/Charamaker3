@@ -72,7 +72,7 @@ namespace Charamaker3.ParameterFile
             }
             catch (Exception eee)
             {
-                Console.WriteLine(name + " ne-yo");
+                Debug.WriteLine(name + " ne-yo");
                 throw eee;
             }
         }
@@ -101,7 +101,7 @@ namespace Charamaker3.ParameterFile
             }
             catch (Exception eee)
             {
-                Console.WriteLine(name + " ne-yo");
+                Debug.WriteLine(name + " ne-yo");
                 throw eee;
             }
         }
@@ -121,16 +121,14 @@ namespace Charamaker3.ParameterFile
         /// テキストを取得する
         /// </summary>
         /// <param name="name">テキストの名前</param>
-        /// <param name="ipcs">入力の変換([Key:Q],[Mus:Left]をへんかん)</param>
-        /// /// <param name="percents">数値の変換([print:%f]をへんかん)</param>
+        /// <param name="percents">数値の変換([print:%f]をへんかん)</param>
         /// <returns>stringで帰ってくる無い場合は変な文字列</returns>
-        /*public string GT(string name, List<IPC> ipcs = null, params float[] percents)
+        public string GT(string name, params float[] percents)
         {
             if (texts.ContainsKey(name))
             {
                 var res = texts[name];
-                if (ipcs != null) res = IPC.convertstringinput(ipcs, res);
-
+        
                 foreach (var a in percents)
                 {
                     var idx = res.IndexOf("[print:%f]");
@@ -152,7 +150,7 @@ namespace Charamaker3.ParameterFile
             {
                 return nullText;
             }
-        }*/
+        }
 
         /// <summary>
         /// マトリックスからテキストを取得する
@@ -168,7 +166,7 @@ namespace Charamaker3.ParameterFile
             }
             catch (Exception e)
             {
-                Console.WriteLine(table + "{}{}{}" + name + e.ToString());
+                Debug.WriteLine(table + "{}{}{}" + name + e.ToString());
                 throw;
             }
 
@@ -187,7 +185,7 @@ namespace Charamaker3.ParameterFile
             }
             catch (global::System.Exception e)
             {
-                Console.WriteLine(table + "{}{}{}" + name + e.ToString());
+                Debug.WriteLine(table + "{}{}{}" + name + e.ToString());
                 throw;
             }
         }
@@ -257,7 +255,7 @@ namespace Charamaker3.ParameterFile
             }
             catch (Exception e)
             {
-                Console.WriteLine("vcvxzxbbzx " + e.ToString());
+                Debug.WriteLine("vcvxzxbbzx " + e.ToString());
                 throw e;
             }
         }
@@ -284,12 +282,12 @@ namespace Charamaker3.ParameterFile
 
 
                             var ps = lis[1].Split(',');
-                            Console.WriteLine(region + lis[0] + " ::desuyanparam");
+                            Debug.WriteLine(region + lis[0] + " ::desuyanparam");
                             param.Add(region + lis[0], Convert.ToSingle(ps[0]));
                             for (int i = 0; i < ps.Length; i++)
                             {
                                 param.Add(region + lis[0] + i.ToString(), Convert.ToSingle(ps[i]));
-                                //  Console.WriteLine(lis[0] + "　　vcvxzxbbzx   " + lis[1]);
+                                //  Debug.WriteLine(lis[0] + "　　vcvxzxbbzx   " + lis[1]);
                             }
                         }
                     }
@@ -323,11 +321,11 @@ namespace Charamaker3.ParameterFile
                                 if (load.Substring(0, ii)[0] == '#')
                                 {
                                     var ps = lis[1].Split(',');
-                                    Console.WriteLine(region + lis[0] + "::desuyanSTRINGparam");
+                                    Debug.WriteLine(region + lis[0] + "::desuyanSTRINGparam");
                                     for (int i = 0; i < ps.Length; i++)
                                     {
                                         textsparam.Add(region + lis[0].Substring(1) + i.ToString(), Convert.ToSingle(ps[i]));
-                                        //  Console.WriteLine(lis[0] + "　　vcvxzxbbzx   " + lis[1]);
+                                        //  Debug.WriteLine(lis[0] + "　　vcvxzxbbzx   " + lis[1]);
                                     }
                                 }
                                 else
@@ -344,7 +342,7 @@ namespace Charamaker3.ParameterFile
 
                                             texx = tx.Substring(idx, end - idx + 1);
 
-                                            //Console.WriteLine(6 + " akgijaoij " + (end - idx-1) + " asf" + texx.Length);
+                                            //Debug.WriteLine(6 + " akgijaoij " + (end - idx-1) + " asf" + texx.Length);
                                             var paramname = texx.Substring(7, end - idx - 6 - 1);
                                             if (param.ContainsKey(paramname))
                                             {
@@ -356,7 +354,7 @@ namespace Charamaker3.ParameterFile
                                             }
 
                                         }
-                                        Console.WriteLine(region + load.Substring(0, ii) + "::desuyoString");
+                                        Debug.WriteLine(region + load.Substring(0, ii) + "::desuyoString");
                                         texts.Add(region + load.Substring(0, ii), tx);
                                     }
                                 }
@@ -405,125 +403,15 @@ namespace Charamaker3.ParameterFile
                                 dic.Add(a, lis[i]);
                             }
                         }
-                        Console.WriteLine("");
+                        Debug.WriteLine("");
 
                     }
                 }
             }
         }
-        /// <summary>
-        /// クッソ適当に作った乱数のリセット
-        /// </summary>
-        /// <param name="seed">シード</param>
-        static public void resetrandomn(uint seed)
-        {
-            randomn = seed;
-            randomn2 = seed + 1;
-
-
-        }
-        static uint randomn = 0, randomn2 = 0;
-        /// <summary>
-        /// クッソ適当に作った乱数の取得。全然正規分布じゃないし意味はあまりない。
-        /// </summary>
-        /// <returns>filemanのとは違ってシード値がリセットの奴だけ</returns>
-        static public uint originalrandom()
-        {
-            randomn += randomn2 % 10 + 1;
-
-            randomn2 += randomn % 10 + 1;
-
-            var res = randomn + randomn2;
-
-            res %= 10000;
-
-            //   Console.WriteLine(res + " rand");
-
-            return res;
-
-        }
-        /// <summary>
-        /// 三角波的コサイン
-        /// </summary>
-        /// <param name="sita">角度-1~1</param>
-        /// <returns>コサイン</returns>
-        static public float Scos(float sita)
-        {
-            var s = new sankakuha();
-            s.Time = sita;
-            return s.C;
-        }
-        /// <summary>
-        /// 三角波的サイン
-        /// </summary>
-        /// <param name="sita">角度-1~1</param>
-        /// <returns>サイン</returns>
-        static public float Ssin(float sita)
-        {
-            var s = new sankakuha();
-            s.Time = sita;
-            return s.S;
-        }
+      
 
 
     }
-    /// <summary>
-    /// 三角波を回せるクラス。
-    /// 角度は-1~1
-    /// </summary>
-    public class sankakuha
-    {
-        float time = 0;
-        /// <summary>
-        /// 時間、横軸
-        /// </summary>
-        public float Time
-        {
-            get { return time; }
-            set
-            {
-                time = value;
-                while (time < -1) time += 2;
-                while (time > 1) time -= 2;
-            }
-        }
-        /// <summary>
-        /// コサインバージョン
-        /// </summary>
-        public float C
-        {
-            get
-
-            {
-                if (time > 0)
-                {
-                    return 1 - time * 2;
-                }
-                else
-                {
-
-                    return 1 + time * 2;
-                }
-            }
-        }
-        /// <summary>
-        /// サインバージョン
-        /// </summary>
-        public float S
-        {
-            get
-
-            {
-                if (-0.5f < time || time < 0.5f)
-                {
-                    return 1 + time * 2;
-                }
-                else
-                {
-
-                    return 1 - time * 2;
-                }
-            }
-        }
-    }
+    
 }
