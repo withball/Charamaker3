@@ -412,9 +412,15 @@ namespace Charamaker3
         public float w, h;
 
         /// <summary>
-        /// テキストのアライメント
+        /// テキストの横のアライメント
         /// </summary>
         public alignment ali= alignment.left;
+
+
+        /// <summary>
+        /// テキストの縦のアライメントあんま信用しないで。
+        /// </summary>
+        public alignment aliV = alignment.left;
 
         /// <summary>
         /// フォントのコンストラクタ
@@ -426,8 +432,10 @@ namespace Charamaker3
         /// <param name="isItaric">斜体</param>
         /// <param name="isBold">太字</param>
         /// <param name="alignment">テキストの位置</param>
+        /// <param name="alignmentV">テキストの縦の位置</param>
         public FontC(float size,float w,float h,string fontName="MS UI Gothic"
-            ,bool isItaric=false,bool isBold=false,alignment alignment=alignment.left) 
+            ,bool isItaric=false,bool isBold=false,alignment alignment=alignment.left
+            , alignment alignmentV = alignment.left) 
         {
             this.size= size;
             this.fontName = fontName;
@@ -436,6 +444,7 @@ namespace Charamaker3
             this.w = w;
             this.h = h;
             this.ali = alignment;
+            this.aliV = alignmentV;
         }
         /// <summary>
         /// カラコン
@@ -455,6 +464,7 @@ namespace Charamaker3
             c.isItaric=this.isItaric;
             c.isBold =this.isBold;
             c.ali = this.ali;
+            c.aliV = this.aliV;
         }
 
         public DataSaver ToSave() 
@@ -468,6 +478,7 @@ namespace Charamaker3
             d.packAdd("isItaric", isItaric);
             d.packAdd("isBold", isBold);
             d.packAdd("alignment", ali);
+            d.packAdd("alignmentV", aliV);
             return d;
         }
         public void ToLoad(DataSaver d) 
@@ -479,6 +490,7 @@ namespace Charamaker3
             this.isItaric = d.unpackDataB("isItaric");
             this.isBold = d.unpackDataB("isBold");
             this.ali = (alignment)d.unpackDataF("alignment");
+            this.aliV = (alignment)d.unpackDataF("alignmentV");
         }
         /// <summary>
         /// ちゃんとしたフォントに変える
@@ -519,7 +531,6 @@ namespace Charamaker3
                     fom.TextAlignment = TextAlignment.Leading;
                     break;
             }
-
             return fom;
         }
         static public bool operator ==(FontC a, FontC b)
@@ -595,7 +606,7 @@ namespace Charamaker3
         /// <param name="F"></param>
         /// <param name="color"></param>
         /// <returns>変わっていたか</returns>
-        private bool ChackChange(string Text, FontC F, ColorC color)
+        private bool CheckChange(string Text, FontC F, ColorC color)
         {
             if (PastText == null || PastText != Text)
             {
@@ -637,13 +648,19 @@ namespace Charamaker3
             PastColor = new ColorC(color);
 
         }
+        float _bottom=0;//!<文字が書かれた領域の最下端
+        /// <summary>
+        /// 領域内でも字が書かれた最下端
+        /// </summary>
+        public float bottom { get { if (rendZone.h == 0) return 0.5f;
+                return _bottom/rendZone.h; } }
 
         private string PastText = null;
         private FontC PastFont = null;
         private ColorC PastColor = null;
         public void Draw(string Text, FontC F, ColorC color)
         {
-            if (ChackChange(Text, F, color)) 
+            if (CheckChange(Text, F, color)) 
             {
                 SetPast(Text, F, color);
             }
@@ -654,16 +671,38 @@ namespace Charamaker3
                 var raw = (RawRectF)rendZone;
                 render.BeginDraw();
                 render.Transform = Matrix3x2.CreateTranslation(0, 0);
-
+                float R = 0.99f, G = 0.98f, B = 0.97f;
                 {
 
                     render.PushAxisAlignedClip(rendZone,AntialiasMode.PerPrimitive);
-                    render.Clear(new ColorC(0,0,0,0));
+                    render.Clear(new ColorC(R, G, B, 0));
                     render.PopAxisAlignedClip();
                 }
                 {
                     var slb = render.CreateSolidColorBrush(color);
                     render.DrawText(Text, F.ToFont(), rendZone, slb);
+                }
+                render.EndDraw();
+
+                if (F.aliV != FontC.alignment.left)
+                {
+                    var list = Display.GetPixels(render.Bitmap, render);
+
+
+                    bool breaked = false;
+                    for (int y = (int)(rendZone.y + rendZone.h - 1); y >= (int)rendZone.y; y--)
+                    {
+                        for (int x = (int)rendZone.x; x < (int)rendZone.x + rendZone.w; x++)
+                        {
+                            if (list[y][x].opa > 0)
+                            {
+                                _bottom = y - rendZone.y;
+                                breaked = true;
+                                break;
+                            }                            
+                        }
+                        if (breaked) break;
+                    }
                 }
                 /*
                 {
@@ -671,7 +710,6 @@ namespace Charamaker3
                     render.DrawRectangle((RawRectF)rendZone,slb);
                 }*/
 
-                render.EndDraw();
                 NoChange = true;
                 parent.Drawed(this);
              }
@@ -718,10 +756,34 @@ namespace Charamaker3
 
             var render = cam.render;
 
+
+            float yZure=0;
+            switch (font.aliV)//無理やり上下にアライメントする
+            {
+                case FontC.alignment.left://上揃え。何もしない
+
+                    break;
+                case FontC.alignment.center:
+                    yZure = e.h/2- (Trender.bottom *e.h);
+                    break;
+                case FontC.alignment.right:
+                    yZure = e.h- (Trender.bottom*e.h) ;
+                    break;
+                case FontC.alignment.justify:
+                    break;
+                default:
+                    break;
+            }
             render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
 
-
+            var zure = new FXY(0,yZure);
+            zure = camsoutai(cam,zure+cam.watchRect.gettxy(0,0));
+            zure.degree += e.degree;
+            rect.Left += zure.x;
+            rect.Right += zure.x;
+            rect.Top += zure.y;
+            rect.Bottom += zure.y;
             {
              
             render.DrawBitmap(Trender.render.Bitmap
@@ -979,7 +1041,7 @@ namespace Charamaker3
         /// <param name="image"></param>
         /// <param name="renderTarget"></param>
         /// <returns></returns>
-        static List<List<Color4>> GetPixels(ID2D1Bitmap image, ID2D1RenderTarget renderTarget)
+        static public List<List<ColorC>> GetPixels(ID2D1Bitmap image, ID2D1RenderTarget renderTarget)
         {
             var deviceContext2d = renderTarget.QueryInterface<ID2D1DeviceContext>();
             var bitmapProperties = new BitmapProperties1();
@@ -1004,15 +1066,16 @@ namespace Charamaker3
 
             //bitmap1.Dispose();
             //deviceContext2d.Dispose();
-            var res = new List<List<Color4>>();
+            var res = new List<List<ColorC>>();
             for (int y = 0; y < image.PixelSize.Height; y++)
             {
-                res.Add(new List<Color4>());
+                res.Add(new List<ColorC>());
                 for (int x = 0; x < image.PixelSize.Width; x++)
                 {
                     var position = (y * image.PixelSize.Width + x) * 4;
                     res[y].Add(
-                        new Color4(bytes[position + 2], bytes[position + 1], bytes[position + 0], bytes[position + 3]));
+                        new ColorC(bytes[position + 2]/255f, bytes[position + 1]/255f
+                        , bytes[position + 0]/255f, bytes[position + 3]/255f));
 
                 }
             }
@@ -1059,8 +1122,8 @@ namespace Charamaker3
                 for (int x = 0; x < size.Width; x++)
                 {
                     //  Console.WriteLine(pxs[y][x].A+" al:skfa :");
-                    save.SetPixel(x, y, System.Drawing.Color.FromArgb((int)(pxs[y][x].A)
-                        , (int)(pxs[y][x].R), (int)(pxs[y][x].G), (int)(pxs[y][x].B))
+                    save.SetPixel(x, y, System.Drawing.Color.FromArgb((int)((pxs[y][x].opa)*255)
+                        , (int)(pxs[y][x].r*255), (int)(pxs[y][x].g*255), (int)(pxs[y][x].b*255))
                         );
                 }
             }
