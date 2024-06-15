@@ -11,10 +11,10 @@ namespace Test
         Display display;
         World w = new World();
         Camera cam;
-        KeyMouse<IButton> km=new KeyMouse<IButton>();
+        KeyMouse km=new KeyMouse();
         System.Drawing.Size BaseSize = new Size(1600, 900);
 
-        NameInput<IButton> inp ;
+        NameInput inp ;
 
         Texture SLP, TXYP;
         public Charamaker()
@@ -23,7 +23,7 @@ namespace Test
 
             FP.l.seting(textsn:new List<string> {@"texts\text" });
 
-            inp = new NameInput<IButton>(km);
+            inp = new NameInput(km);
             inp.Bind("CamSlide",new IButton(MouseButtons.XButton1));
             inp.Bind("SelSlide", new IButton(MouseButtons.XButton2));
 
@@ -234,12 +234,12 @@ namespace Test
             {
                 if (inp.ok("CamSlide", itype.down))
                 {
-                    startcursorC = new FXY(KeyMouse<IButton>.raw.x, KeyMouse<IButton>.raw.y);
+                    startcursorC = new FXY(KeyMouse.raw.x, KeyMouse.raw.y);
                     startCameraFXY = cam.watchRect.gettxy();
                 }
                 if (inp.ok("CamSlide", itype.ing))
                 {
-                    var d = new FXY(KeyMouse<IButton>.raw.x, KeyMouse<IButton>.raw.y) - startcursorC;
+                    var d = new FXY(KeyMouse.raw.x, KeyMouse.raw.y) - startcursorC;
                     cam.watchRect.settxy(startCameraFXY
                         , (d.x + 0.5f) * cam.e.w, (d.y + 0.5f) * cam.e.h);
 

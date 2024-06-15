@@ -334,6 +334,7 @@
     <Compile Include="Mathf.cs" />
     <Compile Include="ParameterFile\FP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scene.cs" />
     <Compile Include="Shapes\Shape.cs" />
     <Compile Include="SoundEngine.cs" />
     <Compile Include="World.cs" />

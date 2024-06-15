@@ -34,12 +34,11 @@ namespace Charamaker3.Inputs
     /// 入力が完成する。
     /// </summary>
     [Serializable]
-    public class KeyMouse<T>
-        where T:IButton
+    public class KeyMouse
     {
-        static public KeyMouse<T> raw = new KeyMouse<T>();
-        List<T> k = new List<T>();
-        List<T> pk = new List<T>();
+        static public KeyMouse raw = new KeyMouse();
+        List<IButton> k = new List<IButton>();
+        List<IButton> pk = new List<IButton>();
         /// <summary>
         /// 空のコンストラクタ
         /// </summary>
@@ -67,9 +66,9 @@ namespace Charamaker3.Inputs
         /// キーを押す
         /// </summary>
         /// <param name="i">押すキー</param>
-        public void down(T i)
+        public void down(IButton i)
         {
-            if (!IButton.Contains<T>(i,k))
+            if (!IButton.Contains(i,k))
             {
                 k.Add(i);
             }
@@ -79,9 +78,9 @@ namespace Charamaker3.Inputs
         /// キーを離す
         /// </summary>
         /// <param name="i">離すキー</param>
-        public void up(T i)
+        public void up(IButton i)
         {
-            IButton.Remove<T>(i,k);
+            IButton.Remove(i,k);
         }
         /// <summary>
         /// 入力を過去のものとする。ゲームのティックに伴って呼び出す。さもなくばitypeが機能しない
@@ -89,9 +88,9 @@ namespace Charamaker3.Inputs
         public void topre()
         {
             pk.Clear();
-            foreach (T i in k)
+            foreach (IButton i in k)
             {
-                pk.Add((T)i.Clone());
+                pk.Add(i.Clone());
             }
         }
         /// <summary>
@@ -204,7 +203,7 @@ namespace Charamaker3.Inputs
         /// <param name="i">そのキー</param>
         /// <param name="t">押されたり仕方のタイプ</param>
         /// <returns>押されたりしているか</returns>
-        public bool ok(T i, itype t)
+        public bool ok(IButton i, itype t)
         {
 
             switch (t)
@@ -227,12 +226,12 @@ namespace Charamaker3.Inputs
         /// 現在押されているキーを取得する
         /// </summary>
         /// <returns>キーの列のコピー</returns>
-        public List<T> getdownkey()
+        public List<IButton> getdownkey()
         {
-            var res=new List<T>();
+            var res=new List<IButton>();
             foreach (var a in k) 
             {
-                res.Add((T)a.Clone());
+                res.Add(a.Clone());
             }
             return res;
         }
@@ -240,12 +239,12 @@ namespace Charamaker3.Inputs
         /// 過去押されていたキーを取得する
         /// </summary>
         /// <returns>キーの列のコピー</returns>
-        public List<T> getupkey()
+        public List<IButton> getupkey()
         {
-            var res = new List<T>();
+            var res = new List<IButton>();
             foreach (var a in pk)
             {
-                res.Add((T)a.Clone());
+                res.Add(a.Clone());
             }
             return res;
         }

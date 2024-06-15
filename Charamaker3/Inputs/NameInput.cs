@@ -108,22 +108,21 @@ namespace Charamaker3.Inputs
     /// キー入力をstringで管理できる奴
     /// </summary>
     /// <typeparam name="T">Ibuttonを継承して作ってもいい</typeparam>
-    public class NameInput<T>
-        where T: IButton
+    public class NameInput
     {
-        KeyMouse<T> input;
+        KeyMouse input;
         List<string> Names;
-        List<T> Button;
-        public NameInput(KeyMouse<T> input) 
+        List<IButton> Button;
+        public NameInput(KeyMouse input) 
         {
             this.input = input;
             Names = new List<string>();
-            Button= new List<T>(); 
+            Button= new List<IButton>(); 
         }
-        public void Bind(string Name, T button) 
+        public void Bind(string Name, IButton button) 
         {
             Names.Add(Name);
-            Button.Add((T)button.Clone());
+            Button.Add((IButton)button.Clone());
         }
         public bool UnBind(string Name) 
         {
@@ -142,9 +141,9 @@ namespace Charamaker3.Inputs
         {
             return new List<string>(Names);
         }
-        public List<T> GetBindedButtons()
+        public List<IButton> GetBindedButtons()
         {
-            return new List<T>(Button);
+            return new List<IButton>(Button);
         }
 
         public bool ok(string name,itype itype)
