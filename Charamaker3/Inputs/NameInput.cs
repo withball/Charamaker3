@@ -110,7 +110,8 @@ namespace Charamaker3.Inputs
     /// <typeparam name="T">Ibuttonを継承して作ってもいい</typeparam>
     public class NameInput
     {
-        KeyMouse input;
+        KeyMouse _input;
+        public KeyMouse input { get { return _input; } }
         List<string> Names;
         List<IButton> Button;
         public NameInput(KeyMouse input) 

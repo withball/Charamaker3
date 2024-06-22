@@ -10,7 +10,7 @@ namespace Charamaker3
     /// <summary>
     /// シーンに渡すスタティックめな情報。
     /// </summary>
-    public class SceneContaner
+    public class SceneContainer
     {
         /// <summary>
         /// インプットデータ
@@ -27,7 +27,7 @@ namespace Charamaker3
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
-        public SceneContaner(Display display,Inputs.NameInput input) 
+        public SceneContainer(Display display,Inputs.NameInput input) 
         {
             this.display = display;
             this.input = input;
@@ -55,7 +55,7 @@ namespace Charamaker3
         /// <summary>
         /// SceneManager
         /// </summary>
-        public SceneContaner sc;
+        public SceneContainer sc;
         /// <summary>
         /// 自動で作られる一番安易なカメラ
         /// </summary>
@@ -64,26 +64,33 @@ namespace Charamaker3
         /// 次のシーン
         /// </summary>
         public Scene next;
+
+        /// <summary>
+        /// ワールド
+        /// </summary>
+        public World wol;
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
         /// <param name="s">シーンマネージャ</param>
         /// <param name="next">次のシーン</param>
-        public Scene(SceneContaner s, Scene next = null)
+        public Scene(SceneContainer s, Scene next = null)
         {
             this.next = next;
             sc = s;
             cam = sc.display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
+            wol = new World();
+            cam.watchRect.add(wol);
         }
         private bool _started = false;
         /// <summary>
-        /// start(),end()が複数回発動しないようにするフラグ。startでtrueになる。
+        /// start(),end()が複数回発動しないようにする。start=falseであるとUpdateすら発動しない。startでtrueになる。
         /// 直接いじってもいいけどstart,endで変えてくれるんだけど
         /// </summary>
         protected bool started { get { return _started; } set { _started = value; } }
         /// <summary>
         /// シーンを開始したいときに発動してね。
-        /// smにこれが代入されてnextがない時は何かしらを代入しておくといい
+        /// scにこれが代入されてnextがない時は何かしらを代入しておくといい
         /// </summary>
         virtual public void Start(float cl=0)
         {
@@ -112,32 +119,41 @@ namespace Charamaker3
         /// <param name="OnDraw">画面の描画を行うか</param>
         virtual public void Update(float cl=1,bool OnDraw=true)
         {
-            if(OnDraw)sc.display.draw(cl);
-            onUpdate(cl);
+            if (started)
+            {
+                if (OnDraw) sc.display.draw(cam,cl);
+                onUpdate(cl);
+            }
         }
         /// <summary>
-        /// フレーム動作。
+        /// フレーム動作。標準はUpdatesのInvocとwolのupdate
         /// </summary>
         /// <param name="cl"></param>
         virtual protected void onUpdate(float cl)
         {
             onUpdates?.Invoke(this, cl);
+
         }
         /// <summary>
-        /// 標準はnextをスタートしてstartedをfalseにするだけ
+        /// 標準はnextをスタートしてstartedをfalseにするだけ。
         /// </summary>
         virtual public void End(float cl=0)
         {
             if (started)
             {
                 onEnd(cl);
-                next.Start(cl);
+                next?.Start(cl);
                 _started = false;
+            }
+            else 
+            {
+                next?.Start(cl);
             }
         }
 
         /// <summary>
-        /// シーンの正しきエンド時に呼び出される。標準では何もしない
+        /// シーンの正しきエンド時に呼び出される。標準では何もしない。<br></br>
+        /// ここに次のシーンを何にするか描くといい。
         /// </summary>
         virtual protected void onEnd(float cl)
         {

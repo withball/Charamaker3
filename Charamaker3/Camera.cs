@@ -997,10 +997,12 @@ namespace Charamaker3
             cameras.Clear();
         }
         /// <summary>
-        /// 一番上のカメラを描画させる
+        /// カメラを描画(Updateもするよあんま意味ないけど)する
         /// </summary>
+        /// <param name="cam">描画するカメラ。このカメラはWorldに所属していない方がいい。(二重にUpdateされちゃうし)<br></br>
+        /// また、Cameraはもちろんこのdisplayから創出された画面用のカメラ</param>
         /// <param name="cl">カメラのフレームスピード</param>
-        public void draw(float cl=1)
+        public void draw(Camera cam,float cl=1)
         {
             render.BeginDraw();
             foreach (var a in cameras) 
@@ -1009,10 +1011,11 @@ namespace Charamaker3
             }
             render.EndDraw();
         }
-       /// <summary>
-       /// このディスプレイのスクショをとる
-       /// </summary>
-        public void ShotThisScreen()
+        /// <summary>
+        /// このカメラのスクショをとる
+        /// <param name="cam">描画するカメラ。</param>
+        /// </summary>
+        public void ShotThisScreen(Camera cam)
         {
              var Size = render.PixelSize;
             //サイズの違いでバグる可能性あり！！！丸めてどうにかしたが、画質の値によっては今後もやばいぞ！
@@ -1024,7 +1027,7 @@ namespace Charamaker3
                 }
             }
             _SCSRender.BeginDraw();
-            draw(0);
+            draw(cam,0);
             _SCSRender.EndDraw();
             foreach (var a in cameras)
             {

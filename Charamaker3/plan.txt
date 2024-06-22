@@ -1,10 +1,10 @@
 ﻿!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!
-・シーン
+・シーン ー＞テストするか
 ・アニメエンジン
 ・背景オブジェクト
 ・エフェクトはどうしよう
-Textの上中下のアライメントを作れ！！！
-ま～とりあえずCharamakerをSceneに押し込もう
+
+ま～とりあえずCharamakerをSceneに押し込もう->むり。WinFromと一体だし？
 ~~~~~~~~~~~~~~~~~~~~
 Characterとかの管理！
 シーン！
@@ -184,3 +184,11 @@ EntityMoveはusing static Charamaker3.CharaModel.DrawableMove;で省略♡
 
 setumageman=>RotateToLim;
 radtoman=>RotateToLim;
+
+
+・Scene
+world,cam,nameInput(普通のinputにもアクセス可能。)を持つ。
+onStart,onEnd,onUpdateをオーバーライドして動かす。
+シーンへのオブジェクトの配置はコンストラクタへ。
+一番最初のシーンを始める場合はScene.Start()
+次のシーンを発動するならnowScene.End()。NextScene().Start()とするとnowScene.end()が出ない
