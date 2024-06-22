@@ -106,7 +106,7 @@ namespace Test
 
         private void ticked(object sender, EventArgs e)
         {
-            km.setpointer(cam,this);
+            km.setpointer(this);
 
             {
                 sel.setPoints(SLP, TXYP, (float)PointB.Value / 100f);
@@ -114,7 +114,7 @@ namespace Test
 
             w.update(1);
 
-            display.draw(1);
+            display.draw(cam, 1);
 
             moveCamera();
             moveSelected();
@@ -201,9 +201,10 @@ namespace Test
         }
         void selectCharacter()
         {
+            FXY p = km.GetCursourPoint(cam, true);
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
-                sel.selectbyPoint(km.x, km.y);
+                sel.selectbyPoint(p.x, p.y);
                 if (sel.e == null)
                 {
                     Select();
@@ -213,7 +214,7 @@ namespace Test
                     {
                         var rec = new Charamaker3.Shapes.Rectangle();
                         rec.setto(a);
-                        if (rec.onhani(km.x, km.y)&&a!=BaseC.e)
+                        if (rec.onhani(p.x, p.y)&&a!=BaseC.e)
                         {
                             Select(a);
                         }
@@ -230,16 +231,18 @@ namespace Test
         FXY startcursorC=new FXY(0,0),startCameraFXY=new FXY(0,0);
         void moveCamera() 
         {
+
+            FXY p = km.GetCursourPoint(cam, true);
             if (inp.ok("CamSlide", itype.ing))
             {
                 if (inp.ok("CamSlide", itype.down))
                 {
-                    startcursorC = new FXY(KeyMouse.raw.x, KeyMouse.raw.y);
+                    startcursorC = new FXY(p.x, p.y);
                     startCameraFXY = cam.watchRect.gettxy();
                 }
                 if (inp.ok("CamSlide", itype.ing))
                 {
-                    var d = new FXY(KeyMouse.raw.x, KeyMouse.raw.y) - startcursorC;
+                    var d = new FXY(p.x, p.y) - startcursorC;
                     cam.watchRect.settxy(startCameraFXY
                         , (d.x + 0.5f) * cam.e.w, (d.y + 0.5f) * cam.e.h);
 
@@ -249,9 +252,11 @@ namespace Test
         }
         void moveSelected()
         {
+
+            FXY p = km.GetCursourPoint(cam, true);
             if (inp.ok("SelSlide", itype.ing))
             {
-                sel.c.e.settxy(km.x,km.y);
+                sel.c.e.settxy(p.x,p.y);
                 Select();
             }
 
@@ -450,7 +455,7 @@ namespace Test
 
         private void screenshotB_Click(object sender, EventArgs e)
         {
-            display.ShotThisScreen();
+            display.ShotThisScreen(cam);
         }
 
         private void OnMouseDown(object sender, MouseEventArgs e)

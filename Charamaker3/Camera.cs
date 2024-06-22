@@ -244,7 +244,6 @@ namespace Charamaker3
         protected override void draw(Camera cam)
         {
             var render=cam.render;
-
             
             render.Transform =rectTrans(cam);
             var rect = rectRectF(cam);
@@ -875,6 +874,7 @@ namespace Charamaker3
             }
             if (watchRect.world != null)
             {
+
                 foreach (var a in watchRect.world.Ddic.getresult())
                 {
                     a.goDraw(this);

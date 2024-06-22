@@ -44,7 +44,7 @@ namespace Charamaker3.Inputs
         /// </summary>
         public KeyMouse() { }
         /// <summary>
-        /// マウスの座標
+        /// マウスの座標。ディスプレイ準拠
         /// </summary>
         public float x = 0, y = 0;
      
@@ -93,45 +93,44 @@ namespace Charamaker3.Inputs
                 pk.Add(i.Clone());
             }
         }
-        /// <summary>
-        /// 生の入力から座標をもらってくる。UI座標の時使え
-        /// </summary>
-        /// <param name="hyo">変換先のカメラ</param>
-        /// <returns></returns>
-        static public FXY fromRaw(Camera cam) 
-        {
-            FXY xy;
-            {
-                xy = cam.e.gettxy(Mathf.min(Mathf.max(raw.x * cam.watchRect.w, 0), cam.watchRect.w)
-                    , Mathf.min(Mathf.max(raw.y * cam.watchRect.h, 0), cam.watchRect.h));
-            }
-            return xy;
-        }
+      
+
         /// <summary>
         /// マウスの座標をカーソルからセットする。rawにもセットされる
         /// </summary>
-        /// <param name="hyojiman">活動制限のためのhyojiman</param>
+        /// <param name="cam">活動制限のためのhyojiman</param>
         /// <param name="f">座標変換のためのフォーム</param>
         /// /// <param name="gamennai">falseの時、画面外の指定を可能にする</param>
-        public void setpointer(Camera cam, Form f, bool gamennai = true)
+        public void setpointer(Form f, bool gamennai = true)
         {
             var cu = f.PointToClient(Cursor.Position);
             raw.x = cu.X / (float)f.ClientRectangle.Width;
             raw.y = cu.Y / (float)f.ClientRectangle.Height;
 
-            FXY xy;
+            x = raw.x;
+            y = raw.y;
+        }
+
+        /// <summary>
+        /// カメラ座標のインプットを受け取る 
+        /// </summary>
+        /// <param name="cam"></param>
+        /// <param name="gamennai"></param>
+        /// <returns></returns>
+        public FXY GetCursourPoint(Camera cam, bool gamennai = true)
+        {
+            FXY res;
+            var FXY = new FXY(x, y);
             if (gamennai)
             {
-                xy = cam.watchRect.gettxy(raw.x * cam.watchRect.w, raw.y * cam.watchRect.h);
+                res = cam.watchRect.gettxy(FXY.x * cam.watchRect.w, FXY.y * cam.watchRect.h);
             }
-            else 
+            else
             {
-                xy = cam.watchRect.gettxy(Mathf.min(Mathf.max(raw.x * cam.watchRect.w,0),cam.watchRect.w)
-                    , Mathf.min(Mathf.max(raw.y * cam.watchRect.h, 0),cam.watchRect.h));
+                res = cam.watchRect.gettxy(Mathf.min(Mathf.max(FXY.x * cam.watchRect.w, 0), cam.watchRect.w)
+                    , Mathf.min(Mathf.max(FXY.y * cam.watchRect.h, 0), cam.watchRect.h));
             }
-            x = xy.x;
-            y = xy.y;
-
+            return res;
         }
         /// <summary>
         /// マウスの座標を中心点との差分でポインタの座標からセットする。
@@ -139,7 +138,7 @@ namespace Charamaker3.Inputs
         /// </summary>
         /// 
         /// <param name="prepoint">前回の戻り値。nullはやめてね</param>
-        /// <param name="hyojiman">活動制限のためのhyojiman</param>
+        /// <param name="cam">活動制限のためのhyojiman</param>
         /// <param name="f">座標変換のためのフォーム</param>
         /// <param name="gamennai">falseの時、画面外の指定を可能にする</param>
         /// <returns>保存しといて次代入するポイント</returns>>

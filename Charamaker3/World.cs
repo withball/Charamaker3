@@ -23,6 +23,9 @@ namespace Charamaker3
 
         Dictionary<string, supersort<Entity>> _Edic = new Dictionary<string, supersort<Entity>>();
 
+        /// <summary>
+        /// タグとそのエンテティのリスト
+        /// </summary>
         public Dictionary<string, List<Entity>> Edic = new Dictionary<string, List<Entity>>();
         /// <summary>
         /// DrawAbleのリスト。変えるなよ。
@@ -38,6 +41,7 @@ namespace Charamaker3
             if (!Entities.Contains(e))
             {
                 Entities.Add(e);
+
                 return true;
             }
             return false;
@@ -98,7 +102,7 @@ namespace Charamaker3
                 Ddic.add(a, a.z);
             }
         }
-        public List<Entity> getEdic(string key) 
+        public List<Entity> getEdic(string key="def") 
         {
             if (Edic.ContainsKey(key)) 
             {

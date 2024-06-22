@@ -116,15 +116,25 @@ namespace Charamaker3.Inputs
         List<IButton> Button;
         public NameInput(KeyMouse input) 
         {
-            this.input = input;
+            this._input = input;
             Names = new List<string>();
             Button= new List<IButton>(); 
         }
+        /// <summary>
+        /// 入力をバインドする
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <param name="button"></param>
         public void Bind(string Name, IButton button) 
         {
             Names.Add(Name);
             Button.Add((IButton)button.Clone());
         }
+        /// <summary>
+        /// 入力をバインドを解除する
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <param name="button"></param>
         public bool UnBind(string Name) 
         {
             for (int i = 0; i < Names.Count; i++) 
@@ -137,6 +147,17 @@ namespace Charamaker3.Inputs
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// 全てのバインドを解除する。
+        /// </summary>
+        /// <param name="Name"></param>
+        /// <param name="button"></param>
+        public void Reset()
+        {
+            Names.Clear();
+            Button.Clear();
         }
         public List<string> GetBinds() 
         {
@@ -205,6 +226,17 @@ namespace Charamaker3.Inputs
 
             }
             return res;
+        }
+
+        /// <summary>
+        /// カメラ座標のインプットを受け取る 
+        /// </summary>
+        /// <param name="cam"></param>
+        /// <param name="gamennai"></param>
+        /// <returns></returns>
+        public FXY GetCursourPoint(Camera cam,bool gamennai=true) 
+        {
+            return input.GetCursourPoint(cam,gamennai);
         }
     }
 }

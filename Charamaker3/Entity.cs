@@ -366,7 +366,6 @@ namespace Charamaker3
             {
                 if (w.add(this))
                 {
-
                     _world = w;
                     _added = true;
                     onadd();

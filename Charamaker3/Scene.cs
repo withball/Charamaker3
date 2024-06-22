@@ -32,6 +32,15 @@ namespace Charamaker3
             this.display = display;
             this.input = input;
         }
+        /// <summary>
+        /// マウスカーソル
+        /// </summary>
+        /// <param name="gamennnai">画面内に座標を抑えるか</param>
+        /// <returns></returns>
+        public FXY GetCursourPoint(bool gamennnai=true) 
+        {
+            return input.GetCursourPoint(nowScene.cam, gamennnai);
+        }
     }
     /// <summary>
     /// シーン
@@ -132,7 +141,7 @@ namespace Charamaker3
         virtual protected void onUpdate(float cl)
         {
             onUpdates?.Invoke(this, cl);
-
+            wol.update(cl);
         }
         /// <summary>
         /// 標準はnextをスタートしてstartedをfalseにするだけ。
