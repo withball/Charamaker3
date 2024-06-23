@@ -1,5 +1,4 @@
 using Charamaker3;
-using Rectangle = Charamaker3.Rectangle;
 using Charamaker3.CharaModel;
 using Charamaker3.Inputs;
 using Charamaker3.ParameterFile;

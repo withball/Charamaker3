@@ -521,6 +521,8 @@ namespace Charamaker3
         /// worldのショートカット
         /// </summary>
         public World world { get { if (e == null) return null; return _e.world; } }
+        protected bool _onWorld=false;
+        public bool onWorld { get { return _onWorld; } }
         public string name="";
         public float time = -1;
         public float timer=0;
@@ -691,15 +693,24 @@ namespace Charamaker3
                 a.add(e,cl);
             }
         }
-
+        /// <summary>
+        /// 世界に追加されたときに発動するメソッド
+        /// </summary>
+        /// <param name="cl"></param>
         virtual public void addtoworld(float cl=0)
         {
+            this._onWorld = true;
             Wadded?.Invoke(e, canclocktime(cl));
+            
         }
 
+        /// <summary>
+        /// 世界から消えた時に発動するメソッド
+        /// </summary>
 
         virtual public void removetoworld(float cl = 0)
         {
+            this._onWorld = false;
             Wremoved?.Invoke(e, canclocktime(cl));
         }
 

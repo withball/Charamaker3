@@ -17,6 +17,155 @@ using Vortice.DirectWrite;
 
 namespace Charamaker3
 {
+    #region cameraUtils
+    /// <summary>
+    /// カメラの動きに対してどのぐらい動くかを変化させる。無理やりね。<br></br>
+    /// これによってe.setTxとかもおかしくなる。
+    /// </summary>
+    public class Haikei :Component
+    {
+        /// <summary>
+        /// カメラが動くとこのエンテティが動く割合。
+        /// </summary>
+        public float px = 1, py = 1;
+
+        /// <summary>
+        /// 背景っぽく動かす
+        /// </summary>
+        /// <param name="px">x方向のスクロール割合</param>
+        /// <param name="py">y方向のスクロール割合</param>
+        /// <param name="cam">追従するカメラ。nullでも後で設定すればいい</param>
+        public Haikei(float px, float py,Camera cam) 
+        {
+            this.px = px;
+            this.py = py;
+            this.cam = cam;
+        }
+        public Haikei() { }
+
+        public override void copy(Component c)
+        {
+            var cc = (Haikei)c;
+            base.copy(c);
+            cc.px = this.px;
+            cc.py = this.py;
+
+            cc.cam = this.cam;
+        }
+        public override DataSaver ToSave()
+        {
+            var d = base.ToSave();
+            d.linechange();
+            d.packAdd("px", px);
+            d.packAdd("py", py);
+            return d;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            this.px = d.unpackDataF("px");
+            this.py = d.unpackDataF("py");
+        }
+        /// <summary>
+        /// 相対位置のカメラ
+        /// </summary>
+        protected Camera cam=null;
+        /// <summary>
+        /// 本来の位置
+        /// </summary>
+        protected float truex, truey;
+
+        /// <summary>
+        /// 前回のの位置
+        /// </summary>
+        protected float prex, prey;
+        public override void update(float cl)
+        {
+            base.update(cl);
+            if (onWorld)
+            {
+                setZahyou(false);
+            }
+        }
+        public override void addtoworld(float cl = 0)
+        {
+            base.addtoworld(cl);
+            setZahyou(true);
+           // Debug.WriteLine("Haikei Add to world");
+        }
+        public override void removetoworld(float cl = 0)
+        {
+            base.removetoworld(cl);
+            e.x = truex;
+            e.y = truey;
+           // Debug.WriteLine("Haikei REMOVE to world");
+        }
+
+        /// <summary>
+        /// 追従するカメラをセッティングする
+        /// </summary>
+        /// <param name="cam"></param>
+        public void setCamera(Camera cam) 
+        {
+            this.cam = cam;
+
+        }
+        /// <summary>
+        /// カメラを考慮した座標をセットする<br></br>
+        /// </summary>
+        /// <param name="OnStart">初めて登場した時にtrueにする</param>
+        /// <exception cref="Exception"></exception>
+         void setZahyou(bool OnStart) 
+        {
+            if (cam == null)
+            {
+                throw new Exception("追従するカメラが無いですやん");
+            }
+            else if (OnStart)
+            {
+                var center = cam.watchRect.gettxy();
+                truex = e.x;
+                truey = e.y;
+                prex = e.x + center.x * (px - 1);
+                prey = e.y + center.y * (py - 1);
+                e.x = prex;
+                e.y = prey;
+
+            }
+            else
+            {
+                var center = cam.watchRect.gettxy();
+                truex += e.x - prex;
+                truey += e.y - prey;
+                prex = truex + center.x * (px - 1);
+                prey = truey + center.y * (py - 1);
+                e.x = prex;
+                e.y = prey;
+            }
+        }
+        /// <summary>
+        /// e.add(world)前に呼びだせば、カメラ座標と一致させることができる(ごめん言葉ではうまく説明できない。)<br></br>
+        /// </summary>
+        /// <exception cref="Exception"></exception>
+        public void SousaiZahyou()
+        {
+            if (cam == null)
+            {
+                throw new Exception("追従するカメラが無いですやん");
+            }
+            else 
+            {
+                var center = cam.watchRect.gettxy();
+       
+                e.x = e.x - center.x * (px - 1);
+                e.y = e.y - center.y * (py - 1);
+                
+            }
+       
+        }
+    }
+    #endregion
+    #region cameraAndDrawing
     public class ColorC
     {
         public float r, g, b, opa;
@@ -58,7 +207,7 @@ namespace Charamaker3
         /// 色。大体透明度しか意味ない。
         /// </summary>
         public ColorC col=new ColorC(0,0,0,0);
-
+        //描画の順番
         public float z;
         public Drawable(float z,ColorC col, float time = -1, string name = ""):base(time,name)
         {
@@ -232,13 +381,15 @@ namespace Charamaker3
 
 
     }
-    
-    public class Rectangle : Drawable
+    /// <summary>
+    /// 描画可能な四角形
+    /// </summary>
+    public class DRectangle : Drawable
     {
-        public Rectangle(float z,ColorC c, float time = -1,string name="") : base(z,c,time,name) 
+        public DRectangle(float z,ColorC c, float time = -1,string name="") : base(z,c,time,name) 
         {
         }
-        public Rectangle() : base()
+        public DRectangle() : base()
         {
         }
         protected override void draw(Camera cam)
@@ -1273,4 +1424,5 @@ namespace Charamaker3
             }
         }
     }
+    #endregion
 }

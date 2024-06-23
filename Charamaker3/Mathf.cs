@@ -13,6 +13,11 @@ namespace Charamaker3
         {
             System.Diagnostics.Debug.WriteLine(w);
         }
+
+        static public void Error(string w)
+        {
+            System.Diagnostics.Debug.WriteLine(w);
+        }
     }
     public class FXY
     {

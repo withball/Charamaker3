@@ -8,7 +8,8 @@ namespace Charamaker3
 {
 
     /// <summary>
-    /// シーンに渡すスタティックめな情報。
+    /// シーンに渡すスタティックめな情報<br></br>
+    /// 便利メソッドもあるよ。
     /// </summary>
     public class SceneContainer
     {
@@ -31,15 +32,6 @@ namespace Charamaker3
         {
             this.display = display;
             this.input = input;
-        }
-        /// <summary>
-        /// マウスカーソル
-        /// </summary>
-        /// <param name="gamennnai">画面内に座標を抑えるか</param>
-        /// <returns></returns>
-        public FXY GetCursourPoint(bool gamennnai=true) 
-        {
-            return input.GetCursourPoint(nowScene.cam, gamennnai);
         }
     }
     /// <summary>
@@ -169,5 +161,30 @@ namespace Charamaker3
 
             onEnds?.Invoke(this, cl);
         }
+
+
+        /// <summary>
+        /// マウスカーソルのシーン標準のカメラでの座標を取得する
+        /// </summary>
+        /// <param name="gamennnai">画面内に座標を抑えるか</param>
+        /// <returns></returns>
+        public FXY GetCursourPoint(bool gamennnai = true)
+        {
+            return sc.input.GetCursourPoint(cam, gamennnai);
+        }
+        /// <summary>
+        /// マウスカーソルの座標。ちょっと重いけど便利。
+        /// </summary>
+        public FXY cursour 
+        {
+            get { return GetCursourPoint(); }
+            set //無理やりカーソルを動かせる。意味あるのかな？
+                {
+                var dp=value-cursour;
+                sc.input.input.x += dp.x;
+                sc.input.input.y += dp.y;
+            }
+        }
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Sample
 {
-    partial class Form1
+    partial class SampleForm
     {
         /// <summary>
         ///  Required designer variable.
