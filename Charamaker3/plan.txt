@@ -1,9 +1,22 @@
 ﻿!!!!!!!!!!!!!!TODO!!!!!!!!!!!!!
 ・シーン ー＞テストするか
 ・アニメエンジン
-・背景オブジェクト->全てのDrawingに搭載しよう。USO。
+・当たり判定、物理エンジン
+図形をコンポーネントとした扱えるように、cloneとかToSaveの仕組みを
+Componentと同じようにする。
+->ok
+
+基本はワールドからやるけども、マニュアルでも当たり判定はできる。
+
+Hitbox
+->Shapeを持つ どう保存するかは、知りません。preshapeも持つ。
+->List<Entity>に当たった奴を保存。preatariもあり、okみたいな感じで当たっているかを取り出す。
+->ワープ移動とかも、Entityに強く組み込む。
+あくまでコンポーネントって形態で作るけども、重要なシステムなため、これ用のシステムもEntityに組み込む。
+->物理もそのエンテティへ。あたり判定がないと物理は機能しないが、まあ、そういうもんだろ
 
 ・エフェクトはどうしよう
+・いわゆる、アセット管理
 
 ま～とりあえずCharamakerをSceneに押し込もう->むり。WinFromと一体だし？
 ~~~~~~~~~~~~~~~~~~~~
@@ -24,8 +37,9 @@ AnimeEngine
 モーションの作成の際、いろいろあったらいろいろ疑う
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-Entity, Componentを新しく継承するときは、CopyとTos.ToSave,ToLoad
-TOsave,Toloadはcopyといっちさせるように！ //これ意味わからん→type項目を忘れずに！
+Entity, Component,Shapeを新しく継承するときは、CopyとTos.ToSave,ToLoad
+TOsave,Toloadはcopyといっちさせるように！ 
+ToSave ではtypeもセーブしてるこれは後でろーづするときに必要、。
 あと空のコンストラクタ。
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 onAddの際にもUpdateが呼び出される仕様です。
@@ -206,3 +220,8 @@ onStart,onEnd,onUpdateをオーバーライドして動かす。
 シーンへのオブジェクトの配置はコンストラクタへ。
 一番最初のシーンを始める場合はScene.Start()
 次のシーンを発動するならnowScene.End()。NextScene().Start()とするとnowScene.end()が出ない
+
+・Hitbox
+tag ->自分のタグ重ね金可能 Enemy Bulletって感じで
+filter ->これがないとぶつからないってタグ。Enemy humanみたいにするとか
+HitShape、PrehitShapeをworldUpDateでぶつける？

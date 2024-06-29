@@ -329,6 +329,7 @@
     <Compile Include="CharaModel\EntityMove.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="FileMan.cs" />
+    <Compile Include="Hitbox\Hitbox.cs" />
     <Compile Include="Inputs\KeyMouse.cs" />
     <Compile Include="Inputs\NameInput.cs" />
     <Compile Include="Mathf.cs" />

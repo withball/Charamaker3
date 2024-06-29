@@ -173,7 +173,34 @@ namespace Charamaker3.Shapes
     public class Shape
     {
         #region statics
+        static public T ToLoadShape<T>(DataSaver d)
+         where T : Shape
+        {
+            var type = Type.GetType(d.unpackDataS("type"));
+            if (typeof(T) == type)
+            {
+                var res = (T)Activator.CreateInstance(type);
+                res.ToLoad(d);
+                return res;
+            }
+            Debug.WriteLine(type + " != " + typeof(T) + " 指定されたタイプじゃないので死にました。");
+            return null;
+        }
+        static public Shape ToLoadShape(DataSaver d)
+        {
 
+            var type = Type.GetType(d.unpackDataS("type"));
+            if (type == null)
+            {
+                Debug.WriteLine("Shapeじゃないよ！ちゃんと読み込めなかったよ！");
+
+                return new Shape();
+            }
+            var res = (Shape)Activator.CreateInstance(type);
+            res.ToLoad(d);
+
+            return res;
+        }
         /// <summary>
         /// 図形二つの重なり。両側からやるよ
         /// </summary>
@@ -488,9 +515,121 @@ namespace Charamaker3.Shapes
         /// <summary>
         /// 図形の頂点の相対座標ども
         /// </summary>
-        List<FXY> points;
+        List<FXY> points=new List<FXY>();
 
 
+
+        /// <summary>
+        /// 普通のコンストラクタ
+        /// </summary>
+        /// <param name="xx">ｘ座標</param>
+        /// <param name="yy">ｙ座標</param>
+        /// <param name="ww">幅</param>
+        /// <param name="hh">高さ</param>
+        /// <param name="radd">角度</param>
+        /// <param name="points">図形の頂点の相対座標(w,hに対する比)ども(0~1)</param>
+        public Shape(float xx, float yy, float ww, float hh, float radd, List<FXY> points)
+        {
+
+            x = xx;
+            y = yy;
+            w = ww;
+            h = hh;
+            _degree = Mathf.st180(radd);
+
+
+            setpoints(points);
+
+        }
+        /// <summary>
+        /// からのコンストラクタ。セーブとか保存用
+        /// </summary>
+        public Shape() { }
+        public Shape clone()
+        {
+            var res = (Shape)Activator.CreateInstance(this.GetType());
+            this.copy(res);
+            return res;
+
+        }
+       /// <summary>
+       /// 図形の情報をコピーする
+       /// </summary>
+       /// <param name="s">コピー先の図形(同じ型であること前提)</param>
+       /// <returns></returns>
+        virtual public void copy(Shape s) 
+        {
+            s.x = this.x;
+            s.y = this.y;
+            s.w = this.w;
+            s.h = this.h;
+            s.degree = this.degree;
+            points = clonepoints();
+        }
+        /// <summary>
+        /// 図形をセーブできるようにする
+        /// </summary>
+        /// <returns></returns>
+        public virtual DataSaver ToSave() 
+        {
+            var res = new DataSaver();
+            res.packAdd("type", this.GetType().ToString());
+            res.packAdd("x", x);
+            res.packAdd("y", y);
+            res.linechange();
+            res.packAdd("w", w);
+            res.packAdd("h", h);
+            res.packAdd("degree", degree);
+            res.linechange();
+            var d = new DataSaver();
+            for (int i = 0; i < points.Count; i++) 
+            {
+                var pd = new DataSaver();
+                pd.packAdd("x", points[i].x);
+                pd.packAdd("y", points[i].y);
+                d.packAdd(i.ToString(), pd);
+            }
+            d.indent();
+            res.packAdd("points",d);
+            res.linechange();
+            return res;
+        }
+        /// <summary>
+        /// 図形の情報をデータセーバーからロードしてくる
+        /// </summary>
+        /// <param name="d"></param>
+        public virtual void ToLoad(DataSaver d) 
+        {
+            this.x = d.unpackDataF("x");
+            this.y = d.unpackDataF("y");
+            this.w = d.unpackDataF("w");
+            this.h = d.unpackDataF("h");
+            this.degree = d.unpackDataF("degree");
+            var points = d.unpackDataD("points");
+            foreach (var p in points.allUnpackDataD()) 
+            {
+                this.points.Add(new FXY(p.unpackDataF("x"), p.unpackDataF("y")));
+            }
+        }
+
+        /// <summary>
+        /// 頂点を複製する
+        /// </summary>
+        /// <returns></returns>
+        protected List<FXY> clonepoints()
+        {
+            var res = new List<FXY>();
+
+            for (int i = 1; i < points.Count - 1; i++)
+            {
+                res.Add(new FXY(points[i]));
+            }
+
+            res.Add(points[0]);
+
+            res.Insert(0, points[points.Count - 2]);
+            return res;
+        }
 
 
         /// <summary>
@@ -638,29 +777,6 @@ namespace Charamaker3.Shapes
 
         }
 
-
-        /// <summary>
-        /// 普通のコンストラクタ
-        /// </summary>
-        /// <param name="xx">ｘ座標</param>
-        /// <param name="yy">ｙ座標</param>
-        /// <param name="ww">幅</param>
-        /// <param name="hh">高さ</param>
-        /// <param name="radd">角度</param>
-        /// <param name="points">図形の頂点の相対座標(w,hに対する比)ども(0~1)</param>
-        public Shape(float xx, float yy, float ww, float hh, float radd, List<FXY> points)
-        {
-
-            x = xx;
-            y = yy;
-            w = ww;
-            h = hh;
-            _degree = Mathf.st180(radd);
-
-
-            setpoints(points);
-
-        }
         /// <summary>
         /// 図形上の一点のx座標を取得する(回転の影響を考慮してるってこと)
         /// </summary>
@@ -1011,32 +1127,7 @@ namespace Charamaker3.Shapes
             }
             return lis;
         }
-        /// <summary>
-        /// 頂点を複製する
-        /// </summary>
-        /// <returns></returns>
-        protected List<FXY> clonepoints()
-        {
-            var res = new List<FXY>();
-
-            for (int i = 1; i < points.Count - 1; i++)
-            {
-                res.Add(new FXY(points[i]));
-            }
-
-            res.Add(points[0]);
-
-            res.Insert(0, points[points.Count - 2]);
-            return res;
-        }
-        /// <summary>
-        /// 図形を複製する
-        /// </summary>
-        /// <returns>複製された図形</returns>
-        virtual public Shape clone()
-        {
-            return new Shape(x, y, w, h, degree, clonepoints());
-        }
+        
         /// <summary>
         /// 図形の重心からの最大の距離
         /// </summary>
@@ -1337,15 +1428,24 @@ namespace Charamaker3.Shapes
 
         }
         /// <summary>
-        /// 図形を複製する
+        /// 空のコンストラクタ
         /// </summary>
-        /// <returns>複製された図形</returns>
-        public override Shape clone()
+        public Rectangle() { }
+        //ToSaveとかは全く変わらないので何もなしでOK!
+
+        public override void copy(Shape s)
         {
-            var res = new Rectangle(x, y, w, h, degree);
-            res.settxy(gettxy());
-            return res;
+            base.copy(s);
         }
+        public override DataSaver ToSave()
+        {
+            return base.ToSave();
+        }
+        public override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+        }
+
         public static implicit operator System.Drawing.RectangleF(Rectangle d)
         {
             return new System.Drawing.RectangleF(d.x,d.y,d.w,d.h);
@@ -1423,6 +1523,35 @@ namespace Charamaker3.Shapes
             basehoukou = hou;
             changehoukou();
         }
+
+        public Triangle() { }
+
+        public override void copy(Shape s)
+        {
+            base.copy(s);
+            var t = (Triangle)s;
+            t.haji = this.haji;
+            t.houkou = this.houkou;
+            t.basehoukou = this.basehoukou;
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.linechange();
+            res.packAdd("hajih",haji);
+            res.packAdd("houkou", houkou);
+            res.packAdd("basehoukou", basehoukou);
+            return res;
+        }
+        public override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            haji=d.unpackDataF("hajih");
+            houkou = (int)d.unpackDataF("houkou");
+            basehoukou = (int)d.unpackDataF("basehoukou");
+        }
+
+
         /// <summary>
         /// 三角形の方向を変えたり変えなかったり
         /// </summary>
@@ -1447,13 +1576,6 @@ namespace Charamaker3.Shapes
             setpoints(lis);
         }
 
-
-        public override Shape clone()
-        {
-            var res = new Triangle(x, y, w, h, haji, degree, houkou);
-            res.settxy(gettxy());
-            return res;
-        }
     }
     /// <summary>
     /// 円を表すクラス
@@ -1503,13 +1625,29 @@ namespace Charamaker3.Shapes
             }
             setpoints(lis);
         }
+        /// <summary>
+        /// 空のコンストラクタ
+        /// </summary>
+        public Circle() { }
 
-        public override Shape clone()
+        public override void copy(Shape s)
         {
-            var res = new Circle(x, y, w, h, degree, kinji);
-            res.settxy(gettxy());
-            res.kinji = kinji;
+            Circle ss= (Circle)s; 
+            base.copy(ss);
+
+            ss.kinji = this.kinji;
+        }
+        public override DataSaver ToSave()
+        {
+            var res=base.ToSave();
+            res.linechange();
+            res.packAdd("kinji",this.kinji);
             return res;
+        }
+        public override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            this.kinji = (int)d.unpackDataF("kinji");
         }
         public override bool onhani(float px, float py, float onis = 1)
         {
