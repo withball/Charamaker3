@@ -15,6 +15,11 @@ Hitbox
 あくまでコンポーネントって形態で作るけども、重要なシステムなため、これ用のシステムもEntityに組み込む。
 ->物理もそのエンテティへ。あたり判定がないと物理は機能しないが、まあ、そういうもんだろ
 
+atarun2がおかしい。gouseiがおかしくなってんのかな？
+->二つ目？の図形のxy座標がNanだから合成できない
+cloneができてない。x=Nan,Y=Nanになる。
+SEttxyの引数xyがNanですね
+
 ・エフェクトはどうしよう
 ・いわゆる、アセット管理
 
@@ -224,4 +229,6 @@ onStart,onEnd,onUpdateをオーバーライドして動かす。
 ・Hitbox
 tag ->自分のタグ重ね金可能 Enemy Bulletって感じで
 filter ->これがないとぶつからないってタグ。Enemy humanみたいにするとか
-HitShape、PrehitShapeをworldUpDateでぶつける？
+WorldのupdateでHitboxは自動的に更新される。
+ただ、マニュアルでワープしたり、さらにフィルターかけたり、
+ぶつかったオブジェクトとったりできる。

@@ -91,6 +91,7 @@ namespace Charamaker3
         {
             base.addtoworld(cl);
             setZahyou(true);
+            
            // Debug.WriteLine("Haikei Add to world");
         }
         public override void removetoworld(float cl = 0)
@@ -253,7 +254,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="cam"></param>
         /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
-        public bool goDraw(Camera cam) 
+        public bool goDraw(Camera cam)
         {
             if (col.opa > 0&&onCamera(cam))
             {
@@ -267,11 +268,11 @@ namespace Charamaker3
         
         protected bool onCamera(Camera cam) 
         {
-            var s=new Shapes.Rectangle();
+            var s=new Shapes.Rectangle(0);
             s.setto(cam.watchRect);
 
 
-            var s2 = new Shapes.Rectangle();
+            var s2 = new Shapes.Rectangle(0);
             s2.setto(this.e);
             return s.atarun(s2);
         }

@@ -444,6 +444,40 @@ namespace Charamaker3
         }
 
         #endregion
+
+        #region bennri,CompShortCuts
+        /// <summary>
+        /// Hitboxコンポーネントを持っていたらヒットしたエンテティを返す。
+        /// </summary>
+        /// <returns></returns>
+        public List<Entity> getHits()
+        {
+            var res = new List<Entity>();
+            foreach (var a in getcompos<Hitboxs.Hitbox>())
+            {
+                res.AddRange(a.Hitteds);
+            }
+            return res;
+        }
+        /// <summary>
+        /// Hitboxコンポーネントを持っていたら、現在の状態に当たり判定をそろえる
+        /// </summary>
+        /// <param name="pretoo">1フレーム前の当たり判定もそろえるワープ移動とかした後にはtrueで</param>
+        /// <returns></returns>
+        public void setHitbox(bool pretoo = true)
+        {
+
+            foreach (var a in getcompos<Hitboxs.Hitbox>())
+            {
+                a.SetHitboxPosition();
+                if (pretoo)
+                {
+                    a.SetPreboxPosition();
+                }
+            }
+        }
+
+        #endregion
     }
 
 
@@ -1069,6 +1103,6 @@ namespace Charamaker3
             }
             return res;
         }
-
+       
     }
 }

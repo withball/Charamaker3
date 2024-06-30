@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Charamaker3.Hitboxs;
 
 namespace Charamaker3
 {
@@ -32,6 +33,10 @@ namespace Charamaker3
         /// </summary>
         public supersort<Drawable> Ddic = new supersort<Drawable>();
         /// <summary>
+        /// hitboxのリスト。変えるなよ。
+        /// </summary>
+        public supersort<Hitbox> Hdic = new supersort<Hitbox>();
+        /// <summary>
         /// Entity.addでだけ呼び出す
         /// </summary>
         /// <param name="e"></param>
@@ -60,11 +65,13 @@ namespace Charamaker3
         /// </summary>
         public event EventHandler<Entity> classifyed;
 
-        public void update(float cl) 
+        virtual public void update(float cl) 
         {
             Edic.Clear();
             _Edic.Clear();
-            Ddic.Clear(); 
+            Ddic.Clear();
+            Hdic.Clear();
+
             foreach (var a in Entities) 
             {
                 classify(a);
@@ -75,6 +82,46 @@ namespace Charamaker3
                 Edic.Add(a.Key, a.Value.getresult());
             }
             Ddic.sort(false);
+            Hdic.sort(false);
+
+            foreach (var a in Hdic.getresult())
+            {
+               a.SetHitboxPosition();
+            }
+            {
+                var tasks = new List<Task>();
+                var hitentityes=getEdic("HasHitbox");
+                foreach (var a in Hdic.getresult())
+                {
+                    tasks.Add(
+                 Task.Run(() =>
+                 {
+                     a.Hitteds.Clear();
+
+                     foreach (var b in hitentityes)
+                     {
+                         if (a.e != b)
+                         {
+                             if (a.Filters(b))
+                             {
+                                 if (a.Hits(b))
+                                 {
+                                     a.Hitteds.Add(b);
+                                 }
+                             }
+                         }
+                     }
+                 }));
+                }
+                foreach (var a in tasks)
+                {
+                    a.Wait();
+                }
+            }
+            foreach (var a in Hdic.getresult())
+            {
+               a.SetPreboxPosition();
+            }
 
             foreach (var a in Entities) 
             {
@@ -96,12 +143,30 @@ namespace Charamaker3
         {
             classifyed?.Invoke(this,e);
             addEdic("def", e,0);
-            var lis = e.getcompos<Drawable>();
-            foreach (var a in lis) 
             {
-                Ddic.add(a, a.z);
+                var lis = e.getcompos<Drawable>();
+                foreach (var a in lis)
+                {
+                    Ddic.add(a, a.z);
+                }
+            }
+            {
+                var lis = e.getcompos<Hitbox>();
+                if (lis.Count > 0) 
+                {
+                    addEdic("HasHitbox", e, 0);
+                }
+                foreach (var a in lis)
+                {
+                    Hdic.add(a,0);
+                }
             }
         }
+        /// <summary>
+        /// キーに即したえんててぃを持ってくる。全部入ってるのはdef
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public List<Entity> getEdic(string key="def") 
         {
             if (Edic.ContainsKey(key)) 

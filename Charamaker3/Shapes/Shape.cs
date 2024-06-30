@@ -492,8 +492,7 @@ namespace Charamaker3.Shapes
         /// <summary>
         /// 図形の基本要素
         /// </summary>
-        public float x, y, w, h;
-
+        public float x=0, y=0, w=0, h=0;
         /// <summary>
         /// カクード
         /// </summary>
@@ -559,12 +558,13 @@ namespace Charamaker3.Shapes
        /// <returns></returns>
         virtual public void copy(Shape s) 
         {
+            
             s.x = this.x;
             s.y = this.y;
             s.w = this.w;
             s.h = this.h;
-            s.degree = this.degree;
-            points = clonepoints();
+            s._degree = this.degree;
+            s.points = this.clonepoints();
         }
         /// <summary>
         /// 図形をセーブできるようにする
@@ -600,11 +600,12 @@ namespace Charamaker3.Shapes
         /// <param name="d"></param>
         public virtual void ToLoad(DataSaver d) 
         {
+
             this.x = d.unpackDataF("x");
             this.y = d.unpackDataF("y");
             this.w = d.unpackDataF("w");
             this.h = d.unpackDataF("h");
-            this.degree = d.unpackDataF("degree");
+            this._degree = d.unpackDataF("degree");
             var points = d.unpackDataD("points");
             foreach (var p in points.allUnpackDataD()) 
             {
@@ -619,15 +620,18 @@ namespace Charamaker3.Shapes
         protected List<FXY> clonepoints()
         {
             var res = new List<FXY>();
-
-            for (int i = 1; i < points.Count - 1; i++)
+            if (points.Count > 0)
             {
-                res.Add(new FXY(points[i]));
+                //Debug.WriteLine(points.Count+" A");
+                for (int i = 1; i < points.Count - 1; i++)
+                {
+                    res.Add(new FXY(points[i]));
+                }
+
+                res.Add(points[0]);
+
+                res.Insert(0, points[points.Count - 2]);
             }
-
-            res.Add(points[0]);
-
-            res.Insert(0, points[points.Count - 2]);
             return res;
         }
 
@@ -697,6 +701,9 @@ namespace Charamaker3.Shapes
         /// <returns></returns>
         public bool atarun2(Shape p, Shape e, Shape pe)
         {
+            var a=this + p;
+            var b = e + pe;
+
             return atarun(this, p, e, pe);
         }/// <summary>
          /// 図形が当たっているか
@@ -874,8 +881,8 @@ namespace Charamaker3.Shapes
         public void settxy(float xx, float yy, float cw=float.NaN, float ch=float.NaN)
         {
             bool xxx = float.IsNaN(cw), yyy = float.IsNaN(ch);
-            
-            if(!xxx)x = xx - cw * (float)Mathf.cos(degree) + ch * (float)Mathf.sin(degree);
+
+            if (!xxx)x = xx - cw * (float)Mathf.cos(degree) + ch * (float)Mathf.sin(degree);
             if(!yyy)y = yy - cw * (float)Mathf.sin(degree) - ch * (float)Mathf.cos(degree);
 
             if (xxx || yyy)
@@ -907,7 +914,7 @@ namespace Charamaker3.Shapes
         {
             w = p.w;
             h = p.h;
-            degree = p.degree;
+            _degree = p.degree;
             x = p.x;
             y = p.y;
         }
@@ -1422,7 +1429,7 @@ namespace Charamaker3.Shapes
         /// <param name="ww">幅</param>
         /// <param name="hh">高さ</param>
         /// <param name="degree">回転角度</param>
-        public Rectangle(float xx = 0, float yy = 0, float ww = 0, float hh = 0, float degree = 0)
+        public Rectangle(float xx , float yy = 0, float ww = 0, float hh = 0, float degree = 0)
             : base(xx, yy, ww, hh, degree, new List<FXY> { new FXY(0, 0), new FXY(1, 0), new FXY(1, 1), new FXY(0, 1) })
         {
 
@@ -1515,7 +1522,7 @@ namespace Charamaker3.Shapes
         /// <param name="hajih">高さと先端の高さの割合。0で左上の角が90°になる</param>
         /// <param name="hou">三角形の先端の方向1で右-1で左2で下</param>
         /// <param name="degree">回転角度</param>
-        public Triangle(float xx = 0, float yy = 0, float ww = 0, float hh = 0, float hajih = 0.5f, float degree = 0, int hou = 1)
+        public Triangle(float xx , float yy = 0, float ww = 0, float hh = 0, float hajih = 0.5f, float degree = 0, int hou = 1)
             : base(xx, yy, ww, hh, degree, new List<FXY>())
         {
             haji = hajih;
@@ -1606,7 +1613,7 @@ namespace Charamaker3.Shapes
         /// <param name="hh">高さ</param>
         /// <param name="degreee">回転角</param>
         /// <param name="pointkinji">近似する多角形の画数</param>
-        public Circle(float xx = 0, float yy = 0, float ww = 0, float hh = 0, float degreee = 0, int pointkinji = 20)
+        public Circle(float xx , float yy = 0, float ww = 0, float hh = 0, float degreee = 0, int pointkinji = 20)
             : base(xx, yy, ww, hh, degreee, new List<FXY>())
         {
             if (pointkinji > kinji)

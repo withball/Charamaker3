@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Charamaker3.Shapes;
 
-namespace Charamaker3.Hitbox
+namespace Charamaker3.Hitboxs
 {
     
     
@@ -29,18 +29,17 @@ namespace Charamaker3.Hitbox
         List<int> tag=new List<int>();
 
         /// <summary>
-        /// これがないならぶつからないってタグ。空にするとすべてに対してぶつかる。
+        /// これがないならぶつからないってタグ。空にするとすべてに対してぶつかる。フィルターは後でかけてもいいけど、ここでやったほうが軽い
         /// </summary>
         List<int> tagfilter=new List<int>();
 
 
 
 
-        protected List<Entity>_OffHitteds= new List<Entity>();
         /// <summary>
-        /// エンジン側でぶつかったと判断されたやつ。
+        /// ぶつかったと判断されたやつ。Worldが勝手にいじる。
         /// </summary>
-        public List<Entity> OffHitteds { get { return new List<Entity>(_OffHitteds); } }
+        public List<Entity>Hitteds= new List<Entity>();
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -125,12 +124,9 @@ namespace Charamaker3.Hitbox
         {
             if (e != null)
             {
-                HitShape.degree = e.degree;
-                HitShape.x = e.x;
-                HitShape.y = e.y;
-                HitShape.w = e.w;
-                HitShape.h = e.h;
+                HitShape.setto(e);
             }
+
         }
         /// <summary>
         /// 前フレームのヒットボックス用の図形を現在のhitboxにはめる
@@ -146,8 +142,10 @@ namespace Charamaker3.Hitbox
         /// <returns></returns>
         public bool Hits(Hitbox h) 
         {
-            
-            return this.HitShape.atarun2(this.preHitShape, h.HitShape, h.preHitShape);
+            var res = this.HitShape.atarun2(this.preHitShape, h.HitShape, h.preHitShape);
+            var res2 = this.HitShape.atarun( h.HitShape);
+          
+            return res;
         }
 
         /// <summary>
@@ -159,7 +157,7 @@ namespace Charamaker3.Hitbox
         {
             foreach (var a in e.getcompos<Hitbox>()) 
             {
-                if (this.Hits(e)) 
+                if (this.Hits(a)) 
                 {
                     return true;
                 }
@@ -187,14 +185,14 @@ namespace Charamaker3.Hitbox
             var thisFilter = this.tagfilter;
             if (thisFilter.Count == 0) { thisFilter.AddRange(h.tag); }
 
-            foreach (var a in thisFilter)
+            for (int i=0;i<thisFilter.Count;i++)
             {
-                if (h.tag.Contains(a) == false)
+                if (h.tag.Contains(thisFilter[i]) == false)
                 {
                     thisOK = false;
+                    break;
                 }
             }
-            
             switch (filteroption)
             {
                 case FilterOption.ThisFilter:
@@ -227,7 +225,7 @@ namespace Charamaker3.Hitbox
         {
             foreach (var a in e.getcompos<Hitbox>())
             {
-                if (this.Filters(e,filteroption))
+                if (this.Filters(a,filteroption))
                 {
                     return true;
                 }
@@ -235,7 +233,7 @@ namespace Charamaker3.Hitbox
             return false;
 
         }
-
+        
 
 
     }

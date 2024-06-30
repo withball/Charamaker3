@@ -1,5 +1,8 @@
 using Charamaker3;
 using Charamaker3.Inputs;
+using Charamaker3.Shapes;
+using Charamaker3.Hitboxs;
+using Rectangle = Charamaker3.Shapes.Rectangle;
 
 namespace Sample
 {
@@ -99,8 +102,28 @@ namespace Sample
                 hai.SousaiZahyou();//‚±‚ê‚ª‚È‚¢‚Æ‚¸‚ê‚é 
 
                 
-                new DRectangle((hai.px * hai.py) , new ColorC(1, 0, 0
-                    , (1-hai.px * hai.py)*0.0f + 1.0f)).add(drawing);
+                var d=new DRectangle((hai.px * hai.py) , new ColorC(1, 0, 0
+                    , (1-hai.px * hai.py)*0.0f + 1.0f));
+                d.add(drawing);
+                
+                new Hitbox(new Rectangle(0,0),new List<int>(),new List<int>()).add(drawing);
+                var comp=new Component(-1, "kasanariiro");
+                {
+                    comp.updated += (aa, bb) => 
+                    {
+                        var hits=comp.e.getHits();
+
+                        if (hits.Count > 0)
+                        {
+                            d.col.r = 0;
+                        }
+                        else 
+                        {
+                            d.col.r = 1;
+                        }
+                    };
+                }
+                comp.add(drawing);
                 
                 drawing.add(wol);
 
