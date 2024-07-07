@@ -84,7 +84,8 @@ namespace Test
                , new FontC(16, 16 * 20, 16 * 15, isBold: false,alignment:FontC.alignment.left
                ,alignmentV:FontC.alignment.right));
             text.add(cam.watchRect);
-
+            text.font.hutiZure = 0.05f;
+            text.font.hutiColor = new ColorC(1, 1, 1, 1);
             text.updated += (aa, bb) =>
             {
                 text.text=inp.Replace(FP.l.GT("CamSlide"))+"\n"+ inp.Replace(FP.l.GT("SelSlide"));
@@ -288,6 +289,10 @@ namespace Test
                 TXYP.e.ty = TXYP.e.w / 2;
             }
         }
+        /// <summary>
+        /// DSB(DataSaverのボックスをセットする)
+        /// </summary>
+        /// <param name="s"></param>
         void setDSB(string s) 
         {
             var cursour=DSB.SelectionStart;

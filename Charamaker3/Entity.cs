@@ -49,7 +49,7 @@ namespace Charamaker3
 
         bool _added = false;
         World _world = null;
-        public string name;
+        public string name="";
 
         /// <summary>
         /// エンテティの辺の長さの平均
@@ -64,7 +64,7 @@ namespace Charamaker3
                 _degree  = Mathf.st180(value); 
                 settxy(fxy); } }
 
-        public bool mirror;
+        public bool mirror=false;
         /// <summary>
         /// entityの回転に合わせた位置を取得する
         /// </summary>
@@ -88,7 +88,7 @@ namespace Charamaker3
         /// <param name="xx">セットするx座標</param>
         /// <param name="yy">セットするy座標</param>
         /// <param name="ww">画像上のwの点。Nanで回転中心</param>
-        /// <param name="yy">画像上のhの点。Nanで回転中心</param>
+        /// <param name="hh">画像上のhの点。Nanで回転中心</param>
         public void settxy(float xx, float yy, float ww=float.NaN, float hh= float.NaN)
         {
             if (float.IsNaN(ww)) ww = tx;
@@ -447,6 +447,23 @@ namespace Charamaker3
 
         #region bennri,CompShortCuts
         /// <summary>
+        /// このEntityの持つCharacterやHitBoxの位置を整列させる。Etityが移動したときとかにどうぞ。
+        /// </summary>
+        virtual public void RefreshComponentsPosition() 
+        {
+            {
+                var lis = getcompos<CharaModel.Character>();
+                foreach (var a in lis) 
+                {
+                    a.assembleCharacter();
+                }
+            }
+            {
+                setHitbox(false);
+            }
+        }
+
+        /// <summary>
         /// Hitboxコンポーネントを持っていたらヒットしたエンテティを返す。
         /// </summary>
         /// <returns></returns>
@@ -478,6 +495,19 @@ namespace Charamaker3
         }
 
         #endregion
+
+        /// <summary>
+        /// EntityをShapeにかぶせるっていうかセットする
+        /// </summary>
+        /// <param name="p"></param>
+        public void setto(Shapes.Shape s)
+        {
+            w = s.w;
+            h = s.h;
+            _degree = s.degree;
+            x = s.x;
+            y = s.y;
+        }
     }
 
 

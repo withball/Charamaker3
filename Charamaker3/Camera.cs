@@ -20,7 +20,8 @@ namespace Charamaker3
     #region cameraUtils
     /// <summary>
     /// カメラの動きに対してどのぐらい動くかを変化させる。無理やりね。<br></br>
-    /// これによってe.setTxとかもおかしくなる。
+    /// これによってe.setTxとかもおかしくなる。<br></br>
+    /// 二つ追加はできない
     /// </summary>
     public class Haikei :Component
     {
@@ -79,6 +80,15 @@ namespace Charamaker3
         /// 前回のの位置
         /// </summary>
         protected float prex, prey;
+        public override bool add(Entity ee, float cl = 0)
+        {
+            if (ee.getcompos<Haikei>().Count == 0)
+            {
+                return base.add(ee, cl);
+            }
+            Debug.WriteLine("!!ERROR!! " + this.GetType() + " を同じエンテティに二つ追加しようとしたのでキャンセルしましたわ");
+            return false;
+        }
         public override void update(float cl)
         {
             base.update(cl);
@@ -145,6 +155,35 @@ namespace Charamaker3
             }
         }
         /// <summary>
+        /// 左上座標をカメラから見ての座標にするよ。
+        /// </summary>
+        /// <param name="e">そうしたいエンテティ</param>
+        /// <param name="tx">移動させたい中心位置</param>
+        /// <param name="ty">移動させたい中心位置</param>
+        /// <returns>このエンテティがHaikeiを持ち、カメラから見ての座標に移動したか</returns>
+        static public bool SetCameraZahyou(Entity e,float tx,float ty) 
+        {
+            var lis = e.getcompos<Haikei>();
+            if (lis.Count <= 0) return false;
+            var h = lis[0];
+            //prex == truex + center.x*(px - 1) == tx(によって作られる左上座標x)
+            h.setZahyou(false);//清算
+            if (h.cam == null)
+            {
+                throw new Exception("追従するカメラが無いですやん");
+            }
+            var center = h.cam.watchRect.gettxy();
+            e.settxy(tx,ty);
+            //この辺を逆算
+            h.prex = e.x;
+            h.prey = e.y;
+            h.truex = h.prex - center.x * (h.px - 1);
+            h.truey = h.prey - center.y * (h.py - 1);
+            
+
+            return true;
+        }
+        /// <summary>
         /// e.add(world)前に呼びだせば、カメラ座標と一致させることができる(ごめん言葉ではうまく説明できない。)<br></br>
         /// </summary>
         /// <exception cref="Exception"></exception>
@@ -201,6 +240,22 @@ namespace Charamaker3
             return a.r != b.r || a.g != b.g || a.b != b.b || a.opa != b.opa;
         }
 
+        public DataSaver ToSave() 
+        {
+            var d = new DataSaver();
+            d.packAdd("r", r);
+            d.packAdd("g", g);
+            d.packAdd("b", b);
+            d.packAdd("opa", opa);
+            return d;
+        }
+        public void ToLoad(DataSaver d) 
+        {
+            r = d.unpackDataF("r");
+            g = d.unpackDataF("g");
+            b = d.unpackDataF("b");
+            opa = d.unpackDataF("opa");
+        }
     }
     public abstract class Drawable : Component 
     {
@@ -234,6 +289,7 @@ namespace Charamaker3
             res.linechange();
             res.packAdd("z", this.z); 
             res.linechange();
+            
             res.packAdd("r", this.col.r);
             res.packAdd("g", this.col.g);
             res.packAdd("b", this.col.b);
@@ -557,6 +613,16 @@ namespace Charamaker3
         /// </summary>
         public float size = 16;
 
+
+        /// <summary>
+        /// ふちをずらす割合。0でふちは無し
+        /// </summary>
+        public float hutiZure = 0.00f;
+        /// <summary>
+        /// ふちの色。透明度は関係ない。
+        /// </summary>
+        public ColorC hutiColor = new ColorC(1,1,1,0);
+
         /// <summary>
         /// 文字を描画できる範囲描画の範囲
         /// </summary>
@@ -616,6 +682,8 @@ namespace Charamaker3
             c.isBold =this.isBold;
             c.ali = this.ali;
             c.aliV = this.aliV;
+            c.hutiZure = this.hutiZure;
+            c.hutiColor = new ColorC(this.hutiColor);
         }
 
         public DataSaver ToSave() 
@@ -630,6 +698,9 @@ namespace Charamaker3
             d.packAdd("isBold", isBold);
             d.packAdd("alignment", ali);
             d.packAdd("alignmentV", aliV);
+            d.linechange();
+            d.packAdd("hutiZure",hutiZure);
+            d.packAdd("hutiColor", hutiColor.ToSave());
             return d;
         }
         public void ToLoad(DataSaver d) 
@@ -642,6 +713,8 @@ namespace Charamaker3
             this.isBold = d.unpackDataB("isBold");
             this.ali = (alignment)d.unpackDataF("alignment");
             this.aliV = (alignment)d.unpackDataF("alignmentV");
+            this.hutiZure = d.unpackDataF("hutiZure");
+            this.hutiColor.ToLoad(d.unpackDataD("hutiColor"));
         }
         /// <summary>
         /// ちゃんとしたフォントに変える
@@ -694,7 +767,7 @@ namespace Charamaker3
 
             return a.size == b.size && a.w == b.w && a.h == b.h &&
                 a.fontName == b.fontName && a.isItaric == b.isItaric
-                && a.isBold == b.isBold;
+                && a.isBold == b.isBold && a.hutiZure==b.hutiZure && a.hutiColor==b.hutiColor;
         }
         static public bool operator !=(FontC a, FontC b)
         {
@@ -706,7 +779,7 @@ namespace Charamaker3
 
             return a.size != b.size && a.w != b.w || a.h != b.h ||
                 a.fontName != b.fontName || a.isItaric != b.isItaric
-                || a.isBold != b.isBold;
+                || a.isBold != b.isBold || a.hutiZure != b.hutiZure || a.hutiColor != b.hutiColor;
         }
     }
 
@@ -799,12 +872,17 @@ namespace Charamaker3
             PastColor = new ColorC(color);
 
         }
+
+        
+        /***************************************************************************************/
+        
+
         float _bottom=0;//!<文字が書かれた領域の最下端
         /// <summary>
         /// 領域内でも字が書かれた最下端
         /// </summary>
         public float bottom { get { if (rendZone.h == 0) return 0.5f;
-                return _bottom/rendZone.h; } }
+                return Mathf.max(_bottom/rendZone.h,1); } }
 
         private string PastText = null;
         private FontC PastFont = null;
@@ -825,8 +903,30 @@ namespace Charamaker3
                 float R = 0.99f, G = 0.98f, B = 0.97f;
                 {
 
-                    render.PushAxisAlignedClip(rendZone,AntialiasMode.PerPrimitive);
                     render.Clear(new ColorC(R, G, B, 0));
+                }
+                if (F.hutiZure > 0)
+                {
+                    render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
+
+                    var c = new ColorC(F.hutiColor);
+                    c.opa = F.hutiColor.opa;
+                    var slb = render.CreateSolidColorBrush(c);
+                    var lis = new List<Shapes.Rectangle>();
+                    lis.Add((Shapes.Rectangle)rendZone.clone());
+                    lis.Add((Shapes.Rectangle)rendZone.clone());
+                    lis.Add((Shapes.Rectangle)rendZone.clone());
+                    lis.Add((Shapes.Rectangle)rendZone.clone());
+                    float zure = F.hutiZure * F.size;
+                    lis[0].x += zure;
+                    lis[1].x -= zure;
+                    lis[2].y += zure;
+                    lis[3].y -= zure;
+                    for(int i=0;i<lis.Count;i++)
+                    {
+                        render.DrawText(Text, F.ToFont(), lis[i], slb);
+                    }
+
                     render.PopAxisAlignedClip();
                 }
                 {
@@ -834,7 +934,7 @@ namespace Charamaker3
                     render.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
                 render.EndDraw();
-
+                //一番下を決める。上にそろえる場合は必要ないので計算しない。
                 if (F.aliV != FontC.alignment.left)
                 {
                     var list = Display.GetPixels(render.Bitmap, render);
@@ -850,10 +950,15 @@ namespace Charamaker3
                                 _bottom = y - rendZone.y;
                                 breaked = true;
                                 break;
-                            }                            
+                            }
                         }
                         if (breaked) break;
                     }
+                    _bottom += 1;
+                }
+                else 
+                {
+                
                 }
                 /*
                 {

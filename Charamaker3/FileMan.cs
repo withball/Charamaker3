@@ -12,6 +12,7 @@ using Vortice.Direct2D1;
 using Vortice.Mathematics;
 using Color = System.Drawing.Color;
 
+using System.Threading;
 
 namespace Charamaker3
 {
@@ -73,6 +74,7 @@ namespace Charamaker3
             }
             //nothingを作る
             {
+                CreateBitmapSS.Wait();
                 int stride = 3 * sizeof(int);
                 using (var tempStream = new DataStream(stride*3, true, true))
                 {
@@ -89,11 +91,11 @@ namespace Charamaker3
                         tempStream.Write(rgba);
                     }
                     var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
-
-                    registBmp(nothing, baseRender.CreateBitmap(new System.Drawing.Size(3, 3), tempStream.BasePointer, sizeof(int), bitmapProperties));
                     
+                    registBmp(nothing, baseRender.CreateBitmap(new System.Drawing.Size(3, 3), tempStream.BasePointer, sizeof(int), bitmapProperties));
+                  
                 }
-
+                CreateBitmapSS.Release();
             }
         }
         //新しいbmpを作るために必要なrender
@@ -116,11 +118,12 @@ namespace Charamaker3
         {
             using (var tempStream = new DataStream(1, true, true))
             {
+                CreateBitmapSS.Wait();
                 int rgba = color.R | (color.G << 8) | (color.B << 16) | (color.A << 24);
                 tempStream.Write(rgba);
                 var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
                 registBmp(bitname + "bit", baseRender.CreateBitmap(new System.Drawing.Size(1, 1), tempStream.BasePointer, sizeof(int), bitmapProperties));
-
+                CreateBitmapSS.Release();
             }
 
         }
@@ -163,6 +166,9 @@ namespace Charamaker3
 
             return bmp == null;
         }
+
+
+        private static SemaphoreSlim CreateBitmapSS = new SemaphoreSlim(1, 1);
 
         /// <summary>
         /// bitmapテクスチャーを読み込む。既に読み込んでいた場合は読み込まずに返す。
@@ -233,16 +239,17 @@ namespace Charamaker3
                             tempStream.Position = 0;
 
                             // 変換したデータからBitmapを生成して返す
-
+                            CreateBitmapSS.Wait();
                             var size = new System.Drawing.Size(bitmap.Width, bitmap.Height);
                             var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
 
                             var result = baseRender.CreateBitmap(size, tempStream.BasePointer, stride, bitmapProperties);
                             registBmp(file, result);
-
+                            CreateBitmapSS.Release();
                         }
                     }
                 }
+
             }
             // Console.WriteLine(texs.Count() + "texcount");
             return texs[file];

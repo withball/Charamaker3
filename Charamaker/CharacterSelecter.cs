@@ -10,9 +10,9 @@ namespace Test
 {
     public class CharacterSelecter
     {
-        public Character c=null;
-        public Joint j =null;
-        public Entity e =null;
+        public Character? c=null;
+        public Joint? j =null;
+        public Entity? e =null;
 
         public CharacterSelecter(Character c) 
         {

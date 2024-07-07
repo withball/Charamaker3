@@ -7,22 +7,26 @@ using Charamaker3.Shapes;
 
 namespace Charamaker3.Hitboxs
 {
-    
-    
+
+
     /// <summary>
+    /// 一つ以上追加しない方が身のためだぞ<br></br>
     /// 当たり判定をするコンポーネント当たり判定は一斉に処理される。<br></br>
-    /// システムに食い込んでるタイプのコンポーネント。エンジン側で結構いじられる。
+    /// システムに食い込んでるタイプのコンポーネント。エンジン側で結構いじられる。<br></br>
     /// </summary>
     public class Hitbox:Component
     {
         /// <summary>
-        /// ヒットする図形
+        /// ヒットする図形。SetHitboxPosition()でセットする
         /// </summary>
-        protected Shape HitShape;
+        public Shape HitShape;
         /// <summary>
-        /// 1フレーム前の図形
+        /// 1フレーム前の図形。SetHitboxPosition()でセットする
         /// </summary>
-        protected Shape preHitShape;
+        public Shape preHitShape;
+
+
+
         /// <summary>
         /// 自身についている属性。intだけど、enumを入れたほうがいい。
         /// </summary>
@@ -143,7 +147,7 @@ namespace Charamaker3.Hitboxs
         public bool Hits(Hitbox h) 
         {
             var res = this.HitShape.atarun2(this.preHitShape, h.HitShape, h.preHitShape);
-            var res2 = this.HitShape.atarun( h.HitShape);
+            //var res2 = this.HitShape.atarun( h.HitShape);
           
             return res;
         }
@@ -233,7 +237,6 @@ namespace Charamaker3.Hitboxs
             return false;
 
         }
-        
 
 
     }

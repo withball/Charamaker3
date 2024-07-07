@@ -85,8 +85,8 @@ namespace Charamaker3.CharaModel
             {
                 a.settxy(gettxy());
                 var lis = a.getcompos<Texture>();
-                float z = -999;
-                if (lis.Count > 0) { z = lis[0].z; }
+                //float z = -999;
+                //if (lis.Count > 0) { z = lis[0].z; }
                 //Debug.WriteLine(parent.name+":p::c:"+a.name + " :assemble: " + a.gettxy().ToString() + " :: " +z);
             }
         }
@@ -470,7 +470,10 @@ namespace Charamaker3.CharaModel
 
 
         }
-        void assembleCharacter()
+        /// <summary>
+        /// キャラクターを組み立てる、というかジョイントとかで整列させる
+        /// </summary>
+        public void assembleCharacter()
         {
             if (_joints.Count > 0)
             {

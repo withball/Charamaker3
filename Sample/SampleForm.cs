@@ -29,8 +29,9 @@ namespace Sample
 
 
             SC.input.Bind("Tap", new IButton(MouseButtons.Left));
+            SC.input.Bind("Tap2", new IButton(MouseButtons.Right));
 
-            SC.input.Bind("Slide", new IButton(MouseButtons.Right));
+            SC.input.Bind("Slide", new IButton(MouseButtons.XButton1));
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -85,28 +86,58 @@ namespace Sample
         }
 
 
-        Entity drawing = null;
+        Entity? drawing = null;
         FXY precursour;
         protected override void onUpdate(float cl)
         {
             base.onUpdate(cl);
 
-            if (sc.input.ok("Tap", itype.down))
+            if ((sc.input.ok("Tap", itype.down)||sc.input.ok("Tap2", itype.down))&&drawing==null)
             {
                 var FXY = GetCursourPoint();
                 drawing = new Entity();
                 drawing.x = FXY.x;
                 drawing.y = FXY.y;
-                var hai = new Haikei(FileMan.whrandhani(1.0f), FileMan.whrandhani(1.0f),cam);
-                hai.add(drawing);
-                hai.SousaiZahyou();//‚±‚ê‚ª‚È‚¢‚Æ‚¸‚ê‚é 
+                drawing.w = 100;
+                drawing.h = 100;
 
+                DRectangle d ;
+                if(1==1)
+                {
+                    var hai = new Haikei(FileMan.whrandhani(1.0f), FileMan.whrandhani(1.0f), cam);
+                    hai.add(drawing);
+                    hai.SousaiZahyou();//‚±‚ê‚ª‚È‚¢‚Æ‚¸‚ê‚é 
+                    d= new DRectangle((hai.px * hai.py), new ColorC(1, 0, 0
+                    , (1 - hai.px * hai.py) * 0.0f + 1.0f));
+                }
+                else 
+                {
+                    d = new DRectangle(10, new ColorC(1, 0, 0, 1));
+                }
                 
-                var d=new DRectangle((hai.px * hai.py) , new ColorC(1, 0, 0
-                    , (1-hai.px * hai.py)*0.0f + 1.0f));
                 d.add(drawing);
                 
-                new Hitbox(new Rectangle(0,0),new List<int>(),new List<int>()).add(drawing);
+                var hit=new Hitbox(new Rectangle(0,0),new List<int>(),new List<int>());
+                hit.add(drawing);
+
+                {
+
+                    var a = new Entity();
+                    new DRectangle(10,new ColorC(1,1,1,0.25f)).add(a);
+                    a.add(wol);
+
+                    var b = new Entity();
+                    new DRectangle(10, new ColorC(0, 0, 1, 0.25f)).add(b);
+                    b.add(wol);
+
+                    hit.freeEvent += (aa, bb) =>
+                    {
+                        a.setto(hit.HitShape);
+                        b.setto(hit.preHitShape);
+                       // Debug.WriteLine(hit.HitShape.gettxy() + "  AA " + hit.preHitShape.gettxy());
+                    };
+                }
+
                 var comp=new Component(-1, "kasanariiro");
                 {
                     comp.updated += (aa, bb) => 
@@ -128,13 +159,30 @@ namespace Sample
                 drawing.add(wol);
 
             }
-            if (sc.input.ok("Tap", itype.ing))
+            if ((sc.input.ok("Tap", itype.ing)|| sc.input.ok("Tap2", itype.ing))&&drawing!=null)
             {
                 var FXY = GetCursourPoint();
                 drawing.w = FXY.x - drawing.x;
                 drawing.h = FXY.y - drawing.y;
 
             }
+            if (sc.input.ok("Tap2", itype.up)&&drawing!=null) 
+            {
+                var p=new PhysicsComp(1, 0.01f, 0.9f, 0.1f, 0, 0, 0, 1);
+                p.onHansya += (aa, bb) => 
+                {
+                  //  Debug.WriteLine(p.vx+" :vxy: "+p.vy);
+                };
+                p.add(drawing);
+                drawing = null;
+            }
+            if (sc.input.ok("Tap", itype.up) && drawing != null)
+            {
+
+                new PhysicsComp(PhysicsComp.MW, 0, 0f, 0f, 0, 0, 0, 0).add(drawing);
+                drawing = null;
+            }
+
             if (sc.input.ok("Slide", itype.down))
             {
                 precursour = new FXY(sc.input.input.x,sc.input.input.y);

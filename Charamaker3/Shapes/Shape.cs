@@ -94,6 +94,13 @@ namespace Charamaker3.Shapes
         public FXY getkyori(float px, float py)
         {
             var res = new FXY(0, 0);
+
+            var pxy=new FXY(px, py)-this.begin;
+            pxy.degree += -this.hosen;
+            pxy.x = 0;
+            pxy.degree += this.hosen;
+            return pxy+this.begin;
+
             float degree = -this.degree;
             float degree2 = -this.hosen;
 
@@ -701,8 +708,6 @@ namespace Charamaker3.Shapes
         /// <returns></returns>
         public bool atarun2(Shape p, Shape e, Shape pe)
         {
-            var a=this + p;
-            var b = e + pe;
 
             return atarun(this, p, e, pe);
         }/// <summary>
