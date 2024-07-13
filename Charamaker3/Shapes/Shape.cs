@@ -614,6 +614,7 @@ namespace Charamaker3.Shapes
             this.h = d.unpackDataF("h");
             this._degree = d.unpackDataF("degree");
             var points = d.unpackDataD("points");
+            this.points.Clear();
             foreach (var p in points.allUnpackDataD()) 
             {
                 this.points.Add(new FXY(p.unpackDataF("x"), p.unpackDataF("y")));
@@ -1443,6 +1444,7 @@ namespace Charamaker3.Shapes
         /// 空のコンストラクタ
         /// </summary>
         public Rectangle() { }
+
         //ToSaveとかは全く変わらないので何もなしでOK!
 
         public override void copy(Shape s)

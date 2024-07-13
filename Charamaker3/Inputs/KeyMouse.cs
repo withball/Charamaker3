@@ -130,6 +130,7 @@ namespace Charamaker3.Inputs
                 res = cam.watchRect.gettxy(Mathf.min(Mathf.max(FXY.x * cam.watchRect.w, 0), cam.watchRect.w)
                     , Mathf.min(Mathf.max(FXY.y * cam.watchRect.h, 0), cam.watchRect.h));
             }
+      
             return res;
         }
         /// <summary>

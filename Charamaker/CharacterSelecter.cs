@@ -165,7 +165,7 @@ namespace Test
             var lis = new List<Entity>();
             foreach (var a in c.getTree("", false)) 
             {
-                var s = new Charamaker3.Shapes.Rectangle();
+                var s = new Charamaker3.Shapes.Rectangle(0);
                 s.setto(a);
                 if (s.onhani(x, y)) 
                 {

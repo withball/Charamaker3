@@ -10,33 +10,33 @@ namespace Test
         Display display;
         World w = new World();
         Camera cam;
-        KeyMouse km=new KeyMouse();
-        System.Drawing.Size BaseSize = new Size(1600, 900);
+        KeyMouse km = new KeyMouse();
+        System.Drawing.Size BaseSize = new Size((int)(1600*0.85f), (int)(900*0.85f));
 
-        NameInput inp ;
+        NameInput inp;
 
         Texture SLP, TXYP;
         public Charamaker()
         {
             InitializeComponent();
-
-            FP.l.seting(textsn:new List<string> {@"texts\text" });
-
-            inp = new NameInput(km);
-            inp.Bind("CamSlide",new IButton(MouseButtons.XButton1));
-            inp.Bind("SelSlide", new IButton(MouseButtons.XButton2));
-
             ClientSize = BaseSize;
 
-            display = new Display(this,1f);
+            FP.l.seting(textsn: new List<string> { @"texts\text" });
 
-            
+            inp = new NameInput(km);
+            inp.Bind("CamSlide", new IButton(MouseButtons.XButton1));
+            inp.Bind("SelSlide", new IButton(MouseButtons.XButton2));
+
+
+            display = new Display(this, 1f);
+
+
 
             FileMan.setupTextureLoader(display);
             FileMan.SoundSetUP();
 
 
-            cam=display.makeCamera(new ColorC(0,0.8f,0.9f,1));
+            cam = display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
             cam.watchRect.add(w);
             /*
             if (Directory.Exists(@".\character"))
@@ -55,7 +55,7 @@ namespace Test
 
             {
 
-                SLP = Texture.make(9999999,1,new KeyValuePair<string, string> ("def","redbit" ));
+                SLP = Texture.make(9999999, 1, new KeyValuePair<string, string>("def", "redbit"));
                 TXYP = Texture.make(99999999, 1, new KeyValuePair<string, string>("def", "bluebit"));
 
 
@@ -63,12 +63,12 @@ namespace Test
                 TXYP.add(new Entity());
 
 
-           
+
                 SLP.e.add(w);
                 TXYP.e.add(w);
             }
             {
-                var c=Entity.ToLoadEntity(DataSaver.loadFromPath(@".\character\yoshino",ext:".ctc"));
+                var c = Entity.ToLoadEntity(DataSaver.loadFromPath(@".\character\yoshino", ext: ".ctc"));
 
                 c.settxy(0, 0);
 
@@ -78,25 +78,25 @@ namespace Test
 
             }
 
-           
 
-            var text=new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
-               , new FontC(16, 16 * 20, 16 * 15, isBold: false,alignment:FontC.alignment.left
-               ,alignmentV:FontC.alignment.right));
+
+            var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
+               , new FontC(16, 16 * 20, 16 * 15, isBold: false, alignment: FontC.alignment.left
+               , alignmentV: FontC.alignment.right));
             text.add(cam.watchRect);
             text.font.hutiZure = 0.05f;
             text.font.hutiColor = new ColorC(1, 1, 1, 1);
             text.updated += (aa, bb) =>
             {
-                text.text=inp.Replace(FP.l.GT("CamSlide"))+"\n"+ inp.Replace(FP.l.GT("SelSlide"));
-              //  cam.watchRect.degree += 0.1f * bb;
+                text.text = inp.Replace(FP.l.GT("CamSlide")) + "\n" + inp.Replace(FP.l.GT("SelSlide"));
+                //  cam.watchRect.degree += 0.1f * bb;
             };
 
-            w.classifyed += (aa, bb) => 
+            w.classifyed += (aa, bb) =>
             {
-                if (bb.getcompos<Character>().Count>0) 
+                if (bb.getcompos<Character>().Count > 0)
                 {
-                    w.addEdic("character",bb,0);
+                    w.addEdic("character", bb, 0);
                 }
             };
             {
@@ -106,6 +106,7 @@ namespace Test
 
         private void ticked(object sender, EventArgs e)
         {
+            this.Text = cam.watchRect.gettxy() + " a ";
             km.setpointer(this);
 
             {
@@ -123,87 +124,91 @@ namespace Test
 
             FileMan.SoundUpdate(1);
             //SEのテスト
-            if (km.ok(new IButton(MouseButtons.Left), itype.down)) 
+            if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
-                var sc =SoundComponent.MakeSE(FileMan.SoundEffect,@"TB\jett", 1);
+                var sc = SoundComponent.MakeSE(FileMan.SoundEffect, @"TB\jett", 1);
                 sc.add(w.staticEntity);
 
                 //FileMan.SoundEffect.playoto(@"TB\jett");
             }
             //BGMのテスト
-            if (km.ok(new IButton(MouseButtons.Left), itype.down))
-            {
-
-                var newbgm= SoundComponent.MakeBGM(FileMan.BGM, @"BGM\inami2", 0.5f, 30, 30);
-                  var lis = w.staticEntity.getcompos<SoundComponent>(SoundComponent.BGMname);
-                newbgm.updated += (aa, bb) =>
-                {
-                    var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length/cam.watchRect.bigs);
-
-                    len = Mathf.max(1 -len, 0);
-                    newbgm.volume = len;
-                };
-                if (lis.Count > 0)
-                {
-                    
-                    var oldbgm = lis[0];
-                    if (oldbgm.sound.path != newbgm.sound.path)
-                    {
-                        oldbgm.Stop();
-                        oldbgm.afters.Clear();
-                        oldbgm.afters.Add(newbgm);
-                    }
-                }
-                else 
-                {
-                    newbgm.add(w.staticEntity);
-                }
-                //FileMan.BGM.playoto(@"inami2");
-            }
-            //BGMのテスト
             if (km.ok(new IButton(MouseButtons.Right), itype.down))
             {
-                var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\tim", 0.5f, 30, 30);
                 var lis = w.staticEntity.getcompos<SoundComponent>(SoundComponent.BGMname);
-                newbgm.updated += (aa, bb) =>
+                if (lis.Count == 0)
                 {
-
-                    var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
-
-                    len = Mathf.max(1 - len, 0);
-                    newbgm.volume = len;
-                };
-                if (lis.Count > 0)
-                {
-
-                    var oldbgm = lis[0];
-                    if (oldbgm.sound.path != newbgm.sound.path)
+                    var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\inami2", 0.5f, 30, 30);
+                    newbgm.updated += (aa, bb) =>
                     {
-                        oldbgm.Stop();
-                        oldbgm.afters.Clear();
-                        oldbgm.afters.Add(newbgm);
+                        var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
+
+                        len = Mathf.max(1 - len, 0);
+                        newbgm.volume = len;
+                    };
+                    if (lis.Count > 0)
+                    {
+
+                        var oldbgm = lis[0];
+                        if (oldbgm.sound.path != newbgm.sound.path)
+                        {
+                            oldbgm.Stop();
+                            oldbgm.afters.Clear();
+                            oldbgm.afters.Add(newbgm);
+                        }
+                    }
+                    else
+                    {
+                        newbgm.add(w.staticEntity);
+                    }
+                }
+                else if (lis[0].sound.path == @"BGM\inami2")
+                {
+                    var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\tim", 0.5f, 30, 30);
+                    newbgm.updated += (aa, bb) =>
+                    {
+
+                        var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
+
+                        len = Mathf.max(1 - len, 0);
+                        newbgm.volume = len;
+                    };
+                    if (lis.Count > 0)
+                    {
+
+                        var oldbgm = lis[0];
+                        if (oldbgm.sound.path != newbgm.sound.path)
+                        {
+                            oldbgm.Stop();
+                            oldbgm.afters.Clear();
+                            oldbgm.afters.Add(newbgm);
+                        }
+                    }
+                    else
+                    {
+                        newbgm.add(w.staticEntity);
                     }
                 }
                 else
                 {
-                    newbgm.add(w.staticEntity);
+                    lis[0].Stop();
                 }
             }
 
 
-            km.topre();
-            if (BaseC != null) 
+                km.topre();
+            if (BaseC != null)
             {
-                BaseC.e.settxy(sel.c.e.gettxy(),BaseC.e.w*2,-BaseC.e.h*-2);
+                BaseC.e.settxy(sel.c.e.gettxy(), BaseC.e.w * 2, -BaseC.e.h * -2);
             }
-            
+
         }
         void selectCharacter()
         {
             FXY p = km.GetCursourPoint(cam, true);
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
+                Debug.WriteLine(p+" clicked");
                 sel.selectbyPoint(p.x, p.y);
                 if (sel.e == null)
                 {
@@ -212,15 +217,16 @@ namespace Test
                     lis.Remove(sel.c.e);
                     foreach (var a in lis)
                     {
-                        var rec = new Charamaker3.Shapes.Rectangle();
+                        Debug.WriteLine(a.gettxy() + " was here");
+                        var rec = new Charamaker3.Shapes.Rectangle(0);
                         rec.setto(a);
-                        if (rec.onhani(p.x, p.y)&&a!=BaseC.e)
+                        if (rec.onhani(p.x, p.y) && a != BaseC.e)
                         {
                             Select(a);
                         }
                     }
                 }
-                else 
+                else
                 {
                     Select();
                 }
@@ -228,21 +234,23 @@ namespace Test
         }
 
 
-        FXY startcursorC=new FXY(0,0),startCameraFXY=new FXY(0,0);
-        void moveCamera() 
+        FXY startcursorC = new FXY(0, 0), startCameraFXY = new FXY(0, 0);
+        void moveCamera()
         {
 
-            FXY p = km.GetCursourPoint(cam, true);
+            FXY p = new FXY(km.x, km.y);
             if (inp.ok("CamSlide", itype.ing))
             {
                 if (inp.ok("CamSlide", itype.down))
                 {
                     startcursorC = new FXY(p.x, p.y);
                     startCameraFXY = cam.watchRect.gettxy();
+
                 }
                 if (inp.ok("CamSlide", itype.ing))
                 {
                     var d = new FXY(p.x, p.y) - startcursorC;
+
                     cam.watchRect.settxy(startCameraFXY
                         , (d.x + 0.5f) * cam.e.w, (d.y + 0.5f) * cam.e.h);
 
@@ -256,7 +264,7 @@ namespace Test
             FXY p = km.GetCursourPoint(cam, true);
             if (inp.ok("SelSlide", itype.ing))
             {
-                sel.c.e.settxy(p.x,p.y);
+                sel.c.e.settxy(p.x, p.y);
                 Select();
             }
 
@@ -272,12 +280,12 @@ namespace Test
 
         }
         public CharacterSelecter sel;
-        public Character BaseC=null;
+        public Character BaseC = null;
 
         private void zoomUD_ValueChanged(object sender, EventArgs e)
         {
             var txy = cam.watchRect.gettxy();
-            cam.watchRect.w = display.width/(float)zoomUD.Value;
+            cam.watchRect.w = display.width / (float)zoomUD.Value;
             cam.watchRect.h = display.height / (float)zoomUD.Value;
 
             cam.watchRect.settxy(txy);
@@ -293,19 +301,19 @@ namespace Test
         /// DSB(DataSaverのボックスをセットする)
         /// </summary>
         /// <param name="s"></param>
-        void setDSB(string s) 
+        void setDSB(string s)
         {
-            var cursour=DSB.SelectionStart;
+            var cursour = DSB.SelectionStart;
             var splits = new List<string>(s.Split('\n'));
             for (int i = splits.Count - 1; i >= 0; i--)
             {
-                if (splits[i].Replace(" ", "").Length == 0) 
+                if (splits[i].Replace(" ", "").Length == 0)
                 {
                     splits.RemoveAt(i);
                 }
             }
             string ss = "";
-            foreach (var a in splits) 
+            foreach (var a in splits)
             {
                 ss += a + "\n";
             }
@@ -314,13 +322,13 @@ namespace Test
             DSB.Text = DSB.Text.Replace("\n", Environment.NewLine);
 
             //カーソルの位置をもとの所へ
-            DSB.SelectionStart=cursour;
+            DSB.SelectionStart = cursour;
         }
-        
-   
-        void BaseSet() 
+
+
+        void BaseSet()
         {
-            if (BaseC != null) 
+            if (BaseC != null)
             {
                 BaseC.e.remove();
             }
@@ -339,7 +347,7 @@ namespace Test
             setDSB(sel.getData());
             BaseSet();
         }
-        void Select(Entity e) 
+        void Select(Entity e)
         {
             Select(new CharacterSelecter(e));
         }
@@ -352,8 +360,8 @@ namespace Test
 
         private void saveB_Click(object sender, EventArgs e)
         {
-            var path=FileMan.dialog("character",".ctc");
-            sel.c.e.ToSave().saveToPath(path,".ctc");
+            var path = FileMan.dialog("character", ".ctc");
+            sel.c.e.ToSave().saveToPath(path, ".ctc");
         }
 
         private void loadB_Click(object sender, EventArgs e)
@@ -404,7 +412,7 @@ namespace Test
 
         private void DSB_KeyUp(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F5) 
+            if (e.KeyCode == Keys.F5)
             {
                 var news = sel.setData(DSB.Text);
 
@@ -415,12 +423,12 @@ namespace Test
 
                 //news.selectbyOld(sel);
                 Select(news);
-                
+
             }
         }
 
-       
-    
+
+
 
         private void motionB_Click(object sender, EventArgs e)
         {
@@ -473,6 +481,11 @@ namespace Test
             var size = BaseSize;
             if (size.Width != 0)
                 this.ClientSize = new System.Drawing.Size(sum * size.Width / (size.Width + size.Height), sum * size.Height / (size.Width + size.Height));
+
+        }
+
+        private void DSB_TextChanged(object sender, EventArgs e)
+        {
 
         }
     }
