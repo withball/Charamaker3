@@ -106,7 +106,8 @@ namespace Charamaker3.CharaModel
         public List<Joint> joints { get { return new List<Joint>(_joints); } }
 
         /// <summary>
-        /// ベースキャラクターのEntityがなるべき名前。StackOverflowの防止の観点より導入
+        /// ベースキャラクターのEntityが一時的に、ほんの一瞬だけなる名前。StackOverflowの防止の観点より導入
+        /// この名前を素で使うと呪われるので注意！
         /// </summary>
         const string BaseCharacterEName= "BaseCharacter";
         /// <summary>
@@ -566,8 +567,10 @@ namespace Charamaker3.CharaModel
         public void SetBaseCharacter()
         {
             var nm = e.name;
+            
             e.name = BaseCharacterEName;
             var clone = e.clone();
+            clone.name = e.name;
 
             _BaseCharacter = clone.getcompos<Character>(this.name)[0];
 
@@ -582,8 +585,10 @@ namespace Charamaker3.CharaModel
         /// <param name="c">クローンされたアドレスフリーのやつね</param>
         public void SetBaseCharacter(Character c)
         {
+            var nm = c.e.name;
             c.e.name = BaseCharacterEName;
             _BaseCharacter =c;
+            _BaseCharacter.name = nm;
 
             BaseCharacter._BaseCharacter = null;
         }
