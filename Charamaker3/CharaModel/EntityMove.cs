@@ -36,17 +36,19 @@ namespace Charamaker3.CharaModel
         /// <param name="dx">=0</param>
         /// <param name="dy">=0</param>
         /// <param name="ddegree">=0</param>
-        /// <param name="withbigs">dx,dyをw+h/2に依存するか=false</param>
+        /// <param name="withbigs">dx,dyを(w+h)/2に依存するか=false</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMove XYD(float time, string name = "", float dx = 0, float dy = 0, float ddegree = 0, bool withbigs=true)
+        static public EntityMove XYD(float time, string name = "", float dx = 0, float dy = 0, float ddegree = 0, bool withbigs=false)
         {
-            var res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
+            EntityMove res; 
             if (withbigs)
             {
+                res = new EntityMove(time, dx, dy, float.NaN, float.NaN, float.NaN, float.NaN, ddegree, float.NaN, float.NaN, name);
                 res.SO = scaleOption.scale;
             }
-            else 
+            else
             {
+                res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
                 res.SO = scaleOption.F;
             }
             return res;
@@ -354,8 +356,8 @@ namespace Charamaker3.CharaModel
         /// <param name="b">=0</param>
         /// <param name="onlyroot">根本のみ変更=0</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ChangeColor(float time = 0, string name = "", float opa = 0, float r = 0
-            , float g = 0, float b = 0, bool onlyroot = false)
+        static public DrawableMove ChangeColor(float time = 0, string name = "", float opa = 1, float r = 1
+            , float g = 1, float b = 1, bool onlyroot = false)
         {
             var res = new DrawableMove(time, 0, r, g, b, opa, "\0", name);
             if (onlyroot)
@@ -433,10 +435,30 @@ namespace Charamaker3.CharaModel
             return res;
         }
     }
-    public enum scaleOption { F=-1, scale=1, basescale=2};
+    public enum scaleOption { 
+        /// <summary>
+        /// スケールしない
+        /// </summary>
+        F=-1
+                                  , scale=1
+            , basescale=2};
     public enum rotateOption { F=-1, world=0, joint=1, baseCharacter=2 };
     public enum rotatePath { shorts=0, plus=1, minus=-1 };
-    public enum goOption { def=0, onlyRoot=-1, goAll=1 };
+    public enum goOption 
+    {
+        /// <summary>
+        /// 親と同じ動きを子供にも適用
+        /// </summary>
+        def=0, 
+        /// <summary>
+        /// 親だけに適用
+        /// </summary>
+        onlyRoot=-1, 
+        /// <summary>
+        /// 親子すべてに対して効果を計算し、適用。
+        /// </summary>
+        goAll=1
+    };
     public enum MirrorOption
     {
         No = 1, Mirror = -1, Reverse = 0
@@ -1127,7 +1149,6 @@ namespace Charamaker3.CharaModel
                 float speed = 1 / time;
                 addDefference(speed * cl);
             }
-
             base.onadd(cl);
         }
         protected override void onupdate(float cl)
@@ -1707,6 +1728,7 @@ namespace Charamaker3.CharaModel
                                     case _OPA:
                                         if (!float.IsNaN(basespeeds[j]))
                                         {
+
                                             speeds[t][i][j] = tagBases[t][i].col.opa * basespeeds[j] - tags[t][i].col.opa;
 
                                         }

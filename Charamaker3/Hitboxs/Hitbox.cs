@@ -7,7 +7,12 @@ using Charamaker3.Shapes;
 
 namespace Charamaker3.Hitboxs
 {
-
+    public enum HitType 
+    {
+        enter//今当たり始めた
+            ,ing//当たり中
+            ,end//当たり終わった。
+    }
 
     /// <summary>
     /// 一つ以上追加しない方が身のためだぞ<br></br>
@@ -44,6 +49,11 @@ namespace Charamaker3.Hitboxs
         /// ぶつかったと判断されたやつ。Worldが勝手にいじる。
         /// </summary>
         public List<Entity>Hitteds= new List<Entity>();
+
+        /// <summary>
+        /// 一フレーム前のぶつかったと判断されたやつ。Worldが勝手にいじる。
+        /// </summary>
+        public List<Entity> preHitteds = new List<Entity>();
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -114,6 +124,58 @@ namespace Charamaker3.Hitboxs
                 tagfilter.Add((int)filterD.unpackDataF(a));
             }
         }
+        /// <summary>
+        /// Hittedsを1フレーム前のものとする。これはworldで勝手に呼び出す。
+        /// </summary>
+        public void topre() 
+        {
+            this.preHitteds = new List<Entity>(this.Hitteds);
+        }
+        /// <summary>
+        /// ぶつかったエンテティを取得する。多分重い
+        /// </summary>
+        /// <param name="h">当たり方のタイプ</param>
+        /// <returns></returns>
+        public List<Entity> getHitteds(HitType h) 
+        {
+            List<Entity> res=new List<Entity>();
+            switch (h)
+            {
+                case HitType.enter:
+                    for (int i = 0; i < Hitteds.Count; i++)
+                    {
+                        if (preHitteds.Contains(Hitteds[i]) == false)
+                        {
+                            res.Add(Hitteds[i]);
+                        }
+                    }
+                    break;
+                case HitType.ing:
+
+                    for (int i = 0; i < Hitteds.Count; i++)
+                    {
+                        if (preHitteds.Contains(Hitteds[i]) == true)
+                        {
+                            res.Add(Hitteds[i]);
+                        }
+                    }
+
+                    break;
+                case HitType.end:
+                    for (int i = 0; i < preHitteds.Count; i++)
+                    {
+                        if (Hitteds.Contains(preHitteds[i]) == false)
+                        {
+                            res.Add(preHitteds[i]);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return res;
+        }
+
         public override void addtoworld(float cl = 0)
         {
             base.addtoworld(cl);
@@ -237,7 +299,6 @@ namespace Charamaker3.Hitboxs
             return false;
 
         }
-
 
     }
 }

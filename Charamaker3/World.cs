@@ -99,7 +99,7 @@ namespace Charamaker3
             {
                 a.SetHitboxPosition();
             }
-
+            toPreHitbox();
 
             calcHitbox();
             buturiall(cl);
@@ -115,7 +115,8 @@ namespace Charamaker3
                 a.SetPreboxPosition();
             }
 
-            foreach (var a in Entities) 
+
+            foreach (var a in getEdic()) 
             {
                 a.update(cl);
             }
@@ -124,7 +125,27 @@ namespace Charamaker3
 
 
         }
-
+        /// <summary>
+        /// 当たり判定を一フレーム前のものとする。
+        /// </summary>
+        protected void toPreHitbox()
+        {
+            {
+                var tasks = new List<Task>();
+                foreach (var a in Hdic.getresult())
+                {
+                    tasks.Add(
+                 Task.Run(() =>
+                 {
+                     a.topre();
+                 }));
+                }
+                foreach (var a in tasks)
+                {
+                    a.Wait();
+                }
+            }
+        }
         /// <summary>
         /// 当たり判定を一気に処理する
         /// </summary>

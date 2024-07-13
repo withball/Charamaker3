@@ -588,6 +588,9 @@ namespace Charamaker3
         protected bool _onWorld=false;
         public bool onWorld { get { return _onWorld; } }
         public string name="";
+        /// <summary>
+        /// 終わる時間0より小さければ終わらない。
+        /// </summary>
         public float time = -1;
         public float timer=0;
 

@@ -339,6 +339,7 @@
     <Compile Include="Scene.cs" />
     <Compile Include="Shapes\Shape.cs" />
     <Compile Include="SoundEngine.cs" />
+    <Compile Include="Utils\LifeTimer.cs" />
     <Compile Include="World.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -168,7 +168,7 @@ namespace Sample
             }
             if (sc.input.ok("Tap2", itype.up)&&drawing!=null) 
             {
-                var p=new PhysicsComp(1, 0.01f, 0.9f, 0.1f, 0, 0, 0, 1);
+                var p=new PhysicsComp(1, 0.01f, 0.9f, 0.1f, 0, 0, 1, 0);
                 p.onHansya += (aa, bb) => 
                 {
                   //  Debug.WriteLine(p.vx+" :vxy: "+p.vy);

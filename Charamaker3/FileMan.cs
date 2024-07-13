@@ -11,7 +11,7 @@ using Vortice.DCommon;
 using Vortice.Direct2D1;
 using Vortice.Mathematics;
 using Color = System.Drawing.Color;
-
+using Charamaker3.CharaModel;
 using System.Threading;
 
 namespace Charamaker3
@@ -270,26 +270,6 @@ namespace Charamaker3
             return @".\temp.temp";
         }
 
-        /// <summary>
-        /// モーションをロードする
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        static public MotionSaver loadMotion(string path) 
-        {
-            var res=MotionSaver.ToLoad(DataSaver.loadFromPath(path,false,ext:".ctm"));
-            return res;
-        }
-        /// <summary>
-        /// モーションをセーブする
-        /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        static public void saveMotion(string path,string script,Motion motion)
-        {
-            new MotionSaver(script, motion).ToSave().saveToPath(path,ext:".ctm");
-            
-        }
 
 
         #region Random
@@ -428,7 +408,100 @@ namespace Charamaker3
         #endregion
 
 
+        #region DataSaverManager
 
+        static Dictionary<string,DataSaver> LoadedDS = new Dictionary<string, DataSaver>();
+
+        /// <summary>
+        /// データセーバーをロードし、保存しておく。
+        /// </summary>
+        /// <param name="path">パス</param>
+        /// <param name="reset">強制的にロードするか</param>
+        /// <param name="ext">拡張子</param>
+        /// <returns></returns>
+        static public DataSaver loadDS(string path,bool reset=false,string ext=".txt") 
+        {
+            DataSaver res;
+            path = slashFormat(path);
+            if (LoadedDS.ContainsKey(path)==false)
+            {
+
+                res = DataSaver.loadFromPath(path, true, ext);
+                LoadedDS.Add(path, res);
+            }
+            else if (reset)
+            {
+                res = DataSaver.loadFromPath(path, true, ext);
+                LoadedDS[path] = res;
+            } 
+            else 
+            {
+                res = LoadedDS[path];
+            }
+
+            return res;
+
+        }
+        /// <summary>
+        /// キャラクターをロードする
+        /// </summary>
+        /// <param name="path">パス。\characer\が自動で入る。</param>
+        /// <param name="reset"></param>
+        /// <returns></returns>
+        static public Entity loadCharacter(string path, bool reset = false) 
+        {
+            var d=loadDS(@"character\"+path,reset,".ctc");
+            return Entity.ToLoadEntity(d);
+        }
+
+        /// <summary>
+        /// キャラクターをロードする
+        /// </summary>
+        /// <param name="path">パス。\characer\が自動で入る。</param>
+        /// <param name="reset"></param>
+        /// <returns></returns>
+        static public Character ldCharacter(string path, bool reset = false)
+        {
+            var d = loadDS(@"character\" + path, reset, ".ctc");
+            return Entity.ToLoadEntity(d).getcompos<Character>()[0];
+        }
+
+        /// <summary>
+        /// キャラクターをロードする
+        /// </summary>
+        /// <param name="path">パス。\motion\が自動で入る。</param>
+        /// <returns>もう一回ファイルをロードしなおす</returns>
+        static public MotionSaver loadMotion(string path, bool reset = false)
+        {
+            var d = loadDS(@"motion\" + path, reset, ".ctm");
+            var res = MotionSaver.ToLoad(d);
+            return res;
+        }
+
+
+        /// <summary>
+        /// モーションをロードする
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="reset"></param>
+        /// <returns></returns>
+        static public Motion ldMotion(string path,bool reset=false)
+        {
+          
+            return loadMotion(path,reset).Motion;
+        }
+        /// <summary>
+        /// モーションをセーブする
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        static public void saveMotion(string path, string script, Motion motion)
+        {
+            new MotionSaver(script, motion).ToSave().saveToPath(path, ext: ".ctm");
+
+        }
+
+        #endregion
     }
     public class MotionSaver
     {

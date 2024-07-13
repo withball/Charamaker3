@@ -2,6 +2,7 @@ using Charamaker3;
 using Charamaker3.CharaModel;
 using Charamaker3.Inputs;
 using Charamaker3.ParameterFile;
+using Charamaker3.Utils;
 namespace Test
 {
 
@@ -81,7 +82,7 @@ namespace Test
 
 
             var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
-               , new FontC(16, 16 * 20, 16 * 15, isBold: false, alignment: FontC.alignment.left
+               , new FontC(16, 16 * 40, 16 * 30, isBold: false, alignment: FontC.alignment.left
                , alignmentV: FontC.alignment.right));
             text.add(cam.watchRect);
             text.font.hutiZure = 0.05f;
@@ -127,9 +128,22 @@ namespace Test
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
-                var sc = SoundComponent.MakeSE(FileMan.SoundEffect, @"TB\jett", 1);
+                var sc = SoundComponent.MakeSE(FileMan.SoundEffect, @"TB\jett", 0.01f);
                 sc.add(w.staticEntity);
+                
+                var FXY = km.GetCursourPoint(cam);
 
+                var eff=Character.MakeCharacter(@"effects\sunbit",FXY.x,FXY.y,64);
+                
+                DrawableMove.BaseColorChange(30, "", 0, go: goOption.goAll).add(eff);
+                EntityMove.XYD(30,"",0,0,360*35).add(eff);
+                var lifetimer=new LifeTimer(30);
+                lifetimer.add(eff);
+
+
+
+
+                eff.add(w);
                 //FileMan.SoundEffect.playoto(@"TB\jett");
             }
             //BGMのテスト
@@ -208,7 +222,6 @@ namespace Test
             FXY p = km.GetCursourPoint(cam, true);
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
-                Debug.WriteLine(p+" clicked");
                 sel.selectbyPoint(p.x, p.y);
                 if (sel.e == null)
                 {
@@ -217,7 +230,6 @@ namespace Test
                     lis.Remove(sel.c.e);
                     foreach (var a in lis)
                     {
-                        Debug.WriteLine(a.gettxy() + " was here");
                         var rec = new Charamaker3.Shapes.Rectangle(0);
                         rec.setto(a);
                         if (rec.onhani(p.x, p.y) && a != BaseC.e)
@@ -383,8 +395,8 @@ namespace Test
             }
             else
             {
-                var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".ctc");
-                var newe = Entity.ToLoadEntity(d);
+                //var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".ctc");
+                var newe = FileMan.loadCharacter(textB.Text);
                 if (newe.getcompos<Character>().Count > 0)
                 {
                     newe.add(w);

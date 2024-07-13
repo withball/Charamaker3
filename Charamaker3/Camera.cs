@@ -643,8 +643,8 @@ namespace Charamaker3
         /// フォントのコンストラクタ
         /// </summary>
         /// <param name="size">フォントサイズ</param>
-        /// <param name="w">文字を書き込める範囲</param>
-        /// <param name="h">文字を書き込める範囲</param>
+        /// <param name="w">文字を書き込める範囲(行の幅に近い)</param>
+        /// <param name="h">文字を書き込める範囲(列の数に近い)</param>
         /// <param name="fontName">フォントの名前</param>
         /// <param name="isItaric">斜体</param>
         /// <param name="isBold">太字</param>

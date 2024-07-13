@@ -40,7 +40,7 @@ namespace Test
         {
             if (e.KeyCode == Keys.Enter)
             {
-                var m = FileMan.loadMotion(@".\motion\"+pathB.Text);
+                var m = FileMan.loadMotion(pathB.Text);
                 if (m.Motion!=null&&!m.Motion.empty)
                 {
                  

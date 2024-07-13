@@ -96,14 +96,19 @@ namespace Charamaker3.CharaModel
         }
 
     }
-
+    /// <summary>
+    /// キャラクター。addされたときに自動でsetBaseされる。
+    /// </summary>
     public class Character : Component
     {
         //先頭のジョイントはEntityがコアの特別なジョイント
         List<Joint> _joints = new List<Joint>();
         public List<Joint> joints { get { return new List<Joint>(_joints); } }
 
-
+        /// <summary>
+        /// ベースキャラクターのEntityがなるべき名前。StackOverflowの防止の観点より導入
+        /// </summary>
+        const string BaseCharacterEName= "BaseCharacter";
         /// <summary>
         /// 
         /// </summary>
@@ -147,6 +152,10 @@ namespace Charamaker3.CharaModel
                     if (a.parent == null) a.parent = e;
                 }
             }
+            if (e.name != BaseCharacterEName) 
+            {
+                SetBaseCharacter();
+            }
         }
 
         protected override void onupdate(float cl)
@@ -155,7 +164,49 @@ namespace Charamaker3.CharaModel
             assembleCharacter();
         }
 
+        static public Entity MakeCharacter(string tex,float x,float y,float size,
+            float tpx=0.5f,float tpy=0.5f,float z=10000,string corename="core") 
+        {
+            var bmp=FileMan.ldtex(tex);
+            float w, h;
+            if (size > 0)
+            {
+                w = size;
+                h = bmp.Size.Height * size / bmp.Size.Width;
+            } 
+            else 
+            {
 
+                w = bmp.Size.Width * - size / bmp.Size.Height;
+                h = - size;
+            }
+            var res=Entity.make(x,y,w,h,w*tpx,h*tpy,0,corename);
+
+            var c=new Character(new Joint(corename+"JOI",0.5f,0.5f,null,new List<Entity>()));
+            
+
+            var t=new Texture(z,new ColorC(1,1,1,1),new Dictionary<string, string> { {"def",tex } });
+            t.add(res);
+
+            c.add(res);
+            return res;
+        }
+        /// <summary>
+        /// キャラクターの普通のコンストラクタ。
+        /// </summary>
+        /// <param name="corejoint">核となるジョイント。parentは必要ない。</param>
+        public Character(Joint corejoint) : base(-1)
+        {
+            _joints.Add(corejoint);
+        }
+        /// <summary>
+        /// ジョイントを追加する。
+        /// </summary>
+        /// <param name="j"></param>
+        public void addJoint(Joint j) 
+        {
+            _joints_.Add(j);
+        }
 
         public Character() : base(-1)
         {
@@ -403,7 +454,11 @@ namespace Charamaker3.CharaModel
             }
             return null;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="d"></param>
+        /// <returns></returns>
         static public Character ToloadC2(DataSaver d)
         {
             var res = new Character(); ;
@@ -506,19 +561,20 @@ namespace Charamaker3.CharaModel
         #region basecharacter
 
         /// <summary>
-        /// 現在の状態をベースにする。
+        /// 現在の状態をベースにする。もちろんaddされてる状態で呼び出してね。
         /// </summary>
-        public void SetBaseCharacter() 
+        public void SetBaseCharacter()
         {
-            var nm=this.name;
-            this.name = this.GetType().ToString() + this.joints.Count + "BASECHARACTERLETSANDGO"+this.ToString();
-            var clone=e.clone();
+            var nm = e.name;
+            e.name = BaseCharacterEName;
+            var clone = e.clone();
 
-            _BaseCharacter=clone.getcompos<Character>(this.name)[0];
+            _BaseCharacter = clone.getcompos<Character>(this.name)[0];
 
-            this.name = nm;
+            e.name = nm;
             BaseCharacter.name = nm;
             BaseCharacter._BaseCharacter = null;
+
         }
         /// <summary>
         /// ベースをセットする
@@ -526,12 +582,9 @@ namespace Charamaker3.CharaModel
         /// <param name="c">クローンされたアドレスフリーのやつね</param>
         public void SetBaseCharacter(Character c)
         {
-
-            var nm = this.name;
+            c.e.name = BaseCharacterEName;
             _BaseCharacter =c;
 
-            this.name = nm;
-            BaseCharacter.name = nm;
             BaseCharacter._BaseCharacter = null;
         }
         public Character BaseCharacter { get { if (_BaseCharacter == null) return this; return _BaseCharacter; } }
