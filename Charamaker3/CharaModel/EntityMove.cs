@@ -309,7 +309,7 @@ namespace Charamaker3.CharaModel
         /// <returns>__MOVE__</returns>
         static public DrawableMove ZChange(string name = "", float dz = 0, float time = 0, bool onlyroot = false)
         {
-            var res = new DrawableMove(time, dz, 0, 0, 0, 0, "\0", name);
+            var res = new DrawableMove(time, dz, 0, 0, 0, 0, "_", name);
             if (onlyroot)
             {
                 res.GO = goOption.onlyRoot;
@@ -332,7 +332,7 @@ namespace Charamaker3.CharaModel
         static public DrawableMove BaseZChange(string name = "", string Basename = "", float pz = 0
             , float time = 0, bool onlyroot = false)
         {
-            var res = new DrawableMove(time, pz, float.NaN, float.NaN, float.NaN, float.NaN, "\0", name);
+            var res = new DrawableMove(time, pz, float.NaN, float.NaN, float.NaN, float.NaN, "_", name);
             res.CO = changeOption.fromBase;
             res.zname = Basename;
             if (onlyroot)
@@ -359,7 +359,7 @@ namespace Charamaker3.CharaModel
         static public DrawableMove ChangeColor(float time = 0, string name = "", float opa = 1, float r = 1
             , float g = 1, float b = 1, bool onlyroot = false)
         {
-            var res = new DrawableMove(time, 0, r, g, b, opa, "\0", name);
+            var res = new DrawableMove(time, 0, r, g, b, opa, "_", name);
             if (onlyroot)
             {
                 res.GO = goOption.onlyRoot;
@@ -386,7 +386,7 @@ namespace Charamaker3.CharaModel
         static public DrawableMove BaseColorChange(float time = 0, string name = "", float opa = float.NaN
             , float r = float.NaN, float g = float.NaN, float b = float.NaN, goOption go = goOption.def)
         {
-            var res = new DrawableMove(time, float.NaN, r, g, b, opa, "\0", name);
+            var res = new DrawableMove(time, float.NaN, r, g, b, opa, "_", name);
             res.CO = changeOption.fromBase;
             res.GO = go;
             return res;
@@ -395,7 +395,7 @@ namespace Charamaker3.CharaModel
         /// テクスチャを変える
         /// </summary>
         /// <param name="name">=""</param>
-        /// <param name="texture">=\\  \0で変更なし、\\でベースになる</param>
+        /// <param name="texture">=\\  _で変更なし、\\でベースになる</param>
         /// <param name="time">=0</param>
         /// /// <param name="gotree">root以下もテクスチャを変えるか=false</param>
         /// <returns>__MOVE__</returns>
@@ -540,6 +540,8 @@ namespace Charamaker3.CharaModel
             {
 
             }
+
+            Debug.WriteLine(basespeeds[_X] + " QQQQQ " );
         }
         public override void copy(Component c)
         {
@@ -1138,17 +1140,17 @@ namespace Charamaker3.CharaModel
             }
             if (degreeSpeedLimit >= 0) //無理やりの実装
             {
-                addDefference(cl);
+            //    addDefference(cl);
             }
             else if (instant)
             {
                 addDefference(1);
             }
-            else
+            /*else
             {
                 float speed = 1 / time;
                 addDefference(speed * cl);
-            }
+            }*/
             base.onadd(cl);
         }
         protected override void onupdate(float cl)
@@ -1422,7 +1424,7 @@ namespace Charamaker3.CharaModel
         protected override void onupdate(float cl)
         {
             base.onupdate(cl);
-            if (!instant) 
+            if (!instant)
             {
                 if (!mirrored && timer>time/2) 
                 {
@@ -1464,8 +1466,8 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// "\\"で、ベース。
         /// </summary>
-        string texture = "\0";
-        string zname="\0";
+        string texture = "_";
+        string zname="_";
 
         goOption GO = goOption.def;
 
@@ -1537,7 +1539,7 @@ namespace Charamaker3.CharaModel
             res.linechange();
             res.packAdd("texture", texture);
             res.packAdd("zname", zname);
-            res.packAdd("CO", (int)CO);
+            res.packAdd("CO", (changeOption)CO);
             
             return res;
         }
@@ -1545,7 +1547,7 @@ namespace Charamaker3.CharaModel
         {
             base.ToLoad(d);
 
-            GO = (goOption)d.unpackDataF("GO");
+            GO = d.unpackDataE<goOption>("GO");
             basespeeds[_Z] = d.unpackDataF("_Z");
             basespeeds[_R] = d.unpackDataF("_R");
             basespeeds[_G] = d.unpackDataF("_G");
@@ -1555,7 +1557,7 @@ namespace Charamaker3.CharaModel
             texture = d.unpackDataS("texture");
             zname = d.unpackDataS("zname");
 
-            CO = (changeOption)d.unpackDataF("CO");
+            CO = d.unpackDataE<changeOption>("CO");
         }
 
 
@@ -1569,7 +1571,6 @@ namespace Charamaker3.CharaModel
         }
         protected virtual void addDefference(float ratio)
         {
-
             for (int t = 0; t < tags.Count; t++)
             {
                 for(int i=0;i< tags[t].Count;i++)
@@ -1578,13 +1579,15 @@ namespace Charamaker3.CharaModel
                     tags[t][i].col.r += (float)(speeds[t][i][_R] * ratio);
                     tags[t][i].col.g += (float)(speeds[t][i][_G] * ratio);
                     tags[t][i].col.b += (float)(speeds[t][i][_B] * ratio);
+                  
                     tags[t][i].col.opa += (float)(speeds[t][i][_OPA] * ratio);
+
                 }
             }
         }
         protected virtual void changes()
         {
-            if (texture != "\0")
+            if (texture != "_")
             {
                 var lis = new List<List<Drawable>>();
                 if (GO ==goOption.goAll)
@@ -1652,12 +1655,16 @@ namespace Charamaker3.CharaModel
                         }
                     }
                 }
-                if (zname != "\0")
+                if (zname != "_")
                 {
-                    var draws = cs[0].getEntity(zname).getcompos<Drawable>();
-                    if (draws.Count > 0) 
+                    var ge = cs[0].getEntity(zname);
+                    if (ge != null)
                     {
-                        zparts=draws[0];
+                        var draws = ge.getcompos<Drawable>();
+                        if (draws.Count > 0)
+                        {
+                            zparts = draws[0];
+                        }
                     }
                 
                 }
@@ -1820,11 +1827,11 @@ namespace Charamaker3.CharaModel
             {
                 addDefference(1);
             }
-            else
+           /* else
             {
                 float speed = 1 / time;
-                addDefference(speed * cl);
-            }
+                addDefference(Math.Min(speed * cl,1));
+            }*/
             base.onadd(cl);
         }
         protected override void onupdate(float cl)

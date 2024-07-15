@@ -122,7 +122,7 @@ namespace Charamaker3
         {
             if (started)
             {
-                if (OnDraw) sc.display.draw(cam,cl);
+                if (OnDraw) sc.display.draw(cl);
                 onUpdate(cl);
             }
         }

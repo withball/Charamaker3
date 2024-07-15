@@ -15,7 +15,7 @@ using System.Windows.Forms;
 using System.Xml.Linq;
 using static Charamaker3.CharaModel.DrawableMove;
 using static Charamaker3.CharaModel.EntityMove;
-namespace Test
+namespace Charamaker
 {
     public partial class MotionMaker : Form
     {
@@ -33,6 +33,10 @@ namespace Test
         }
         void addmotion(Motion m)
         {
+            if (cm.anmE != null)
+            {
+                cm.anmE.SetText(m.ToSave());
+            }
             m.add(cm.sel.c.e);
             m.speed = (float)speedUD.Value;
         }
@@ -119,7 +123,6 @@ namespace Test
             var path=FileMan.dialog("motion", ".ctm");
             FileMan.saveMotion(path, ScriptB.Text, m);
         }
-
         private void ScriptB_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.F5) 

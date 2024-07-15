@@ -388,9 +388,9 @@ namespace Charamaker3
         virtual public void update(float cl) 
         {
             var lis = components;
-            for (int i=lis.Count-1;i>=0;i--)
+            foreach (var a in lis)
             {
-                lis[i].update(cl);
+                a.update(cl);
             }
         }
         public bool remove()
@@ -535,7 +535,7 @@ namespace Charamaker3
             var type = Type.GetType(d.unpackDataS("type"));
             if (type == null)
             {
-                Debug.WriteLine("Componentじゃないよ！ちゃんと読み込めなかったよ！");
+                Debug.WriteLine(d.unpackDataS("type") + "はComponentじゃないよ！ちゃんと読み込めなかったよ！");
 
                 return new Component();
             }
@@ -608,9 +608,11 @@ namespace Charamaker3
                 timer = 0;
             }
         }
-
-        public bool eternal { get { return time < 0; } }
-        public float remaintime { get { if (!eternal) return Mathf.max(time - timer, 0);return -1; } }
+        /// <summary>
+        /// 時間経過でエンテティから取り除かれないか
+        /// </summary>
+       virtual public bool eternal { get { return time < 0; } }
+        public float remaintime { get { if (time>=0) return Mathf.max(time - timer, 0);return -1; } }
         /// <summary>
         /// updateで可能な時間だけ取り出す。
         /// </summary>
@@ -710,13 +712,14 @@ namespace Charamaker3
             {
                 this._e = ee;
                 this.e.compoadd(this, cl);
-                onadd(canclocktime(cl));
+                onadd(cl);
                 return true;
             }
             
                 Debug.WriteLine(name+this.GetType().ToString()+" is already added");
             return false;
         }
+
         virtual protected void onadd(float cl) 
         {
             added?.Invoke(e, cl);
@@ -744,7 +747,7 @@ namespace Charamaker3
         {
             if (e != null)
             {
-                onremove(canclocktime(cl));
+                onremove(cl);
                 this.e.comporemove(this);
                 this._e = null;
 
@@ -955,6 +958,10 @@ namespace Charamaker3
             stops.Add(stop);
             time = sumtime;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cl">余った時間。</param>
         protected override void onadd(float cl)
         {
             //start();

@@ -1170,6 +1170,10 @@ namespace Charamaker3
 
     public class Display
     {
+        /// <summary>
+        /// カメラのWatchRectの標準の名前
+        /// </summary>
+        public const string WatchRectName = "WatchRect";
         public ID2D1HwndRenderTarget render { get { return _render; } }
         ID2D1HwndRenderTarget _render;
 
@@ -1230,13 +1234,14 @@ namespace Charamaker3
             cameras.Add(res);
             return res;
         }
+        
         /// <summary>
         /// 画面に直接描画するカメラを作る。Watchrectはあとでworldに追加してね。Cameraが追加されてるEntityはマジどうでもいい
         /// </summary>
         /// <returns></returns>
         public Camera makeCamera( ColorC backcolor)
         {
-            Entity Watchrect = Entity.make2(0, 0, render.Size.Width/resol, render.Size.Height / resol);
+            Entity Watchrect = Entity.make2(0, 0, render.Size.Width/resol, render.Size.Height / resol,name:WatchRectName);
 
             return makeCamera(Watchrect,backcolor);
         }
@@ -1259,7 +1264,7 @@ namespace Charamaker3
         /// <param name="cam">描画するカメラ。このカメラはWorldに所属していない方がいい。(二重にUpdateされちゃうし)<br></br>
         /// また、Cameraはもちろんこのdisplayから創出された画面用のカメラ</param>
         /// <param name="cl">カメラのフレームスピード</param>
-        public void draw(Camera cam,float cl=1)
+        public void draw(float cl=1)
         {
             render.BeginDraw();
             foreach (var a in cameras) 
@@ -1284,7 +1289,7 @@ namespace Charamaker3
                 }
             }
             _SCSRender.BeginDraw();
-            draw(cam,0);
+            draw(0);
             _SCSRender.EndDraw();
             foreach (var a in cameras)
             {

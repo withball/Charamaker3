@@ -3,16 +3,16 @@ using Charamaker3.CharaModel;
 using Charamaker3.Inputs;
 using Charamaker3.ParameterFile;
 using Charamaker3.Utils;
-namespace Test
+namespace Charamaker
 {
 
     public partial class Charamaker : Form
     {
-        Display display;
-        World w = new World();
-        Camera cam;
+        public Display display;
+        public World w = new World();
+        public Camera cam;
         KeyMouse km = new KeyMouse();
-        System.Drawing.Size BaseSize = new Size((int)(1600*0.85f), (int)(900*0.85f));
+        System.Drawing.Size BaseSize = new Size((int)(1600 * 0.85f), (int)(900 * 0.85f));
 
         NameInput inp;
 
@@ -116,7 +116,7 @@ namespace Test
 
             w.update(1);
 
-            display.draw(cam, 1);
+            display.draw(1);
 
             moveCamera();
             moveSelected();
@@ -130,14 +130,14 @@ namespace Test
 
                 var sc = SoundComponent.MakeSE(FileMan.SoundEffect, @"TB\jett", 0.01f);
                 sc.add(w.staticEntity);
-                
+
                 var FXY = km.GetCursourPoint(cam);
 
-                var eff=Character.MakeCharacter(@"effects\sunbit",FXY.x,FXY.y,64);
-                
+                var eff = Character.MakeCharacter(@"effects\sunbit", FXY.x, FXY.y, 64);
+
                 DrawableMove.BaseColorChange(30, "", 0, go: goOption.goAll).add(eff);
-                EntityMove.XYD(30,"",0,0,360*35).add(eff);
-                var lifetimer=new LifeTimer(30);
+                EntityMove.XYD(30, "", 0, 0, 360 * 35).add(eff);
+                var lifetimer = new LifeTimer(30);
                 lifetimer.add(eff);
 
 
@@ -210,7 +210,7 @@ namespace Test
             }
 
 
-                km.topre();
+            km.topre();
             if (BaseC != null)
             {
                 BaseC.e.settxy(sel.c.e.gettxy(), BaseC.e.w * 2, -BaseC.e.h * -2);
@@ -499,6 +499,25 @@ namespace Test
         private void DSB_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        public AnimeEditor anmE;
+
+        private void animationB_Click(object sender, EventArgs e)
+        {
+            if (anmE == null || anmE.Visible == false)
+            {
+                anmE = new AnimeEditor(this);
+                anmE.Show();
+            }
+        }
+
+        private void printoutB_Click(object sender, EventArgs e)
+        {
+            if (sel != null&&sel.c!=null)
+            {
+                this.messageB.Text = sel.c.e.ToSave().getData().Replace("\n", Environment.NewLine);
+            }
         }
     }
 }

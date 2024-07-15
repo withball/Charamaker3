@@ -1,4 +1,4 @@
-namespace Test
+namespace Charamaker
 {
     internal static class Program
     {

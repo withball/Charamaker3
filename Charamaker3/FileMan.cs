@@ -419,19 +419,19 @@ namespace Charamaker3
         /// <param name="reset">強制的にロードするか</param>
         /// <param name="ext">拡張子</param>
         /// <returns></returns>
-        static public DataSaver loadDS(string path,bool reset=false,string ext=".txt") 
+        static public DataSaver loadDS(string path,bool reset=false,string ext=".txt",bool escape=true) 
         {
             DataSaver res;
             path = slashFormat(path);
             if (LoadedDS.ContainsKey(path)==false)
             {
 
-                res = DataSaver.loadFromPath(path, true, ext);
+                res = DataSaver.loadFromPath(path, escape, ext);
                 LoadedDS.Add(path, res);
             }
             else if (reset)
             {
-                res = DataSaver.loadFromPath(path, true, ext);
+                res = DataSaver.loadFromPath(path, escape, ext);
                 LoadedDS[path] = res;
             } 
             else 
@@ -462,8 +462,8 @@ namespace Charamaker3
         /// <returns></returns>
         static public Character ldCharacter(string path, bool reset = false)
         {
-            var d = loadDS(@"character\" + path, reset, ".ctc");
-            return Entity.ToLoadEntity(d).getcompos<Character>()[0];
+            var d = loadCharacter(path,reset);
+            return d.getcompos<Character>()[0];
         }
 
         /// <summary>
@@ -473,7 +473,7 @@ namespace Charamaker3
         /// <returns>もう一回ファイルをロードしなおす</returns>
         static public MotionSaver loadMotion(string path, bool reset = false)
         {
-            var d = loadDS(@"motion\" + path, reset, ".ctm");
+            var d = loadDS(@"motion\" + path, reset, ".ctm",false);
             var res = MotionSaver.ToLoad(d);
             return res;
         }
@@ -516,6 +516,7 @@ namespace Charamaker3
         {
             var res = new DataSaver();
             res.packAdd("Script", Script);
+            res.linechange();
             res.packAdd("Motion", Motion.ToSave());
             return res;
         }
@@ -558,7 +559,9 @@ namespace Charamaker3
         /// <summary>
         /// 全体をインデントする
         /// </summary>
-        public void indent(int num = 1)
+        /// <param name="num"></param>
+        /// <returns>便利だし、自身を返す</returns>
+        public DataSaver indent(int num = 1)
         {
             var s = Data.Split('\n');
             string res = "";
@@ -567,6 +570,7 @@ namespace Charamaker3
                 res += new string(' ', num) + s[i] + "\n";
             }
             Data = res;
+            return this;
         }
 
         /// <summary>
@@ -958,6 +962,13 @@ namespace Charamaker3
 
             return new DataSaver(sou);
         }
+
+        public E unpackDataE<E>(string name)
+            where E : struct, Enum
+        {
+            var sou = unpackDataS(name);
+            return (E)Enum.Parse(typeof(E),sou);
+        }
         /// <summary>
         /// floatでアンパックする
         /// 
@@ -1178,8 +1189,8 @@ namespace Charamaker3
             {
                 ;
                 var b = unpackDataD(a);
-                st += new string(' ', indent) + a + "\n";
-                st += new string(' ', indent) + b.getAllkouzou(indent + 1) + "\n";
+                st += new string('.', indent) + a + "\n";
+                st += new string('.', indent) + b.getAllkouzou(indent + 1) ;
 
             }
 

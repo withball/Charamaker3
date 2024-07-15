@@ -1,4 +1,4 @@
-﻿namespace Test
+﻿namespace Charamaker
 {
     partial class Charamaker
     {
@@ -41,6 +41,8 @@
             PointB = new TrackBar();
             motionB = new Button();
             screenshotB = new Button();
+            animationB = new Button();
+            printoutB = new Button();
             ((System.ComponentModel.ISupportInitialize)zoomUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PointB).BeginInit();
             SuspendLayout();
@@ -158,7 +160,7 @@
             // motionB
             // 
             motionB.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            motionB.Location = new Point(686, 826);
+            motionB.Location = new Point(687, 826);
             motionB.Name = "motionB";
             motionB.Size = new Size(75, 23);
             motionB.TabIndex = 9;
@@ -177,11 +179,35 @@
             screenshotB.UseVisualStyleBackColor = true;
             screenshotB.Click += screenshotB_Click;
             // 
+            // animationB
+            // 
+            animationB.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            animationB.Location = new Point(768, 825);
+            animationB.Name = "animationB";
+            animationB.Size = new Size(75, 23);
+            animationB.TabIndex = 11;
+            animationB.Text = "animation";
+            animationB.UseVisualStyleBackColor = true;
+            animationB.Click += animationB_Click;
+            // 
+            // printoutB
+            // 
+            printoutB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            printoutB.Location = new Point(1291, 719);
+            printoutB.Name = "printoutB";
+            printoutB.Size = new Size(75, 23);
+            printoutB.TabIndex = 12;
+            printoutB.Text = "printout";
+            printoutB.UseVisualStyleBackColor = true;
+            printoutB.Click += printoutB_Click;
+            // 
             // Charamaker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 861);
+            Controls.Add(printoutB);
+            Controls.Add(animationB);
             Controls.Add(screenshotB);
             Controls.Add(motionB);
             Controls.Add(PointB);
@@ -222,5 +248,7 @@
         private TrackBar PointB;
         private Button motionB;
         private Button screenshotB;
+        private Button animationB;
+        private Button printoutB;
     }
 }

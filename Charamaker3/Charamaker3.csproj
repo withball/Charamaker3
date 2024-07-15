@@ -325,6 +325,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Camera.cs" />
+    <Compile Include="CharaModel\AnimeLoader.cs" />
     <Compile Include="CharaModel\Character.cs" />
     <Compile Include="CharaModel\EntityMove.cs" />
     <Compile Include="Entity.cs" />

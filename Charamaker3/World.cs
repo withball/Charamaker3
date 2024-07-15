@@ -9,18 +9,57 @@ namespace Charamaker3
 {
     public class World
     {
+        #region statics
         /// <summary>
-        /// World作成時に追加されるエンテティ。BGMの再生とかにどうぞ。カメラの位置を指すために使ったりもできるし。
+        /// その名前のエンテティを取得する。
+        /// </summary>
+        /// <param name="name">検索する名前</param>
+        /// <param name="lis">検索するリスト</param>
+        /// <returns></returns>
+        static public List<Entity> getNamedEntity(string name, List<Entity> lis) 
+        {
+            var res=new List<Entity>();
+            foreach (var a in lis) 
+            {
+                if (a.name == name) 
+                {
+                    res.Add(a);
+                }
+            }
+            return res;
+        }
+        #endregion
+
+        /// <summary>
+        /// World作成時に追加されるエンテティ。BGMの再生とかにどうぞ。カメラの位置を指すために使ったりもできるし。<br></br>
+        /// 世界から消そうと思っても消せない。名前はStaticEntityNameに格納
         /// </summary>
         public Entity staticEntity=new Entity();
-
+        public const string StaticEntityName = "static";
         public World() 
         {
+            staticEntity.name = StaticEntityName;
             staticEntity.add(this);
+            var c = new Component();
+            c.add(staticEntity);
+            c.Wremoved += (aa, bb) =>
+            {
+                staticEntity.add(this);
+            };
+            c.removed += (aa, bb) =>
+            {
+                c.add(staticEntity);
+            };
         }
 
-
-        List<Entity> Entities = new List<Entity>();
+        /// <summary>
+        /// 根源のリスト
+        /// </summary>
+        protected List<Entity> _Entities = new List<Entity>();
+        /// <summary>
+        /// すべてのエンテティ。リアルタイムに反映される。
+        /// </summary>
+        public List<Entity> Entities { get { return new List<Entity>(_Entities); } }
 
         Dictionary<string, supersort<Entity>> _Edic = new Dictionary<string, supersort<Entity>>();
 
@@ -47,9 +86,9 @@ namespace Charamaker3
         /// <returns></returns>
         public bool add(Entity e)
         {
-            if (!Entities.Contains(e))
+            if (!_Entities.Contains(e))
             {
-                Entities.Add(e);
+                _Entities.Add(e);
 
                 return true;
             }
@@ -62,7 +101,7 @@ namespace Charamaker3
           /// <returns></returns>
         public bool remove(Entity e)
         {
-            return Entities.Remove(e);
+            return _Entities.Remove(e);
         }
         /// <summary>
         /// ここに分類したい奴を書き込んだりする。
@@ -81,7 +120,7 @@ namespace Charamaker3
             Pdic.Clear();
             Hdic.Clear();
 
-            foreach (var a in Entities) 
+            foreach (var a in _Entities) 
             {
                 classify(a);
             }
@@ -120,7 +159,10 @@ namespace Charamaker3
             {
                 a.update(cl);
             }
-
+            foreach (var a in getEdic("HasCharacter")) 
+            {
+                a.RefreshComponentsPosition();
+            }
 
 
 
@@ -227,9 +269,17 @@ namespace Charamaker3
                     Pdic.add(a, a.wei);
                 }
             }
+            {
+                var lis = e.getcompos<CharaModel.Character>();
+                if (lis.Count > 0)
+                {
+                    addEdic("HasCharacter", e, 0);
+                }
+            }
         }
         /// <summary>
-        /// キーに即したえんててぃを持ってくる。全部入ってるのはdef
+        /// キーに即したえんててぃを持ってくる。全部入ってるのはdef<br></br>
+        /// このフレーム中に発生したオブジェクトは入っていない。
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
