@@ -535,7 +535,7 @@ namespace Charamaker3
             var type = Type.GetType(d.unpackDataS("type"));
             if (type == null)
             {
-                Debug.WriteLine(d.unpackDataS("type") + "はComponentじゃないよ！ちゃんと読み込めなかったよ！");
+                Debug.WriteLine(d.unpackDataS("type","no [type]") + "はComponentじゃないよ！ちゃんと読み込めなかったよ！");
 
                 return new Component();
             }

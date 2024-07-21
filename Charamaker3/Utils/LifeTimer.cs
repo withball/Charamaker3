@@ -214,6 +214,7 @@ namespace Charamaker3.Utils
         {
             summon = summoncomponent;
             tag= targetname;
+            this.addCl = addcl;
         }
         /// <summary>
         /// 空のコンストラクタ
@@ -268,7 +269,7 @@ namespace Charamaker3.Utils
                 {
                     var a = tags[i];
                     var named=World.getNamedEntity(a, lis);
-                    Debug.WriteLine(a+" search "+named.Count);
+                    //Debug.WriteLine(a+" search "+named.Count);
                     if (named.Count == 0)
                     {
                         break;
@@ -316,6 +317,7 @@ namespace Charamaker3.Utils
         /// </summary>
         /// <param name="path">モーションのパス</param>
         /// <param name="speed"></param>
+        /// <param name="targetname">対象の名前</param>
         /// <param name="time"></param>
         /// <param name="name"></param>
         /// <param name="addcl">addしたときにするフレーム</param>

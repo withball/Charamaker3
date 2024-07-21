@@ -425,12 +425,14 @@ namespace Charamaker3
             path = slashFormat(path);
             if (LoadedDS.ContainsKey(path)==false)
             {
-
+                Debug.WriteLine(path + " LoadAndRegist!");
                 res = DataSaver.loadFromPath(path, escape, ext);
                 LoadedDS.Add(path, res);
+
             }
             else if (reset)
             {
+                Debug.WriteLine(path + " RE LoadAndRegist!");
                 res = DataSaver.loadFromPath(path, escape, ext);
                 LoadedDS[path] = res;
             } 
@@ -531,6 +533,7 @@ namespace Charamaker3
             d=d.escaped();
             var res = new MotionSaver(script
                 ,Component.ToLoadComponent<Motion>(d.unpackDataD("Motion")));
+            if (res.Motion == null) { res.Motion = new Motion(1,false); }
             return res;
         }
 
@@ -624,6 +627,26 @@ namespace Charamaker3
         public DataSaver escaped()
         {
             Data = escapen(Data);
+
+            int count = 0;
+            while (1 == 1)
+            {
+                var i=Data.IndexOf("[]");
+                if (i > 0)
+                {
+                    var nd=Data.Substring(0, i);
+                    nd += $"[__{count++}__]";
+                    if (i + 2 < Data.Length)
+                    {
+                     nd+=   Data.Substring(i + 2, Data.Length - (i + 2));
+                    }
+                    Data = nd;
+                }
+                else 
+                {
+                    break;
+                }
+            }
             return this;
         }
 
@@ -755,6 +778,11 @@ namespace Charamaker3
         {
             packAdd(name, d.ToString(), kaigyo);
         }
+        /// <summary>
+        /// パックを削除したデータを新しく作る。
+        /// </summary>
+        /// <param name="packs"></param>
+        /// <returns>削除が完了したデータ</returns>
 
         public DataSaver PackRemoves(params string[] packs) 
         {
@@ -765,24 +793,47 @@ namespace Charamaker3
                 int st,end;
                 res.PackSearch(a,out st,out end);
                 var n=res.Data.Substring(0,st);
-                if (end < res.Data.Length) 
+                if (end < res.Data.Length)
                 {
-                    n += res.Data.Substring(end, res.Data.Length);
+                    n += res.Data.Substring(end + 1, res.Data.Length - end - 1);
+                 //   n += res.Data.Substring(end+1, res.Data.Length);
                 }
                 res = new DataSaver(n);
             }
             return res;
-            /*
-            var res = new DataSaver();
-            var lis = this.getAllPacks();
-            foreach (var a in lis) 
+        }
+
+        /// <summary>
+        /// 特定のパックを新しいものに置き換える
+        /// </summary>
+        /// <param name="remove">置き換えるパック</param>
+        /// <param name="newname">新しい名前=""でデータをパックせずに置く</param>
+        /// <param name="newdata">新しいデータ</param>
+        /// <returns></returns>
+
+        public DataSaver PackReplace(string remove, string newname, string newdata)
+        {
+            var res = new DataSaver(this.getData());
             {
-                if (!packs.Contains(a)) 
+                int st, end;
+                res.PackSearch(remove, out st, out end);
+
+                var n = res.Data.Substring(0, st);
+                if (newname != "")
                 {
-                    res.packAdd(a,this.unpackDataS(a));
+                    n += "[" + newname + "]" + "{" + newdata + "}";
                 }
+                else 
+                {
+                    n +=  newdata ;
+                }
+                if (end < res.Data.Length)
+                {
+                    n += res.Data.Substring(end+1, res.Data.Length-end-1);
+                }
+                res = new DataSaver(n);
             }
-            return res;*/
+            return res;
         }
 
         /// <summary>
@@ -859,6 +910,7 @@ namespace Charamaker3
             }
             if (hiraki > 0)
             {
+                Debug.WriteLine(Data + " asdasdas d " + name);
                 return Data.Substring(start, Data.Length - start);
             }
             //   Console.WriteLine("nakattayo " + name);
@@ -1189,7 +1241,7 @@ namespace Charamaker3
             {
                 ;
                 var b = unpackDataD(a);
-                st += new string('.', indent) + a + "\n";
+                st += new string('.', indent)+":" + a + "\n";
                 st += new string('.', indent) + b.getAllkouzou(indent + 1) ;
 
             }

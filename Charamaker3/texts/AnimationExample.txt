@@ -1,0 +1,93 @@
+﻿[config]{
+[function]
+{
+ [FadeIn]
+ {
+  [argument]{@target@:@start@:@time@:}
+  [format]
+  {
+    [F:SummonComponent:@name@]
+    {
+    []{0}[]{@target@}[]{100}
+    [F:BaseColorChange:0]{[]{10}[]{}[]{0}}
+    }
+    [F:SummonComponent:@name@:2]
+    {
+    []{@start@}[]{@target@}[]{0}
+    [F:BaseColorChange:0]{[]{@time@}[]{}[]{1}}
+    }
+  }//Format
+ }//Fade
+}//function
+
+}
+
+
+[maxtime]{150}
+
+[F:SummonCharacter:0]{[]{0}[]{yoshino}[]{yoshino}}
+[F:SummonComponent:1]
+{
+[]{0}[]{WatchRect}[]{0}
+[F:XYD:0]{[]{30}[]{}[]{300}[]{0}[]{}[]{}}
+}
+
+
+[F:SummonICharacter:2]
+{
+[]{0}[]{charamaker3logo}[]{200}[]{logo}
+}
+
+[F:SummonComponent:4]
+{
+[]{0}[]{logo}[]{100}
+[F:XYD:0]{[]{10}[]{}[]{0}[]{-200}}
+}
+
+[F:FadeIn:3]
+{
+[]{logo}[]{30}[]{30}
+}
+
+[F:SummonComponent:3.50]
+{
+ []{30}[]{logo}[]{}
+ [F:ZRotate:0]
+ {
+  []{}[]{15}[]{0}[]{360}[]{0}[]{0}[]{1.5}[]{1.5}
+ }
+}
+[F:SummonComponent:3.51]
+{
+ []{45}[]{logo}[]{}
+ [F:ZRotate:0]
+ {
+  []{}[]{30}[]{0}[]{360}[]{0}[]{0}[]{1.5}[]{1.5}
+ }
+}
+[F:SummonComponent:3.52]
+{
+ []{75}[]{logo}[]{}
+ [F:ZRotate:0]
+ {
+  []{}[]{45}[]{0}[]{360}[]{0}[]{0}[]{1.5}[]{1.5}
+ }
+}
+
+[F:SummonComponent:5]
+{
+[]{0}[]{yoshino}[]{100}
+[F:BaseColorChange:0]{[]{10}[]{}[]{0}}
+}
+
+[F:SummonComponent:6]
+{
+[]{10}[]{yoshino}[]{0}
+[F:BaseColorChange:0]{[]{10}[]{}[]{1}}
+}
+
+
+
+[F:SummonMotion:8]{
+[]{90}[]{yoshino\happy}[]{yoshino}[]{1}[]{0}
+}

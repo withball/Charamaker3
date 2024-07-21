@@ -296,6 +296,35 @@ namespace Charamaker3.CharaModel
         {
             return new EntityMirror(name, time, mo,goreef);
         }
+
+
+        /// <summary>
+        /// Zじゃない軸で回転するムーブ
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="time"></param>
+        /// <param name="startX">=0 現在の角度</param>
+        /// <param name="endX">=0 終わりの角度</param>
+        /// <param name="startY">=0</param>
+        /// <param name="endy">=0</param>
+        /// <param name="scalex">=1</param>
+        /// <param name="scaley">=1</param>
+        /// <param name="onlyroot">=false</param>
+        /// <returns>__MOVE__</returns>
+        static public ZRotateMove ZRotate(string name, float time, float startX = 0, float endX = 0, float startY = 0, float endy = 0
+            , float scalex = 1, float scaley = 1, bool onlyroot = false)
+        {
+            var res = new ZRotateMove(time, startX, endX, startY, endy, scalex, scaley, name);
+            if (onlyroot)
+            {
+                res.GO = goOption.onlyRoot;
+            }
+            else
+            {
+                res.GO = goOption.goAll;
+            }
+            return res;
+        }
     }
     public partial class DrawableMove : Component
     {
@@ -541,7 +570,6 @@ namespace Charamaker3.CharaModel
 
             }
 
-            Debug.WriteLine(basespeeds[_X] + " QQQQQ " );
         }
         public override void copy(Component c)
         {
@@ -1434,16 +1462,18 @@ namespace Charamaker3.CharaModel
                 float ddegree = cl / time * 180;
                 float ratio = Mathf.abs(Mathf.cos(degree + ddegree)) - Mathf.abs(Mathf.cos(degree));
                 float ratio2 = cl/time;
+                
                 for (int i = 0; i < tagBases.Count; i++)
                 {
                     var a = tags[i];
+                    var xy = a.gettxy();
                     a.w += speeds[i][_W] * ratio;
                     a.h += speeds[i][_H] * ratio;
 
                     a.tx += speeds[i][_TX] * ratio;
                     a.ty += speeds[i][_TY] * ratio;
                     a.degree += speeds[i][_DEGREE] * ratio2;
-
+                    a.settxy(xy);
                 }
                 degree += ddegree;
             }
@@ -1850,6 +1880,251 @@ namespace Charamaker3.CharaModel
         protected override void onremove(float cl)
         {
             changes();
+            base.onremove(cl);
+        }
+
+
+    }
+    /// <summary>
+    /// Z以外の軸で回転させる動き
+    /// </summary>
+    public partial class ZRotateMove : Component
+    {
+        List<float[]> speeds = new List<float[]>();
+        List<Entity> tags = new List<Entity>();
+        List<Entity> tagbases = new List<Entity>();
+        float[] basespeeds = new float[12];
+
+        public goOption GO = goOption.def;
+
+
+        const int _STX = 0;
+        const int _ENX = 1;
+        const int _STY = 2;
+        const int _ENY = 3;
+        const int _SCX = 4;
+        const int _SCY = 5;
+        const int _SCXE = 6;
+        const int _SCYE = 7;
+
+        const int _TXS = 8;
+        const int _TXE = 9;
+        const int _TYS = 10;
+        const int _TYE = 11;
+        bool instant { get { return time <= 0; } }
+
+
+
+        
+
+        public ZRotateMove() { }
+        public ZRotateMove(float time,float stx,float enx,float sty,float eny,float scx,float scy,string name="") : base(time, name)
+        {
+
+            basespeeds[_STX] = stx;
+            basespeeds[_ENX] = enx;
+            basespeeds[_STY] = sty;
+            basespeeds[_ENY] = eny;
+
+            basespeeds[_SCX] = scx;
+            basespeeds[_SCY] = scy;
+
+            if (time == 0)
+            {
+            }
+            else if (time < 0)
+            {
+                Debug.WriteLine("このコンポーネントはtime<0じゃダメなので勝手に0にしました♡");
+                this.time = 0;
+            }
+            else
+            {
+
+            }
+        }
+      
+        public override void copy(Component c)
+        {
+            var cc = (ZRotateMove)c;
+            base.copy(c);
+            for (int i = 0; i < basespeeds.Length; i++)
+            {
+                cc.basespeeds[i] = this.basespeeds[i];
+            }
+      
+            cc.GO = this.GO;
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.linechange();
+            res.packAdd("GO", (goOption)GO);
+            res.packAdd("_STX", basespeeds[_STX]);
+            res.packAdd("_ENX", basespeeds[_ENX]);
+            res.packAdd("_STY", basespeeds[_STY]);
+            res.packAdd("_ENY", basespeeds[_ENY]);
+            res.packAdd("_SCX", basespeeds[_SCX]); 
+            res.packAdd("_SCY", basespeeds[_SCY]);
+            
+            return res;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+
+            GO = d.unpackDataE<goOption>("GO");
+            basespeeds[_STX] = d.unpackDataF("_STX", 0);
+            basespeeds[_ENX] = d.unpackDataF("_ENX", 0);
+            basespeeds[_STY] = d.unpackDataF("_STY", 0);
+            basespeeds[_ENY] = d.unpackDataF("_ENY", 0);
+            basespeeds[_SCX] = d.unpackDataF("_SCX", 1);
+            basespeeds[_SCY] = d.unpackDataF("_SCY", 1);
+
+        }
+
+
+        public override string ToString()
+        {
+            var res = base.ToString();
+            res += $" -> STX:{basespeeds[_STX]}:ENX:{basespeeds[_ENX]}:STY:{basespeeds[_STY]}:ENY:{basespeeds[_ENY]}:SCX:{basespeeds[_SCX]}:SCY:{basespeeds[_SCY]}" +
+                $"";
+            return res;
+        }
+        protected virtual void ToValue(float time)
+        {
+            for (int t = 0; t < tags.Count; t++)
+            {
+                var txy = tags[t].gettxy();
+
+                float nowX = speeds[t][_STX] + (speeds[t][_ENX] - speeds[t][_STX]) * time;
+                float nowY = speeds[t][_STY] + (speeds[t][_ENY] - speeds[t][_STY]) * time;
+
+                tags[t].w = (speeds[t][_SCX] + (speeds[t][_SCXE] - speeds[t][_SCX]) * time) * Mathf.cos(nowX);
+                tags[t].tx = (speeds[t][_TXS] + (speeds[t][_TXE] - speeds[t][_TXS]) * time) * Mathf.cos(nowX);
+
+
+
+                tags[t].h = (speeds[t][_SCY] + (speeds[t][_SCYE]-speeds[t][_SCY]) * time) * Mathf.cos(nowY);
+                tags[t].ty = (speeds[t][_TYS] + (speeds[t][_TYE]-speeds[t][_TYS]) * time) * Mathf.cos(nowY);
+
+                tags[t].settxy(txy);
+
+            }
+        }
+        protected override void onadd(float cl)
+        {
+            tags.Clear();
+            speeds.Clear();
+            //characterから得るtag
+            var cs = e.getcompos<Character>();
+            if (cs.Count == 0)
+            {
+
+                tags.Add(e);
+                tagbases.Add(e);
+            }
+            else
+            {
+                if (GO == goOption.def || GO == goOption.goAll)
+                {
+                    foreach (var a in cs)
+                    {
+                        foreach (var b in a.getTree(name))
+                        {
+                            tags.Add(b);
+                        }
+                        foreach (var b in a.BaseCharacter.getTree(name))
+                        {
+                            tagbases.Add(b);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (var a in cs)
+                    {
+                        {
+                            var tag = a.getEntity(name);
+                            if (tag != null)
+                            {
+                                tags.Add(tag);
+                            }
+                        }
+                        {
+                            var tag = a.BaseCharacter.getEntity(name);
+                            if (tag != null)
+                            {
+                                tagbases.Add(tag);
+                            }
+                        }
+                    }
+                }
+
+            }
+            for (int t = 0; t < tags.Count; t++)
+            {
+                speeds.Add(new float[12]);
+                for (int i = 0; i < 4; i++)
+                {
+                    speeds[t][i] = basespeeds[i];
+                }
+                if (Mathf.cos(speeds[t][_STX]) == 0)
+                {
+                    speeds[t][_SCX] = tagbases[t].w;
+                    speeds[t][_TXS] = tagbases[t].tx;
+
+
+                }
+                else
+                {
+                    speeds[t][_SCX] = tags[t].w / Mathf.cos(speeds[t][_STX]);
+                    speeds[t][_TXS] = tags[t].tx / Mathf.cos(speeds[t][_STX]);
+
+                    speeds[t][_SCXE] = speeds[t][_SCX] * Mathf.cos(speeds[t][_ENX]);
+                    speeds[t][_TXE] = speeds[t][_TXS] * Mathf.cos(speeds[t][_ENX]);
+                }
+                speeds[t][_SCXE] = speeds[t][_SCXE] * (basespeeds[_SCX]);
+                speeds[t][_TXE] = speeds[t][_TXE] * (basespeeds[_SCX]);
+                if (Mathf.cos(speeds[t][_STY]) == 0)
+                {
+                    speeds[t][_SCY] = tagbases[t].h;
+                    speeds[t][_TYS] = tagbases[t].ty;
+                }
+                else
+                {
+                    speeds[t][_SCY] = tags[t].h / Mathf.cos(speeds[t][_STY]);
+                    speeds[t][_TYS] = tags[t].ty / Mathf.cos(speeds[t][_STY]);
+                }
+                speeds[t][_SCYE] = speeds[t][_SCY] * basespeeds[_SCY];
+                speeds[t][_TYE] = speeds[t][_TYS] * basespeeds[_SCY];
+
+            }
+            if (instant)
+            {
+
+                this.ToValue(1);
+            }
+            /* else
+             {
+                 float speed = 1 / time;
+                 addDefference(Math.Min(speed * cl,1));
+             }*/
+            base.onadd(cl);
+        }
+        protected override void onupdate(float cl)
+        {
+            if (cl > 0)
+            {
+               if (!instant)
+                {
+                    this.ToValue(timer / time);
+                }
+            }
+            base.onupdate(cl);
+
+        }
+        protected override void onremove(float cl)
+        {
             base.onremove(cl);
         }
 

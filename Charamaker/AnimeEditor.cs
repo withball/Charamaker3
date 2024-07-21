@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Charamaker3;
 using Charamaker3.CharaModel;
 using Component = Charamaker3.Component;
@@ -21,6 +22,7 @@ namespace Charamaker
         bool started = false;
 
         float timer = 0;
+        float maxtime = 1;
         AnimeLoader anm;
         public AnimeEditor(Charamaker c)
         {
@@ -49,8 +51,67 @@ namespace Charamaker
         }
         public void SetText(string d)
         {
-            MessageBox.Text = d.Replace("\n", Environment.NewLine);
+            MessageBox.Text = "";
+            foreach (var a in Debug.downMess()) 
+            {
+                MessageBox.Text += a + Environment.NewLine;
+            }
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
+            MessageBox.Text += d.Replace("\n", Environment.NewLine);
+            MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
+            MessageBox.Text += "[F:Funcname:xxx]{[arg0]{}[arg0]{}[arg0]{}[arg0]{}} でMotionMaker系の関数を使える" + Environment.NewLine;
+            {
+                var res = "";
+                string xml_file_path_ = @".\Charamaker3.xml";
+
+                //xmlを読み込め。
+                XDocument xml_ = XDocument.Load(xml_file_path_);
+
+                //ルートタグを変数に。
+                XElement root = xml_.Element("doc");
+
+
+                //ルートタグを変数に。
+                XElement members = root.Element("members");
+
+                foreach (XElement a in members.Elements())
+                {
+
+                    var name = a.Attribute("name").Value.Split(':');
+                    //メソッドを取得
+                    if (name[0] == "M")
+                    {
+                        //returns ="__ANIM__"なら書き込む
+                        if (a.Element("returns") != null && a.Element("returns").Value == "__ANIM__")
+                        {
+                            var dots = name[1].Split('(')[0].Split('.');
+                            var TNAME = "";
+
+                            for (int i = dots.Count() - 1; i < dots.Count(); i++)
+                            {
+                                if (i > dots.Count() - 1) TNAME += ".";
+                                TNAME += dots[i];
+                            }
+                            TNAME += "(";
+
+                            foreach (var b in a.Elements("param"))
+                            {
+                                TNAME += " " + b.Attribute("name").Value;
+                                TNAME += ":" + b.Value + " ,";
+                            }
+
+                            TNAME += ")"; TNAME += a.Element("summary").Value;
+                            TNAME += Environment.NewLine;
+
+                            res += TNAME;
+                        }
+                    }
+
+                }
+                MessageBox.Text += res;
+            }
+
+
             MessageBox.Text += new AnimeLoader(new DataSaver()).ToSave().getData().Replace("\n", Environment.NewLine);
 
         }
@@ -80,18 +141,18 @@ namespace Charamaker
                 }
 
             }
-            if (timer < anm.maxtime && started)
+            if (timer < maxtime && started)
             {
-                var ntimer = Mathf.min(timer + 1 * ((float)SpeedUd.Value), anm.maxtime);
+                var ntimer = Mathf.min(timer + 1 * ((float)SpeedUd.Value), maxtime);
                 w.update(ntimer - timer);
                 timer = ntimer;
                 this.TimeBar.Value = (int)(timer * 10);
-                if (timer == anm.maxtime)
+                if (timer == maxtime)
                 {
                     started = false;
                 }
             }
-            timeLabel.Text = timer + " / " + anm.maxtime;
+            timeLabel.Text = timer + " / " + maxtime;
             if (started) 
             {
                 timeLabel.Text += " is playing";
@@ -102,9 +163,10 @@ namespace Charamaker
         {
 
             newWorld();
-            anm.MakeAnime(w.staticEntity);
+            var d=anm.MakeAnime(w.staticEntity);
+            maxtime = Mathf.max(Mathf.abs(d.unpackDataF("maxtime")),1);
             {
-                TimeBar.Maximum = (int)(anm.maxtime * 10);
+                TimeBar.Maximum = (int)(maxtime * 10);
             }
             Debug.WriteLine("animchange!");
         }
@@ -133,7 +195,7 @@ namespace Charamaker
         {
             if (!started )
             {
-                if (timer < anm.maxtime)
+                if (timer < maxtime)
                 {
                     started = true;
                 }
@@ -157,7 +219,32 @@ namespace Charamaker
 
         private void CheckB_Click(object sender, EventArgs e)
         {
-            SetText(anm.Check().Replace("\n",Environment.NewLine));
+            if (1 == 0)
+            {
+                string text = "";
+                var sp = anm.Check().Split('\n');
+                for (int i = 0; i < sp.Length; i++)
+                {
+                    int cou = 0;
+                    while (cou < sp[i].Length && sp[i][cou++] == '.')
+                    {
+
+                    }
+                    text += cou.ToString() + " : " + sp[i].Substring(cou) + Environment.NewLine;
+
+                }
+                SetText(text);
+            }
+            else 
+            {
+                var text = "";
+                foreach (var a in anm.Check2()) 
+                {
+                    text += "["+a+"]" + Environment.NewLine;
+                }
+               // text += anm.Check3();
+                SetText(text);
+            }
         }
     }
 }

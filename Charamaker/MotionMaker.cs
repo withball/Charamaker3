@@ -215,9 +215,12 @@ namespace Charamaker
             
             foreach (XElement a in members.Elements())
             {
+
                 var name = a.Attribute("name").Value.Split(':');
+                //メソッドを取得
                 if (name[0] == "M")
                 {
+                    //returns ="__Move__"なら書き込む
                     if (a.Element("returns")!=null&&a.Element("returns").Value == "__MOVE__")
                     {
                         var dots = name[1].Split('(')[0].Split('.');

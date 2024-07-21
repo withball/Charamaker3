@@ -18,6 +18,28 @@ namespace Charamaker3
         {
             System.Diagnostics.Debug.WriteLine(w);
         }
+
+        static List<string>messages= new List<string>();
+
+        /// <summary>
+        /// メッセージをため込む
+        /// </summary>
+        /// <param name="w"></param>
+        static public void Mess(string w)
+        {
+            messages.Add(w);
+        }
+        /// <summary>
+        /// メッセージをすべて取り出す。
+        /// </summary>
+        /// <param name="w"></param>
+        /// <returns></returns>
+        static public List<string> downMess()
+        {
+          var mess= new List<string>(messages);
+            messages.Clear();
+            return mess;
+        }
     }
     public class FXY
     {
