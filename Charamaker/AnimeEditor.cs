@@ -35,6 +35,17 @@ namespace Charamaker
         {
 
             cam.watchRect.remove();
+            foreach (var a in FileMan.SoundEngines) 
+            {
+                a.stopAll();
+            }
+            if (w != null)
+            {
+                foreach (var a in w.getEdic())
+                {
+                    a.remove();
+                }
+            }
             w = new World();
             charamaker.display.removeCamera(cam);
             cam = charamaker.display.makeCamera(new ColorC(0, 0, 0, 0));

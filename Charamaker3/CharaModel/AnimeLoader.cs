@@ -12,17 +12,57 @@ namespace Charamaker3.CharaModel
     public class AnimeLoader
     {
         /// <summary>
-        /// キャラクターをパスから召喚する
+        /// 音を流す。
         /// </summary>
         /// <param name="time">召喚する時間</param>
+        /// <param name="target"></param>
         /// <param name="path"></param>
-        /// <param name="name"></param>
-        /// <param name="scale">=1</param>
+        /// <param name="volume">=1</param>
         /// <returns>__ANIM__</returns>
-        static public SoundComponent Sound(float time, string path, string name, float scale = 1)
+        static public SummonComponent SE(float time, string target, string path, float volume = 1)
         {
-            return null;   
-           // return new SoundComponent(, path, name, time, path + name + "summon");
+            try
+            {
+                var se = SoundComponent.MakeSE(FileMan.SE, path, volume);
+                return new SummonComponent(se, target, time, 0, "SoundEffect::" + path);
+            }
+            catch (Exception ex)
+            {
+                Debug.Mess("SoundEffect Load Missed " + path + " \n" + ex.ToString());
+                return new SummonComponent(new Component(), "", 0);
+            }
+        }
+
+        /// <summary>
+        /// BGMを流すコンポーネント。
+        /// </summary>
+        /// <param name="time">召喚する時間</param>
+        /// <param name="stop">止める時間</param>
+        /// <param name="path"></param>
+        /// <param name="volume">=1</param>
+        /// <param name="fadein">=-1</param>
+        /// <param name="fadeout">=-1</param>
+        /// <returns>__ANIM__</returns>
+        static public SummonEntity BGM(float time,float stop, string path, float volume,float fadein=-1)
+        {
+            try
+            {
+                var bgm = SoundComponent.MakeBGM(FileMan.BGM, path, volume, fadein);
+                var lifetime = new LifeTimer(stop);
+
+                var e = Entity.make(0,0,1,1,1,1);
+                bgm.add(e);
+                lifetime.add(e);
+
+                return new SummonEntity(e, time, "BGM::" + path);
+            }
+            catch (Exception ex)
+            {
+                Debug.Mess("BGM Load Missed " + path + " \n" + ex.ToString());
+
+                var e = Entity.make(0, 0, 1, 1, 1, 1);
+                return new SummonEntity(e, time, "BGM::" + path);
+            }
         }
 
         /// <summary>

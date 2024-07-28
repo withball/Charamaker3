@@ -536,7 +536,6 @@ namespace Charamaker3
             if (type == null)
             {
                 Debug.WriteLine(d.unpackDataS("type","no [type]") + "はComponentじゃないよ！ちゃんと読み込めなかったよ！");
-
                 return new Component();
             }
             var res = (Component)Activator.CreateInstance(type);

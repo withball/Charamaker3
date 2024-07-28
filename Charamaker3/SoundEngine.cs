@@ -82,11 +82,10 @@ namespace Charamaker3
                 if (a != ".wav") file += ".wav";
             }
 
-
             if (File.Exists(@".\sounds\" + file) == false)
             {
 
-                Console.WriteLine(file + "  no such oto file");
+                Debug.WriteLine(file + "  no such oto file");
                 return;
             }
             var reader = new BinaryReader(File.OpenRead(@".\sounds\" + file));
@@ -218,7 +217,7 @@ namespace Charamaker3
 
 
         /// <summary>
-        /// 効果音を鳴らす
+        /// 効果音を鳴らすやつをロードする
         /// </summary>
         /// <param name="file">.\oto\*.wavの*部分</param>
         /// <param name="vol">この音のボリューム</param>
@@ -276,7 +275,7 @@ namespace Charamaker3
 
                 if (oton.Count > maxOto)
                 {
-                    //oton[0].dispo();
+                    oton[0].Stop();
                     oton.RemoveAt(0);
 
 
@@ -285,11 +284,17 @@ namespace Charamaker3
             }
             return null;
         }
+
         /// <summary>
-        /// フレーム処理。主にBGMのフェードインアウト
+        /// BGMとか効果音を強制的に全部止める
         /// </summary>
-        /// <param name="cl">経過フレーム</param>
-        virtual public void Update(float cl) { }
+        public void stopAll() 
+        {
+            foreach (var a in oton) 
+            {
+                a.Stop();
+            }
+        }
     }
 
 
@@ -738,6 +743,7 @@ namespace Charamaker3
         static public SoundComponent MakeBGM(SoundEngine SE, string file, float volume = 1
             , float fadein = 0, float fadeout = 0)
         {
+            Debug.WriteLine("Make Bgm " + file);
             return new SoundComponent(SE, file, volume, false,255,fadein,fadeout, name:BGMname);
         }
 
@@ -783,11 +789,11 @@ namespace Charamaker3
         }
         protected override void ToLoad(DataSaver d)
         { 
-            //TODO:ここにサウンドエンジンの検索をする。
+          
             base.ToLoad(d);
-            this.SE = FileMan.SoundEffect;
+            this.SE = FileMan.GetSoundEngine(d.unpackDataS("SoundEngine"));
             this.playThenEnd = d.unpackDataB("playThenEnd");
-            this._sound = this.SE.playoto(d.unpackDataS("path"), d.unpackDataF("vol"));
+            this._sound = this.SE.playoto(d.unpackDataS("path"), d.unpackDataF("soundvol",1));
             this.volume = d.unpackDataF("compvol");
             this.loop = (int)d.unpackDataF("loop");
             this.fadein = d.unpackDataF("fadein");
@@ -799,11 +805,13 @@ namespace Charamaker3
         {
             base.addtoworld(cl);
             Play();
+            //Debug.WriteLine(sound.path + " Sound Started");
         }
         public override void removetoworld(float cl = 0)
         {
             base.removetoworld(cl);
-            Stop();
+            Stop(true);
+            //Debug.WriteLine(sound.path + " Sound SToped");
         }
         protected override void onupdate(float cl)
         {
@@ -839,10 +847,10 @@ namespace Charamaker3
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="fadekyousei">既にfedeaut中だった時に、</param>
-        public void Stop(bool fadekyousei=false)
+        /// <param name="stopkyousei">強制的に止める</param>
+        public void Stop(bool stopkyousei=false)
         {
-            if (fadeout <= 0 || (fadeOutTimer>=0&&timer >= fadeOutTimer + fadeout))
+            if (stopkyousei||fadeout <= 0 || (fadeOutTimer>=0&&timer >= fadeOutTimer + fadeout))
             {
                 sound.Stop();
             }

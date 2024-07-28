@@ -123,12 +123,11 @@ namespace Charamaker
             selectCharacter();
 
 
-            FileMan.SoundUpdate(1);
             //SE‚ÌƒeƒXƒg
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
-                var sc = SoundComponent.MakeSE(FileMan.SoundEffect, @"TB\jett", 0.01f);
+                var sc = SoundComponent.MakeSE(FileMan.SE, @"TB\jett", 0.01f);
                 sc.add(w.staticEntity);
 
                 var FXY = km.GetCursourPoint(cam);

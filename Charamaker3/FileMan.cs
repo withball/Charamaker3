@@ -379,30 +379,44 @@ namespace Charamaker3
         /// <summary>
         /// SEを再生するときに使う方
         /// </summary>
-        static public SoundEngine SoundEffect;
+        static public SoundEngine SE { get { return GetSoundEngine("SE"); } }
         /// <summary>
         /// BGMを再生するときに使うやつ
         /// </summary>
-        static public SoundEngine BGM;
-
+        static public SoundEngine BGM { get { return GetSoundEngine("BGM"); } }
+        static List<SoundEngine> _SoundEngines=new List<SoundEngine>();
+        /// <summary>
+        /// すべてのサウンドエンジン
+        /// </summary>
+        static public List<SoundEngine> SoundEngines  { get { return new List<SoundEngine>(_SoundEngines); } }
         /// <summary>
         /// Set Up Sound Engine
         /// </summary>
         static public void SoundSetUP()
         {
             //Debug.WriteLine(" EEEEEEEEEEEEEEEEEEEEEEE");
-            SoundEffect = new SoundEngine("SoundEffect");
-            BGM = new SoundEngine("BGM");
-
+            _SoundEngines.Add(new SoundEngine("SE"));
+            _SoundEngines.Add(new SoundEngine("BGM"));
         }
         /// <summary>
-        /// UpDate Sound Engine まあBGMのフェードとか
+        /// サウンドエンジンを返す。何もないのを指定したら一番最初のを返す。
         /// </summary>
-        /// <param name="cl"></param>
-        static public void SoundUpdate(float cl) 
+        /// <param name="name"></param>
+        /// <returns></returns>
+        static public SoundEngine GetSoundEngine(string name) 
         {
-            SoundEffect.Update(cl);
-            BGM.Update(cl);
+            foreach (var a in SoundEngines) 
+            {
+                if (a.name == name) 
+                {
+                    return a;
+                }
+            }
+            if (SoundEngines.Count > 0) 
+            {
+                return SoundEngines[0];
+            }
+            return null;
         }
 
         #endregion
