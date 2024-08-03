@@ -43,6 +43,8 @@
             screenshotB = new Button();
             animationB = new Button();
             printoutB = new Button();
+            texturelabel = new Label();
+            rootpathbox = new TextBox();
             ((System.ComponentModel.ISupportInitialize)zoomUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PointB).BeginInit();
             SuspendLayout();
@@ -201,11 +203,33 @@
             printoutB.UseVisualStyleBackColor = true;
             printoutB.Click += printoutB_Click;
             // 
+            // texturelabel
+            // 
+            texturelabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            texturelabel.AutoSize = true;
+            texturelabel.Location = new Point(1191, 724);
+            texturelabel.Name = "texturelabel";
+            texturelabel.Size = new Size(38, 15);
+            texturelabel.TabIndex = 13;
+            texturelabel.Text = "label1";
+            texturelabel.Click += label1_Click;
+            // 
+            // rootpathbox
+            // 
+            rootpathbox.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            rootpathbox.Location = new Point(849, 825);
+            rootpathbox.Name = "rootpathbox";
+            rootpathbox.Size = new Size(246, 23);
+            rootpathbox.TabIndex = 14;
+            rootpathbox.TextChanged += textBox1_TextChanged;
+            // 
             // Charamaker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 861);
+            Controls.Add(rootpathbox);
+            Controls.Add(texturelabel);
             Controls.Add(printoutB);
             Controls.Add(animationB);
             Controls.Add(screenshotB);
@@ -250,5 +274,7 @@
         private Button screenshotB;
         private Button animationB;
         private Button printoutB;
+        private Label texturelabel;
+        private TextBox rootpathbox;
     }
 }

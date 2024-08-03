@@ -44,7 +44,7 @@ namespace Charamaker
         {
             if (e.KeyCode == Keys.Enter)
             {
-                var m = FileMan.loadMotion(pathB.Text);
+                var m = FileMan.loadMotion(pathB.Text,true);
                 if (m.Motion!=null&&!m.Motion.empty)
                 {
                  

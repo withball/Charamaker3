@@ -19,6 +19,11 @@ namespace Charamaker3
     static public class FileMan
     {
         /// <summary>
+        /// ファイルマネージャーのルートパス。サウンドエンジンにも影響。
+        /// </summary>
+        static public string rootpath = @".\";
+
+        /// <summary>
         /// スラッシュをバックスラッシュに変換する。
         /// だってモーションとかの登録を入力パッスにしてるからさ、
         /// \/が混じってると二回ロードしちゃうんだよな
@@ -186,7 +191,7 @@ namespace Charamaker3
 
             if (!texs.ContainsKey(file) || reset)
             {
-                string path = @".\tex\" + file;
+                string path = rootpath+@"tex\" + file;
                 if (!File.Exists(path))
                 {
                     Debug.WriteLine("texture " + path + " not exists");
@@ -253,6 +258,21 @@ namespace Charamaker3
             }
             // Console.WriteLine(texs.Count() + "texcount");
             return texs[file];
+        }
+        /// <summary>
+        /// テクスチャーの大きさだけ取得する
+        /// </summary>
+        /// <param name="file">.\tex\に続くファイルパス</param>
+        /// <param name="reset">強制的に再読み込みする</param>
+        /// <returns>大きさ</returns>
+        static public FXY texSize(string file, bool reset = false)
+        {
+            var tex = ldtex(file,reset);
+            if (tex == null) 
+            {
+                return new FXY(0, 0);
+            }
+            return new FXY(tex.Size.Width, tex.Size.Height);
         }
         #endregion
 
@@ -427,9 +447,9 @@ namespace Charamaker3
         static Dictionary<string,DataSaver> LoadedDS = new Dictionary<string, DataSaver>();
 
         /// <summary>
-        /// データセーバーをロードし、保存しておく。
+        /// データセーバーをロードし、アセット的に保存しておく。
         /// </summary>
-        /// <param name="path">パス</param>
+        /// <param name="path">自由なパス</param>
         /// <param name="reset">強制的にロードするか</param>
         /// <param name="ext">拡張子</param>
         /// <returns></returns>
@@ -466,7 +486,7 @@ namespace Charamaker3
         /// <returns></returns>
         static public Entity loadCharacter(string path, bool reset = false) 
         {
-            var d=loadDS(@"character\"+path,reset,".ctc");
+            var d=loadDS(rootpath+@"character\"+path,reset,".ctc");
             return Entity.ToLoadEntity(d);
         }
 
@@ -489,7 +509,7 @@ namespace Charamaker3
         /// <returns>もう一回ファイルをロードしなおす</returns>
         static public MotionSaver loadMotion(string path, bool reset = false)
         {
-            var d = loadDS(@"motion\" + path, reset, ".ctm",false);
+            var d = loadDS(rootpath+@"motion\" + path, reset, ".ctm",false);
             var res = MotionSaver.ToLoad(d);
             return res;
         }
@@ -498,7 +518,7 @@ namespace Charamaker3
         /// <summary>
         /// モーションをロードする
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">自由なパス</param>
         /// <param name="reset"></param>
         /// <returns></returns>
         static public Motion ldMotion(string path,bool reset=false)
@@ -509,7 +529,7 @@ namespace Charamaker3
         /// <summary>
         /// モーションをセーブする
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">自由なパス</param>
         /// <returns></returns>
         static public void saveMotion(string path, string script, Motion motion)
         {

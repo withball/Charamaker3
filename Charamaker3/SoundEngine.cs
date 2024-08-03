@@ -82,13 +82,13 @@ namespace Charamaker3
                 if (a != ".wav") file += ".wav";
             }
 
-            if (File.Exists(@".\sounds\" + file) == false)
+            if (File.Exists(rootpath+@"sounds\" + file) == false)
             {
 
                 Debug.WriteLine(file + "  no such oto file");
                 return;
             }
-            var reader = new BinaryReader(File.OpenRead(@".\sounds\" + file));
+            var reader = new BinaryReader(File.OpenRead(rootpath + @"sounds\" + file));
             int mp3channel = 0;
             int mp3samplerate = 0;
             if (mp3)

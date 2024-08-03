@@ -17,9 +17,17 @@ namespace Charamaker
         NameInput inp;
 
         Texture SLP, TXYP;
+        DataSaver save;
         public Charamaker()
         {
             InitializeComponent();
+
+            {
+                save = DataSaver.loadFromPath(@".\save");
+
+                ChangeRootpath(save.unpackDataS("rootpath", @".\"));
+            }
+
             ClientSize = BaseSize;
 
             FP.l.seting(textsn: new List<string> { @"texts\text" });
@@ -131,19 +139,21 @@ namespace Charamaker
                 sc.add(w.staticEntity);
 
                 var FXY = km.GetCursourPoint(cam);
+                if (1 == 0)
+                {
+                    var eff = Character.MakeCharacter(@"effects\sunbit", FXY.x, FXY.y, 64);
 
-                var eff = Character.MakeCharacter(@"effects\sunbit", FXY.x, FXY.y, 64);
-
-                DrawableMove.BaseColorChange(30, "", 0, go: goOption.goAll).add(eff);
-                EntityMove.XYD(30, "", 0, 0, 360 * 35).add(eff);
-                var lifetimer = new LifeTimer(30);
-                lifetimer.add(eff);
+                    DrawableMove.BaseColorChange(30, "", 0, go: goOption.goAll).add(eff);
+                    EntityMove.XYD(30, "", 0, 0, 360 * 35).add(eff);
+                    var lifetimer = new LifeTimer(30);
+                    lifetimer.add(eff);
 
 
 
 
-                eff.add(w);
-                //FileMan.SoundEffect.playoto(@"TB\jett");
+                    eff.add(w);
+                    //FileMan.SoundEffect.playoto(@"TB\jett");
+                }
             }
             //BGMのテスト
             if (km.ok(new IButton(MouseButtons.Right), itype.down))
@@ -334,6 +344,8 @@ namespace Charamaker
 
             //カーソルの位置をもとの所へ
             DSB.SelectionStart = cursour;
+
+
         }
 
 
@@ -357,6 +369,15 @@ namespace Charamaker
         {
             setDSB(sel.getData());
             BaseSet();
+            if (sel.e != null)
+            {
+                var texs = sel.e.getcompos<Texture>();
+                if (texs.Count > 0)
+                {
+
+                    this.texturelabel.Text = FileMan.texSize(this.texturelabel.Text = texs[0].nowtex).ToString();
+                }
+            }
         }
         void Select(Entity e)
         {
@@ -395,7 +416,7 @@ namespace Charamaker
             else
             {
                 //var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".ctc");
-                var newe = FileMan.loadCharacter(textB.Text);
+                var newe = FileMan.loadCharacter(textB.Text,true);
                 if (newe.getcompos<Character>().Count > 0)
                 {
                     newe.add(w);
@@ -513,10 +534,30 @@ namespace Charamaker
 
         private void printoutB_Click(object sender, EventArgs e)
         {
-            if (sel != null&&sel.c!=null)
+            if (sel != null && sel.c != null)
             {
                 this.messageB.Text = sel.c.e.ToSave().getData().Replace("\n", Environment.NewLine);
             }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+        void ChangeRootpath(string newPath) 
+        {
+
+            FileMan.rootpath = rootpathbox.Text;
+            save = new DataSaver();
+            save.packAdd("rootpath",FileMan.rootpath.Replace("\\","/"));
+            this.rootpathbox.Text = newPath;
+            save.saveToPath(@".\save");
+        }
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            ChangeRootpath(rootpathbox.Text);
+//            FileMan.rootpath= rootpathbox.Text; 
+           
         }
     }
 }

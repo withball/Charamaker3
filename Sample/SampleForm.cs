@@ -3,6 +3,7 @@ using Charamaker3.Inputs;
 using Charamaker3.Shapes;
 using Charamaker3.Hitboxs;
 using Rectangle = Charamaker3.Shapes.Rectangle;
+using Charamaker3.ParameterFile;
 
 namespace Sample
 {
@@ -18,7 +19,10 @@ namespace Sample
             InitializeComponent();
 
             ClientSize = BaseSize;
-            display = new Display(this,1); 
+            display = new Display(this,1);
+
+
+            FP.l.seting(textsn: new List<string> {  });
 
             FileMan.setupTextureLoader(display);
             FileMan.SoundSetUP();

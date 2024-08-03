@@ -478,6 +478,12 @@ namespace Charamaker3
         /// 今選択されているテクスチャの名前
         /// </summary>
         public string texname="def";
+        /// <summary>
+        /// 現在のテクスチャー
+        /// </summary>
+        public string nowtex { get { if(textures.ContainsKey(texname))return textures[texname];
+                return FileMan.nothing;
+            } }
 
         public Texture(float z, ColorC c, Dictionary<string,string> texs,float time = -1, string name = "") : base(z, c, time, name)
         {
@@ -546,13 +552,10 @@ namespace Charamaker3
             var render = cam.render;
 
             ID2D1Bitmap bitmap;
-            if (!textures.ContainsKey(texname))
+            bitmap = FileMan.ldtex(nowtex);
+            if (bitmap == null) 
             {
-                bitmap = FileMan.ldtex("nothing");
-            }
-            else
-            {
-                bitmap = FileMan.ldtex(textures[texname]);
+                bitmap = FileMan.ldtex(FileMan.nothing);
             }
             render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);

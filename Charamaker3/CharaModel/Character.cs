@@ -153,10 +153,12 @@ namespace Charamaker3.CharaModel
                     if (a.parent == null) a.parent = e;
                 }
             }
-            if (e.name != BaseCharacterEName) 
+            /*
+            if (e.name != BaseCharacter,name) 
             {
+                Debug.WriteLine(e.name + " different Name" + BaseCharacter.name);
                 SetBaseCharacter();
-            }
+            }*/
         }
 
         protected override void onupdate(float cl)
@@ -266,10 +268,22 @@ namespace Charamaker3.CharaModel
         }
 
         /// <summary>
-        /// 子が重複してたらヤヴァイので調査＆削除する
+        /// 子が重複してたらヤヴァイので調査＆削除する<br></br>
+        /// 
         /// </summary>
         void doubleChildecheck() 
         {
+            //子供に親が混じってたら無限参照するため、親を消し飛ばす。
+            foreach (var a in joints) 
+            {
+                foreach (var b in a.childs) 
+                {
+                    if (a.parent != null && a.parent.name == b.name) 
+                    {
+                        a.parent = e;
+                    }
+                }
+            }
             Dictionary<string, string> dic = new Dictionary<string, string>();
             foreach (var a in joints) 
             {
