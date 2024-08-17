@@ -886,7 +886,7 @@ namespace Charamaker3
         /// 領域内でも字が書かれた最下端
         /// </summary>
         public float bottom { get { if (rendZone.h == 0) return 0.5f;
-                return Mathf.max(_bottom/rendZone.h,1); } }
+                return Mathf.min(_bottom/rendZone.h,1); } }
 
         private string PastText = null;
         private FontC PastFont = null;
@@ -956,6 +956,7 @@ namespace Charamaker3
                             {
                                 _bottom = y - rendZone.y;
                                 breaked = true;
+                               // Debug.WriteLine(_bottom+" bottom kousined!");
                                 break;
                             }
                         }
@@ -1057,6 +1058,7 @@ namespace Charamaker3
                     break;
                 case FontC.alignment.center:
                     yZure = e.h/2- (Trender.bottom *e.h)/2;
+                   // Debug.WriteLine(e.h + " :: " + Trender.bottom + " == " + yZure);
                     break;
                 case FontC.alignment.right:
                     yZure = e.h- (Trender.bottom*e.h) ;
