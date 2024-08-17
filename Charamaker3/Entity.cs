@@ -446,6 +446,37 @@ namespace Charamaker3
         #endregion
 
         #region bennri,CompShortCuts
+
+        /// <summary>
+        /// 先頭のキャラクターをもらう。持っていない場合は架空のキャラクターを返す。
+        /// </summary>
+        /// <returns></returns>
+        virtual public CharaModel.Character getCharacter() 
+        {
+            var cs = this.getcompos<CharaModel.Character>();
+            if (cs.Count > 0) 
+            {
+                return cs[0];
+            }
+            return new CharaModel.Character(new CharaModel.Joint("coreJ",0,0,this,new List<Entity>()));
+        }
+        /// <summary>
+        /// 先頭のDrawableをもらう。持っていない場合は架空のDrawableを返す
+        /// </summary>
+        /// <returns></returns>
+        virtual public D getDrawable<D>()
+            where D :Drawable
+        {
+            var cs = this.getcompos<D>();
+            if (cs.Count > 0)
+            {
+                return cs[0];
+            }
+            var res = ((D)Activator.CreateInstance(typeof(D)));
+            
+            return Component.ToLoadComponent<D>(res.ToSave());
+        }
+
         /// <summary>
         /// このEntityの持つCharacterやHitBoxの位置を整列させる。Etityが移動したときとかにどうぞ。
         /// </summary>
@@ -475,6 +506,23 @@ namespace Charamaker3
                 res.AddRange(a.Hitteds);
             }
             return res;
+        }
+
+        /// <summary>
+        /// 持っているHitboxコンポーネントをもとに当たり判定をとる。
+        /// </summary>
+        /// <returns></returns>
+        public bool Hits(Shapes.Shape pres,Shapes.Shape s)
+        {
+            var res = new List<Entity>();
+            foreach (var a in getcompos<Hitboxs.Hitbox>())
+            {
+                if (s.atarun2(pres, a.HitShape, a.preHitShape))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         /// <summary>
         /// Hitboxコンポーネントを持っていたら、現在の状態に当たり判定をそろえる
@@ -704,7 +752,21 @@ namespace Charamaker3
             }
 
         }
-
+        /// <summary>
+        /// 追加して消す。motionを少しだけ動かすときとかに。
+        /// </summary>
+        /// <param name="ee"></param>
+        /// <param name="cl"></param>
+        /// <returns>追加削除ができたか</returns>
+        public bool addAndRemove(Entity ee, float cl)
+        {
+            if (this.add(ee, cl)) 
+            {
+                this.remove();
+                return true;
+            }
+            return false;
+        }
         virtual public bool add(Entity ee,float cl=0)
         {
             if (e == null)

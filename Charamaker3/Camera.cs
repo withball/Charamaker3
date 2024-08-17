@@ -629,7 +629,7 @@ namespace Charamaker3
         /// <summary>
         /// 文字を描画できる範囲描画の範囲
         /// </summary>
-        public float w, h;
+        public float w=1, h=1;
 
         /// <summary>
         /// テキストの横のアライメント
@@ -699,6 +699,7 @@ namespace Charamaker3
             d.packAdd("fontName", fontName);
             d.packAdd("isItaric", isItaric);
             d.packAdd("isBold", isBold);
+            d.linechange();
             d.packAdd("alignment", ali);
             d.packAdd("alignmentV", aliV);
             d.linechange();
@@ -708,14 +709,14 @@ namespace Charamaker3
         }
         public void ToLoad(DataSaver d) 
         {
-            this.size = d.unpackDataF("size");
-            this.w = d.unpackDataF("w");
-            this.h = d.unpackDataF("h");
-            this.fontName = d.unpackDataS("fontName");
-            this.isItaric = d.unpackDataB("isItaric");
-            this.isBold = d.unpackDataB("isBold");
-            this.ali = (alignment)d.unpackDataF("alignment");
-            this.aliV = (alignment)d.unpackDataF("alignmentV");
+            this.size = d.unpackDataF("size",this.size);
+            this.w = d.unpackDataF("w",this.w);
+            this.h = d.unpackDataF("h",this.h);
+            this.fontName = d.unpackDataS("fontName",this.fontName);
+            this.isItaric = d.unpackDataB("isItaric",this.isItaric);
+            this.isBold = d.unpackDataB("isBold",this.isBold);
+            this.ali = d.unpackDataE("alignment",this.ali);
+            this.aliV = d.unpackDataE("alignmentV",this.aliV);
             this.hutiZure = d.unpackDataF("hutiZure");
             this.hutiColor.ToLoad(d.unpackDataD("hutiColor"));
         }
@@ -899,10 +900,13 @@ namespace Charamaker3
 
             if (!NoChange)
             {
+                //Debug.WriteLine(Text + " Drawed!");
               //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
                 var raw = (RawRectF)rendZone;
                 render.BeginDraw();
                 render.Transform = Matrix3x2.CreateTranslation(0, 0);
+                render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
+
                 float R = 0.99f, G = 0.98f, B = 0.97f;
                 {
 
@@ -910,7 +914,6 @@ namespace Charamaker3
                 }
                 if (F.hutiZure > 0)
                 {
-                    render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
 
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
@@ -930,12 +933,13 @@ namespace Charamaker3
                         render.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
 
-                    render.PopAxisAlignedClip();
+                  
                 }
                 {
                     var slb = render.CreateSolidColorBrush(color);
                     render.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
+                render.PopAxisAlignedClip();
                 render.EndDraw();
                 //一番下を決める。上にそろえる場合は必要ないので計算しない。
                 if (F.aliV != FontC.alignment.left)
@@ -998,6 +1002,34 @@ namespace Charamaker3
             this.font = font;
         }
         public Text() { }
+        public override void copy(Component c)
+        {
+            base.copy(c);
+            var cc = (Text)c;
+            cc.text = this.text;
+            cc.font = new FontC();
+            this.font.copy(cc.font);
+        }
+        public override DataSaver ToSave()
+        {
+            var d = base.ToSave();
+            d.linechange();
+            d.packAdd("text", text);
+            var dd = font.ToSave();
+            d.linechange();
+            dd.indent();
+            d.packAdd("font", dd);
+            return d;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            this.text=d.unpackDataS("text", "なんもない");
+            this.font = new FontC();
+            var dd = d.unpackDataD("font");
+            this.font.ToLoad(dd);
+
+        }
 
         protected override void draw(Camera cam)
         {
@@ -1008,6 +1040,7 @@ namespace Charamaker3
             }
             else if(Trender.rendZone.w!=font.w && Trender.rendZone.h != font.h)
             {
+                cam.d.ReleaseTextRenderer(Trender);
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
 
@@ -1023,7 +1056,7 @@ namespace Charamaker3
 
                     break;
                 case FontC.alignment.center:
-                    yZure = e.h/2- (Trender.bottom *e.h);
+                    yZure = e.h/2- (Trender.bottom *e.h)/2;
                     break;
                 case FontC.alignment.right:
                     yZure = e.h- (Trender.bottom*e.h) ;
@@ -1302,6 +1335,7 @@ namespace Charamaker3
                 }
             }
             screenShot(_SCSRender);
+            //screenShot(_TextRender);
         }
         /// <summary>
         /// ビットマップを->扱いやすい形に変える
@@ -1325,11 +1359,10 @@ namespace Charamaker3
             bitmap1.CopyFromBitmap(renderTarget.CreateSharedBitmap(image
                 , new BitmapProperties(image.PixelFormat)));
             var map = bitmap1.Map(MapOptions.Read);
-            var size = image.PixelSize.Width * image.PixelSize.Height * 4;
+            var size = (map.Pitch * image.PixelSize.Height) ;
             byte[] bytes = new byte[size];
             Marshal.Copy(map.Bits, bytes, 0, size);
             bitmap1.Unmap();
-
             bitmap1.Release();
 
             //bitmap1.Dispose();
@@ -1340,7 +1373,7 @@ namespace Charamaker3
                 res.Add(new List<ColorC>());
                 for (int x = 0; x < image.PixelSize.Width; x++)
                 {
-                    var position = (y * image.PixelSize.Width + x) * 4;
+                    var position = map.Pitch*y + x * 4;
                     res[y].Add(
                         new ColorC(bytes[position + 2]/255f, bytes[position + 1]/255f
                         , bytes[position + 0]/255f, bytes[position + 3]/255f));
@@ -1366,7 +1399,7 @@ namespace Charamaker3
             h.hyoji2(bt, 0, true, true, false, false, true);
             */
 
-            string dir = @".\shots\";
+            string dir = FileMan.rootpath+@"shots\";
 
             if (Directory.Exists(dir))
             {
@@ -1410,6 +1443,7 @@ namespace Charamaker3
         List<TextRenderer> textRenderers = new List<TextRenderer>();
         internal TextRenderer makeTextRenderer(float w,float h) 
         {
+          //  Debug.WriteLine("make TextRendere" + w + " :: " + h);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
             h = Mathf.ceil(h);
@@ -1511,6 +1545,8 @@ namespace Charamaker3
             }
             var returns = new TextRenderer(this, _TextRender, res);
             textRenderers.Add(returns);
+           // Debug.WriteLine("returns "+returns.rendZone.ToSave().getData());
+           
             return returns;   
         }
 

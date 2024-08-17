@@ -1049,11 +1049,13 @@ namespace Charamaker3
             return new DataSaver(sou);
         }
 
-        public E unpackDataE<E>(string name)
+        public E unpackDataE<E>(string name,E Nan)
             where E : struct, Enum
         {
             var sou = unpackDataS(name);
-            return (E)Enum.Parse(typeof(E),sou);
+            E res ;
+            if (sou != null && Enum.TryParse(sou, out res)) return res;
+            return Nan;
         }
         /// <summary>
         /// floatでアンパックする

@@ -101,6 +101,57 @@ namespace Charamaker3.CharaModel
     /// </summary>
     public class Character : Component
     {
+        /// <summary>
+        /// キャラクターを基準も含めてセットする
+        /// </summary>
+        /// <param name="scale"></param>
+        /// <param name="dz"></param>
+        /// <param name="zbai">zを全部倍にしたり</param>
+        /// <param name="opacity"></param>
+        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai=1, float opacity = 1)
+        {
+            e.name = name;
+            var cs = e.getcompos<Character>();
+            foreach (var c in cs) 
+            {
+                if (c.BaseCharacter != c)
+                {
+                    var lis = new List<Character> {c,c.BaseCharacter };
+                    foreach (var cc in lis)
+                    {
+                        EntityMove.scalechange(0, "", scale, scale).add(cc.e, 10);
+                        DrawableMove.ZChange("", dz, 0).add(cc.e, 10);
+                        DrawableMove.BaseColorChange(0, "", opacity).add(cc.e, 10);
+                        foreach (var a in cc.getTree(""))
+                        {
+                            foreach (var b in a.getcompos<Drawable>())
+                            {
+                                b.z *= zbai;
+                            }
+
+
+                        }
+                    }
+                }
+                else 
+                {
+                    EntityMove.scalechange(0, "", scale, scale).add(c.e,10);
+                    DrawableMove.ZChange("", dz,0).add(c.e,10);
+                    DrawableMove.BaseColorChange(0, "", opacity).add(c.e, 10);
+                    foreach (var a in c.getTree("")) 
+                    {
+                        foreach (var b in a.getcompos<Drawable>()) 
+                        {
+                            b.z *= zbai;
+                        }
+
+
+                    }
+                }
+                break;
+            }
+        }
+
         //先頭のジョイントはEntityがコアの特別なジョイント
         List<Joint> _joints = new List<Joint>();
         public List<Joint> joints { get { return new List<Joint>(_joints); } }

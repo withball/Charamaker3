@@ -27,6 +27,7 @@ namespace Charamaker3.CharaModel
             return new Component(time);
         }
 
+
         //res.addmove(,False);
         /// <summary>
         /// XYDに動かすムーブ
@@ -1577,7 +1578,7 @@ namespace Charamaker3.CharaModel
         {
             base.ToLoad(d);
 
-            GO = d.unpackDataE<goOption>("GO");
+            GO = d.unpackDataE<goOption>("GO",goOption.def);
             basespeeds[_Z] = d.unpackDataF("_Z");
             basespeeds[_R] = d.unpackDataF("_R");
             basespeeds[_G] = d.unpackDataF("_G");
@@ -1587,7 +1588,7 @@ namespace Charamaker3.CharaModel
             texture = d.unpackDataS("texture");
             zname = d.unpackDataS("zname");
 
-            CO = d.unpackDataE<changeOption>("CO");
+            CO = d.unpackDataE<changeOption>("CO",changeOption.difference);
         }
 
 
@@ -1656,6 +1657,7 @@ namespace Charamaker3.CharaModel
             tagBases.Clear();
             speeds.Clear();
             zparts = null;
+            float zpartsdz = 0;
             //characterから得るtag
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
@@ -1671,8 +1673,9 @@ namespace Charamaker3.CharaModel
                 {
                     foreach (var b in a.getTree(name))
                     {
+
                         var lis = b.getcompos<Drawable>();
-                        tags.Add(lis); 
+                        tags.Add(lis);
                     }
                     foreach (var b in a.BaseCharacter.getTree(name))
                     {
@@ -1687,13 +1690,16 @@ namespace Charamaker3.CharaModel
                 }
                 if (zname != "_")
                 {
-                    var ge = cs[0].getEntity(zname);
+                    var geC = cs[0].BaseCharacter.getEntity(zname);
+                    var ge = cs[0].getEntity(name);
                     if (ge != null)
                     {
+                        var drawsC = geC.getcompos<Drawable>();
                         var draws = ge.getcompos<Drawable>();
-                        if (draws.Count > 0)
+                        if (drawsC.Count > 0&&draws.Count>0)
                         {
-                            zparts = draws[0];
+                            zparts = drawsC[0];
+                            zpartsdz = ((maxz - minz) * basespeeds[_Z]) + zparts.z - draws[0].z;
                         }
                     }
                 
@@ -1718,7 +1724,8 @@ namespace Charamaker3.CharaModel
                                         {
                                             if (zparts != null)
                                             {
-                                                speeds[t][i][j] = ((maxz - minz) * basespeeds[j]) + zparts.z - tags[t][i].z;
+                                                speeds[t][i][j] = zpartsdz;
+
                                             }
                                             else
                                             {
@@ -1788,6 +1795,7 @@ namespace Charamaker3.CharaModel
                             {
                                 switch (j)
                                 {
+                               
                                     case _R:
                                         if (!float.IsNaN(basespeeds[j]))
                                         {
@@ -1843,7 +1851,21 @@ namespace Charamaker3.CharaModel
                             }
                             else
                             {
-                                speeds[t][i][j] = basespeeds[j];
+                                if (j == _Z)
+                                {
+                                    if (zparts != null)
+                                    {
+                                        speeds[t][i][j] = zpartsdz;
+                                    }
+                                    else
+                                    {
+                                        speeds[t][i][j] = basespeeds[j];
+                                    }
+                                }
+                                else
+                                {
+                                    speeds[t][i][j] = basespeeds[j];
+                                }
                             }
                         }
                         else 
@@ -1972,7 +1994,7 @@ namespace Charamaker3.CharaModel
         {
             base.ToLoad(d);
 
-            GO = d.unpackDataE<goOption>("GO");
+            GO = d.unpackDataE<goOption>("GO",goOption.def);
             basespeeds[_STX] = d.unpackDataF("_STX", 0);
             basespeeds[_ENX] = d.unpackDataF("_ENX", 0);
             basespeeds[_STY] = d.unpackDataF("_STY", 0);
