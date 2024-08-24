@@ -12,4 +12,10 @@
     <ProjectReference Include="..\Charamaker3\Charamaker3.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Charamaker3">
+      <HintPath>..\Charamaker3\bin\Debug\Charamaker3.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

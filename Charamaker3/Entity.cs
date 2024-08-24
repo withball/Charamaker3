@@ -472,9 +472,18 @@ namespace Charamaker3
             {
                 return cs[0];
             }
-            var res = ((D)Activator.CreateInstance(typeof(D)));
-            
-            return Component.ToLoadComponent<D>(res.ToSave());
+            if (typeof(D) == typeof(Drawable))
+            {
+                var res = ((DRectangle)Activator.CreateInstance(typeof(DRectangle)));
+
+                return (D)Component.ToLoadComponent(res.ToSave());
+            }
+            else 
+            {
+                var res = ((D)Activator.CreateInstance(typeof(D)));
+
+                return Component.ToLoadComponent<D>(res.ToSave());
+            }
         }
 
         /// <summary>
@@ -825,7 +834,8 @@ namespace Charamaker3
             }
         }
         /// <summary>
-        /// 世界に追加されたときに発動するメソッド
+        /// 世界に追加されたときに発動するメソッド.
+        ///　onaddより先に発動する。
         /// </summary>
         /// <param name="cl"></param>
         virtual public void addtoworld(float cl=0)

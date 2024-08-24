@@ -14,6 +14,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.IO.Compression;
 using Vortice.DirectWrite;
+using Charamaker3.Shapes;
+using Rectangle = Charamaker3.Shapes.Rectangle;
 
 namespace Charamaker3
 {
@@ -310,7 +312,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="cam"></param>
         /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
-        public bool goDraw(Camera cam)
+        virtual public bool goDraw(Camera cam)
         {
             if (col.opa > 0&&onCamera(cam))
             {
@@ -904,10 +906,10 @@ namespace Charamaker3
               //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
                 var raw = (RawRectF)rendZone;
                 render.BeginDraw();
-                render.Transform = Matrix3x2.CreateTranslation(0, 0);
                 render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
+                render.Transform = Matrix3x2.CreateTranslation(0, 0);
 
-                float R = 0.99f, G = 0.98f, B = 0.97f;
+                float R = 1, G = 0.98f, B = 0.97f;
                 {
 
                     render.Clear(new ColorC(R, G, B, 0));
@@ -941,22 +943,24 @@ namespace Charamaker3
                 }
                 render.PopAxisAlignedClip();
                 render.EndDraw();
+
                 //一番下を決める。上にそろえる場合は必要ないので計算しない。
                 if (F.aliV != FontC.alignment.left)
                 {
-                    var list = Display.GetPixels(render.Bitmap, render);
-
+                    
+                   
+                    var list = Display.GetPixels(render.Bitmap, render,rendZone);
 
                     bool breaked = false;
-                    for (int y = (int)(rendZone.y + rendZone.h - 1); y >= (int)rendZone.y; y--)
+                    for (int y = list.Count-1; y >= 0; y--)
                     {
-                        for (int x = (int)rendZone.x; x < (int)rendZone.x + rendZone.w; x++)
+                        for (int x = 0; x < list[y].Count; x++)
                         {
                             if (list[y][x].opa > 0)
                             {
-                                _bottom = y - rendZone.y;
+                                _bottom = y;
                                 breaked = true;
-                               // Debug.WriteLine(_bottom+" bottom kousined!");
+                                // Debug.WriteLine(_bottom+" bottom kousined!");
                                 break;
                             }
                         }
@@ -986,7 +990,7 @@ namespace Charamaker3
     public class Text :Drawable
     {
         public string text="";
-        public FontC font;
+        public FontC font=new FontC();
         private TextRenderer _Trender = null;
 
         internal TextRenderer Trender { get { return _Trender; }
@@ -1022,6 +1026,10 @@ namespace Charamaker3
             d.packAdd("font", dd);
             return d;
         }
+        public override void update(float cl)
+        {
+            base.update(cl);
+        }
         protected override void ToLoad(DataSaver d)
         {
             base.ToLoad(d);
@@ -1031,19 +1039,23 @@ namespace Charamaker3
             this.font.ToLoad(dd);
 
         }
-
-        protected override void draw(Camera cam)
+        public override bool goDraw(Camera cam)
         {
             if (Trender == null)
             {
                 //ここでテンポラリなやつをもらう。
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
-            else if(Trender.rendZone.w!=font.w && Trender.rendZone.h != font.h)
+            else if (Trender.rendZone.w != font.w && Trender.rendZone.h != font.h)
             {
                 cam.d.ReleaseTextRenderer(Trender);
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
+            return base.goDraw(cam);
+        }
+        protected override void draw(Camera cam)
+        {
+            
 
             Trender.Draw(text,font,col);
 
@@ -1079,11 +1091,10 @@ namespace Charamaker3
             rect.Top += zure.y;
             rect.Bottom += zure.y;
             {
-             
-            render.DrawBitmap(Trender.render.Bitmap
-              , rect
-              , this.col.opa, BitmapInterpolationMode.Linear
-                , Trender.rendZone);
+                render.DrawBitmap(Trender.render.Bitmap
+                  , rect
+                  , this.col.opa, BitmapInterpolationMode.Linear
+                    , Trender.rendZone);
             }
 
         }
@@ -1344,8 +1355,9 @@ namespace Charamaker3
         /// </summary>
         /// <param name="image"></param>
         /// <param name="renderTarget"></param>
+        /// <param name="zone">変換する領域。nullで全部</param>
         /// <returns></returns>
-        static public List<List<ColorC>> GetPixels(ID2D1Bitmap image, ID2D1RenderTarget renderTarget)
+        static public List<List<ColorC>> GetPixels(ID2D1Bitmap image, ID2D1RenderTarget renderTarget,Rectangle zone=null)
         {
             var deviceContext2d = renderTarget.QueryInterface<ID2D1DeviceContext>();
             var bitmapProperties = new BitmapProperties1();
@@ -1370,20 +1382,29 @@ namespace Charamaker3
             //bitmap1.Dispose();
             //deviceContext2d.Dispose();
             var res = new List<List<ColorC>>();
-            for (int y = 0; y < image.PixelSize.Height; y++)
+
+            if (zone == null) 
+            {
+                zone = new Rectangle(0,0, image.PixelSize.Width, image.PixelSize.Height);
+            }
+
+            for (int y = (int)zone.y; y < image.PixelSize.Height&&y<zone.y+zone.h; y++)
             {
                 res.Add(new List<ColorC>());
-                for (int x = 0; x < image.PixelSize.Width; x++)
-                {
-                    var position = map.Pitch*y + x * 4;
-                    res[y].Add(
-                        new ColorC(bytes[position + 2]/255f, bytes[position + 1]/255f
-                        , bytes[position + 0]/255f, bytes[position + 3]/255f));
+                var yy = y;
 
+                for (int x = (int)zone.x; x < image.PixelSize.Width&&x<zone.x+zone.w; x++)
+                {
+                    var position = map.Pitch * yy + x * 4;
+                    var c = new ColorC(bytes[position + 2] / 255f, bytes[position + 1] / 255f
+                        , bytes[position + 0] / 255f, bytes[position + 3] / 255f);
+                    res[yy-(int)zone.y].Add(c);
                 }
             }
             return res;
         }
+
+      
 
         /// <summary>
         /// 画面のスクリーンショットを取る。effectcharaがぶれるバグあり！

@@ -127,10 +127,11 @@ namespace Charamaker3
         /// 四捨五入
         /// </summary>
         /// <param name="value"></param>
+        /// <param name="digits"></param>
         /// <returns></returns>
-        public static float round(float value) 
+        public static float round(float value,int digits) 
         {
-            return (float)Math.Round(value);
+            return (float)Math.Round(value,digits);
         }
 
         /// <summary>
@@ -265,9 +266,12 @@ namespace Charamaker3
         public static float max(params float[] a) 
         {
             int idx = 0;
+            
             for (int i = 1; i < a.Length; i++) 
             {
-                if (a[idx] < a[i]) idx = i;
+                if (
+                    (float.IsNaN(a[idx])|| (a[idx] < a[i])) && !float.IsNaN(a[i])
+                    ) idx = i;
             }
             return a[idx];
         }
@@ -282,8 +286,11 @@ namespace Charamaker3
             int idx = 0;
             for (int i = 1; i < a.Length; i++)
             {
-                if (a[idx] > a[i]) idx = i;
+                if (
+                   (float.IsNaN(a[idx]) || (a[idx] > a[i])) && !float.IsNaN(a[i])
+                   ) idx = i;
             }
+
             return a[idx];
         }
 
