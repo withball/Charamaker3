@@ -124,6 +124,16 @@ namespace Charamaker3
     static public class Mathf 
     {
         /// <summary>
+        ///  クラスの親子関係 == かサブクラス
+        /// </summary>
+        /// <param name="t">対象</param>
+        /// <param name="parent">親か同じクラス</param>
+        /// <returns>t == parent || t subclassed parent</returns>
+        public static bool isSubClassOf(Type t, Type parent) 
+        {
+            return t == parent || t.IsSubclassOf(parent);
+        }
+        /// <summary>
         /// 四捨五入
         /// </summary>
         /// <param name="value"></param>

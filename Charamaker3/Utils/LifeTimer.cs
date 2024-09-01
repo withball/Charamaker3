@@ -69,9 +69,13 @@ namespace Charamaker3.Utils
     public class SummonEntity : Component
     {
         /// <summary>
+        /// エンテティを生み出したときにそのエンテティに対して発動するイベント
+        /// </summary>
+        public event EventHandler<Entity> onSummon;
+        /// <summary>
         /// 召喚するエンテティ
         /// </summary>
-        protected Entity summon=new Entity();
+        public Entity summon=new Entity();
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -110,8 +114,10 @@ namespace Charamaker3.Utils
         protected override void onremove(float cl)
         {
             base.onremove(cl);
-            summon.add(world);
-            summon.update(cl);
+            var summons = summon;
+            onSummon?.Invoke(this,summons);
+            summons.add(world);
+            summons.update(cl);
         }
     }
     /// <summary>
@@ -120,6 +126,10 @@ namespace Charamaker3.Utils
     /// </summary>
     public class SummonCharacter : Component
     {
+        /// <summary>
+        /// エンテティを生み出したときにそのエンテティに対して発動するイベント
+        /// </summary>
+        public event EventHandler<Entity> onSummon;
         /// <summary>
         /// 召喚するキャラクターのパス
         /// </summary>
@@ -180,6 +190,7 @@ namespace Charamaker3.Utils
             c.e.name = charaName;
             c.BaseCharacter.e.name= charaName;
             e.settxy(0, 0);
+            onSummon?.Invoke(this, c.e);
             c.e.add(world);
             c.e.update(cl);
         }
@@ -191,9 +202,13 @@ namespace Charamaker3.Utils
     public class SummonComponent : Component
     {
         /// <summary>
+        /// コンポーネントを生み出したときにそのコンポーネントに対して発動するイベント
+        /// </summary>
+        public event EventHandler<Component> onSummon;
+        /// <summary>
         /// 召喚するエンテティ
         /// </summary>
-        protected Component summon=new Component();
+        public Component summon=new Component();
 
         /// <summary>
         /// コンポーネントを追加するターゲット。
@@ -258,6 +273,7 @@ namespace Charamaker3.Utils
             base.onremove(cl);
             if (tag == "")
             {
+                onSummon?.Invoke(this, summon);
                 summon.add(e,addCl+cl);
             }
             else  
@@ -276,6 +292,7 @@ namespace Charamaker3.Utils
                     }
                     else if (i >= tags.Count() - 1)
                     {
+                        onSummon?.Invoke(this, summon);
                         summon.add(named[0],addCl+cl);
                     }
                     else 
@@ -301,6 +318,10 @@ namespace Charamaker3.Utils
     /// </summary>
     public class SummonMotion : Component
     {
+        /// <summary>
+        /// コンポーネントを生み出したときにそのコンポーネントに対して発動するイベント
+        /// </summary>
+        public event EventHandler<Component> onSummon;
         /// <summary>
         /// 召喚するキャラクターのパス
         /// </summary>
@@ -367,6 +388,7 @@ namespace Charamaker3.Utils
             summon.speed= this.speed;
             if (tag == "")
             {
+                onSummon?.Invoke(e, summon);
                 summon.add(e,addCl + cl);
             }
             else
@@ -384,6 +406,7 @@ namespace Charamaker3.Utils
                     }
                     else if (i >= tags.Count() - 1)
                     {
+                        onSummon?.Invoke(e, summon);
                         summon.add(named[0],addCl+cl);
                         break;
                     }
@@ -402,5 +425,47 @@ namespace Charamaker3.Utils
                 }
             }
         }
+    }
+    /// <summary>
+    /// 終わった時にエンテティ中のフリーイベントを発動させるコンポーネント
+    /// </summary>
+    public class FreeEventer :Component
+    {
+        string freeEventName="";
+
+        public FreeEventer(float timer, string eventName) : base(timer) 
+        {
+            freeEventName = eventName;
+        }
+        public FreeEventer() { }
+
+        public override void copy(Component c)
+        {
+            base.copy(c);
+            var cc = (FreeEventer)c;
+            cc.freeEventName = freeEventName;
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.linechange();
+            res.packAdd("freeEventName", freeEventName);
+            return res;
+
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            this.freeEventName = d.unpackDataS("freeEventName", this.freeEventName);
+        }
+        protected override void onremove(float cl)
+        {
+            base.onremove(cl);
+            foreach (var a in e.components) 
+            {
+                a.freeevent(freeEventName);
+            }
+        }
+
     }
 }

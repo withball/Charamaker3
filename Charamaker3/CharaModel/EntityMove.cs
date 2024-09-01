@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Charamaker3.Utils;
 
 namespace Charamaker3.CharaModel
 {
     public partial class EntityMove : Component 
     {
+
 
         /// <summary>
         /// モーションを作る
@@ -27,6 +29,16 @@ namespace Charamaker3.CharaModel
             return new Component(time);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="eventName"></param>
+        /// <returns>__MOVE__</returns>
+        static public FreeEventer FreeEventer(float time, string eventName) 
+        {
+            return new FreeEventer(time, eventName);
+        }
 
         //res.addmove(,False);
         /// <summary>

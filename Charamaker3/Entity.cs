@@ -423,7 +423,7 @@ namespace Charamaker3
         /// Componentだけから呼び出す
         /// </summary>
         /// <param name="c"></param>
-        internal void compoadd(Component c,float cl) 
+        virtual public void compoadd(Component c,float cl) 
         {
             _components.Add(c);
             if (added) //Entiyがすでに顕現していたら
@@ -435,7 +435,7 @@ namespace Charamaker3
         /// Componentだけから呼び出す
         /// </summary>
         /// <param name="c"></param>
-        internal void comporemove(Component c)
+        virtual public void comporemove(Component c)
         {
             if (_components.Remove(c) && added)
             {
