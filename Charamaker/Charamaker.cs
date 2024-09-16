@@ -91,7 +91,7 @@ namespace Charamaker
 
             var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
                , new FontC(16, 16 * 40, 16 * 30, isBold: false, alignment: FontC.alignment.left
-               , alignmentV: FontC.alignment.right));
+               , alignmentV: FontC.alignment.center));
             text.add(cam.watchRect);
             text.font.hutiZure = 0.05f;
             text.font.hutiColor = new ColorC(1, 1, 1, 1);
@@ -122,6 +122,8 @@ namespace Charamaker
                 sel.setPoints(SLP, TXYP, (float)PointB.Value / 100f);
             }
 
+
+
             w.update(1);
 
             display.draw(1);
@@ -135,6 +137,10 @@ namespace Charamaker
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
+                for (int i = 0; i < 40; i++)
+                {
+                    FileMan.loadCharacter("Card").add(w);
+                }
                 var sc = SoundComponent.MakeSE(FileMan.SE, @"TB\jett", 0.01f);
                 sc.add(w.staticEntity);
 

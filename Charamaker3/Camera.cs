@@ -320,10 +320,25 @@ namespace Charamaker3
                 return true;
             }
             return false;
+        }   
+        /// <summary>
+            /// 事前描画をする
+            /// </summary>
+            /// <param name="cam"></param>
+            /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
+        virtual public bool goPreDraw(Camera cam)
+        {
+            if (onCamera(cam))
+            {
+                PreDraw(cam);
+                return true;
+            }
+            return false;
         }
 
         protected abstract void draw(Camera cam);
-        
+        protected virtual void PreDraw(Camera cam) { }
+
         protected bool onCamera(Camera cam) 
         {
             var s=new Shapes.Rectangle(0);
@@ -802,6 +817,7 @@ namespace Charamaker3
         public Shapes.Rectangle rendZone;
 
         bool NoChange = false;
+        bool NoChange2 = false;
 
         /// <summary>
         /// 
@@ -809,7 +825,7 @@ namespace Charamaker3
         /// <param name="parent"></param>
         /// <param name="render"></param>
         /// <param name="drawto">回転は無しね</param>
-        public TextRenderer(Display parent, ID2D1BitmapRenderTarget render,Shapes.Rectangle drawto) 
+        public TextRenderer(Display parent, ID2D1BitmapRenderTarget render, Shapes.Rectangle drawto)
         {
             this.parent = parent;
             this.render = render;
@@ -827,6 +843,7 @@ namespace Charamaker3
         public void Changed()
         {
             NoChange = false;
+            NoChange2 = false;
         }
 
         /// <summary>
@@ -841,25 +858,28 @@ namespace Charamaker3
             if (PastText == null || PastText != Text)
             {
                 NoChange = false;
-                return　true;
+                NoChange2 = false;
+                return true;
             }
 
             if (PastFont == null || PastFont != F)
             {
                 NoChange = false;
+                NoChange2 = false;
                 return true;
             }
 
             if (PastColor == null || PastColor != color)
             {
                 NoChange = false;
+                NoChange2 = false;
                 return true;
             }
             return false;
         }
 
 
-        public void Release() 
+        public void Release()
         {
             parent.ReleaseTextRenderer(this);
         }
@@ -873,39 +893,44 @@ namespace Charamaker3
         private void SetPast(string Text, FontC F, ColorC color)
         {
             PastText = Text;
-            PastFont=new FontC();
+            PastFont = new FontC();
             F.copy(PastFont);
             PastColor = new ColorC(color);
 
         }
 
-        
-        /***************************************************************************************/
-        
 
-        float _bottom=0;//!<文字が書かれた領域の最下端
+        /***************************************************************************************/
+
+
+        float _bottom = 0;//!<文字が書かれた領域の最下端
         /// <summary>
         /// 領域内でも字が書かれた最下端
         /// </summary>
-        public float bottom { get { if (rendZone.h == 0) return 0.5f;
-                return Mathf.min(_bottom/rendZone.h,1); } }
+        public float bottom
+        {
+            get
+            {
+                if (rendZone.h == 0) return 0.5f;
+                return Mathf.min(_bottom / rendZone.h, 1);
+            }
+        }
 
         private string PastText = null;
         private FontC PastFont = null;
         private ColorC PastColor = null;
         public void Draw(string Text, FontC F, ColorC color)
         {
-            if (CheckChange(Text, F, color)) 
+            if (CheckChange(Text, F, color))
             {
                 SetPast(Text, F, color);
             }
 
-            if (!NoChange)
+            if (NoChange==false)
             {
                 //Debug.WriteLine(Text + " Drawed!");
-              //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
+                //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
                 var raw = (RawRectF)rendZone;
-                render.BeginDraw();
                 render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
                 render.Transform = Matrix3x2.CreateTranslation(0, 0);
 
@@ -930,29 +955,50 @@ namespace Charamaker3
                     lis[1].x -= zure;
                     lis[2].y += zure;
                     lis[3].y -= zure;
-                    for(int i=0;i<lis.Count;i++)
+                    for (int i = 0; i < lis.Count; i++)
                     {
                         render.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
 
-                  
+
                 }
                 {
                     var slb = render.CreateSolidColorBrush(color);
                     render.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
                 render.PopAxisAlignedClip();
-                render.EndDraw();
 
+              
+                /*
+                {
+                    var slb = render.CreateSolidColorBrush(new ColorC(0, 0, 0, 1));
+                    render.DrawRectangle((RawRectF)rendZone, slb);
+                }*/
+
+                parent.Drawed(this);
+                NoChange = true;
+            }
+
+        }
+        /// <summary>
+        /// 画面に描画する前に呼び出すよ
+        /// </summary>
+        /// <param name="Text"></param>
+        /// <param name="F"></param>
+        /// <param name="color"></param>
+        public void OnDraw(string Text, FontC F, ColorC color)
+        {
+            if (NoChange2==false)
+            {
                 //一番下を決める。上にそろえる場合は必要ないので計算しない。
                 if (F.aliV != FontC.alignment.left)
                 {
-                    
-                   
-                    var list = Display.GetPixels(render.Bitmap, render,rendZone);
+
+
+                    var list = Display.GetPixels(render.Bitmap, render, rendZone);
 
                     bool breaked = false;
-                    for (int y = list.Count-1; y >= 0; y--)
+                    for (int y = list.Count - 1; y >= 0; y--)
                     {
                         for (int x = 0; x < list[y].Count; x++)
                         {
@@ -960,30 +1006,22 @@ namespace Charamaker3
                             {
                                 _bottom = y;
                                 breaked = true;
-                                // Debug.WriteLine(_bottom+" bottom kousined!");
                                 break;
                             }
                         }
+
+
                         if (breaked) break;
                     }
                     _bottom += 1;
                 }
-                else 
+                else
                 {
-                
+
                 }
-                /*
-                {
-                    var slb = render.CreateSolidColorBrush(new ColorC(0, 0, 0, 1));
-                    render.DrawRectangle((RawRectF)rendZone,slb);
-                }*/
-
-                NoChange = true;
-                parent.Drawed(this);
-             }
-
+                NoChange2 = true;
+            }
         }
-
     }
 
 
@@ -1039,7 +1077,7 @@ namespace Charamaker3
             this.font.ToLoad(dd);
 
         }
-        public override bool goDraw(Camera cam)
+        public override bool goPreDraw(Camera cam)
         {
             if (Trender == null)
             {
@@ -1051,14 +1089,16 @@ namespace Charamaker3
                 cam.d.ReleaseTextRenderer(Trender);
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
-            return base.goDraw(cam);
+            return base.goPreDraw(cam);
+        }
+        protected override void PreDraw(Camera cam)
+        {
+            base.PreDraw(cam);
+            Trender.Draw(text, font, col);
         }
         protected override void draw(Camera cam)
         {
-            
-
-            Trender.Draw(text,font,col);
-
+            Trender.OnDraw(text, font, col);
             var render = cam.render;
 
 
@@ -1163,7 +1203,20 @@ namespace Charamaker3
             this.watchRect = WatchRect;
 
         }
-
+        /// <summary>
+        /// テキストなど事前描画が必要なやつを一気に処理する
+        /// </summary>
+        virtual public void PreDraw(float cl) 
+        {
+            //cl=0でも呼び出される
+            if (watchRect.world != null)
+            {
+                foreach (var a in watchRect.world.Ddic.getresult())
+                {
+                    a.goPreDraw(this);
+                }
+            }
+        }
         public override void update(float cl)
         {
             //この中ではcl=0のとき呼び出されないやつとかある。
@@ -1307,6 +1360,7 @@ namespace Charamaker3
         {
             cameras.Clear();
         }
+
         /// <summary>
         /// カメラを描画(Updateもするよあんま意味ないけど)する
         /// </summary>
@@ -1315,12 +1369,26 @@ namespace Charamaker3
         /// <param name="cl">カメラのフレームスピード</param>
         public void draw(float cl=1)
         {
+            PreDraw(cl);
             render.BeginDraw();
             foreach (var a in cameras) 
             {
                 a.e.update(cl);
             }
             render.EndDraw();
+        }
+        /// <summary>
+        /// テキストのやつなど、事前に描画が必要なやつなどをまとめて処理する
+        /// </summary>
+        /// <param name="cl"></param>
+        protected void PreDraw(float cl) 
+        {
+            _TextRender.BeginDraw();
+            foreach (var a in cameras)
+            {
+                a.PreDraw(cl);
+            }
+            _TextRender.EndDraw();
         }
         /// <summary>
         /// このカメラのスクショをとる
@@ -1395,12 +1463,14 @@ namespace Charamaker3
 
                 for (int x = (int)zone.x; x < image.PixelSize.Width&&x<zone.x+zone.w; x++)
                 {
-                    var position = map.Pitch * yy + x * 4;
-                    var c = new ColorC(bytes[position + 2] / 255f, bytes[position + 1] / 255f
+                    var position = map.Pitch * yy + x * (map.Pitch/image.PixelSize.Width);
+                    var c = new ColorC(bytes[position + 2] / 255, bytes[position + 1] / 255f
                         , bytes[position + 0] / 255f, bytes[position + 3] / 255f);
                     res[yy-(int)zone.y].Add(c);
+                 
                 }
             }
+            
             return res;
         }
 
@@ -1466,6 +1536,27 @@ namespace Charamaker3
         List<TextRenderer> textRenderers = new List<TextRenderer>();
         internal TextRenderer makeTextRenderer(float w,float h) 
         {
+            bool onHani(Rectangle r,float x,float y) 
+            {
+                if ((r.x <= x && x <= r.x + r.w)
+                    && (r.y <= y && y <= r.y + r.h)) 
+                {
+                    return true;
+                }
+                return false;
+            }
+            bool onHani2(Rectangle r, float x, float y, float x2, float y2)
+            {
+                if(onHani(r,x,y))return true;
+                if (onHani(r, x2, y2)) return true;
+
+                if (Shape.crosses(r.x, r.y, r.x + w, r.y, x, y, x2, y2)) return true;
+                if (Shape.crosses(r.x + r.w, r.y, r.x + w, r.y + r.h, x, y, x2, y2)) return true;
+                if (Shape.crosses(r.x + r.w, r.y + r.h, r.x, r.y + r.h, x, y, x2, y2)) return true;
+                if (Shape.crosses(r.x, r.y + r.h, r.x, r.y, x, y, x2, y2)) return true;
+
+                return false;
+            }
           //  Debug.WriteLine("make TextRendere" + w + " :: " + h);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
@@ -1477,13 +1568,14 @@ namespace Charamaker3
             {
                 //上に追加
                 {
-                    var np = a.rendZone.gettxy(a.rendZone.w, 0);
+                    var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
                     if (np.x > 0 && np.y>0)
                     {
                         bool ok = true;
-                        foreach (var b in textRenderers)
+                        for (int i = 0; i < textRenderers.Count; i++)
                         {
-                            if (b.rendZone.onhani(np.x, np.y - 0.5f))
+                            var b = textRenderers[i];
+                            if (onHani(b.rendZone,np.x, np.y ))
                             {
                                 ok = false;
                                 break;
@@ -1497,13 +1589,15 @@ namespace Charamaker3
                 }
                 //左に追加
                 {
-                    var np = a.rendZone.gettxy(0, a.rendZone.h);
+                    var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
                     if (np.x > 0 && np.y > 0)
                     {
                         bool ok = true;
-                        foreach (var b in textRenderers)
+
+                        for (int i = 0; i <textRenderers.Count; i++)
                         {
-                            if (b.rendZone.onhani(np.x - 0.5f, np.y))
+                            var b = textRenderers[i];
+                            if (onHani(b.rendZone, np.x, np.y))
                             {
                                 ok = false;
                                 break;
@@ -1523,7 +1617,7 @@ namespace Charamaker3
                 float maxx=0, maxy=0;
                 foreach (var b in textRenderers) 
                 {
-                    if (b.rendZone.onhani(a.x - 0.5f, a.y - 0.5f
+                    if (onHani2(b.rendZone, a.x , a.y 
                         , a.x - _TextRender.Size.Width, a.y)) 
                     {
                         maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w,0).x,maxx);
@@ -1531,7 +1625,7 @@ namespace Charamaker3
                 }
                 foreach (var b in textRenderers)
                 {
-                    if (b.rendZone.onhani(a.x - 0.5f, a.y - 0.5f
+                    if (onHani2(b.rendZone, a.x , a.y 
                         , a.x , a.y - _TextRender.Size.Height))
                     {
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y,maxy);
@@ -1547,8 +1641,8 @@ namespace Charamaker3
             Shapes.Rectangle res = null;
             foreach (var a in rects) 
             {
-                //なるべく面積の小さい奴を選ぶ
-                if (res == null || res.menseki > a.menseki) 
+                //なるべく面積の大きいやつを選ぶ
+                if (res == null || res.menseki < a.menseki) 
                 {
                     if (a.w >= w && a.h >= h) 
                     {
@@ -1568,6 +1662,14 @@ namespace Charamaker3
             }
             var returns = new TextRenderer(this, _TextRender, res);
             textRenderers.Add(returns);
+            //右下順に並べる
+            var ss = new supersort<TextRenderer>();
+            foreach (var a in textRenderers) 
+            {
+                ss.add(a, a.rendZone.x + a.rendZone.y);
+            }
+            ss.sort(true);
+            textRenderers = ss.getresult();
            // Debug.WriteLine("returns "+returns.rendZone.ToSave().getData());
            
             return returns;   

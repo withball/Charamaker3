@@ -45,7 +45,7 @@ namespace Charamaker
             if (e.KeyCode == Keys.Enter)
             {
                 var m = FileMan.loadMotion(pathB.Text,true);
-                if (m.Motion!=null&&!m.Motion.empty)
+                if (m.Motion!=null&& (!m.Motion.empty||1==1))
                 {
                  
                     //setmotionjouhou(m);
@@ -143,6 +143,47 @@ namespace Charamaker
         }
         private Motion build()
         {
+
+            /*/移植用
+            {
+                Debug.WriteLine(" isyoku");
+                string[] filesM = System.IO.Directory.GetFiles(FileMan.rootpath+@"\motion\", "*.c3m", System.IO.SearchOption.AllDirectories);
+                foreach (var a in filesM)
+                {
+                    Debug.WriteLine(a + " kyusaisimasu");
+                    if (!a.Contains("zfile"))
+                    {
+                        string file = a;
+                        string dir = a.Replace(".c3m",".ctm");
+                        var d = DataSaver.loadFromPath(file, false, ".c3m");
+
+                        var script = d.unpackDataS("script");
+                        script = script.Replace("work.addmoves", "res.addmove");
+                        script = script.Replace("new ", "");
+                        script = script.Replace("setumageman", "RotateToLim");
+                        script = script.Replace("radtoman", "RotateToLim");
+                        script = script.Replace("idouman", "XYD");
+                        script = script.Replace("setuidouman", "XYD");
+                        script = script.Replace("texchangeman", "ChangeTexture");
+                        script = script.Replace("Kopaman", "BaseColorChange");
+                        script = script.Replace("zchangeman", "ZChange");
+                        script = script.Replace("Kzchangeman", "BaseZChange");
+                        script = script.Replace("Kscalechangeman", "scalechange");
+                        script = script.Replace("Ktyusinchangeman", "calechange");
+                        script = script.Replace("Kdxychangeman", "JointMove");
+                        script = script.Replace("zkaitenman", "ZRotate");
+                       
+
+                        FileMan.saveMotion(dir, script, new Motion());
+
+                        Debug.WriteLine(a + " kyusaiend");
+
+
+
+                    }
+                }
+                
+            }*/
             try
             {
                 messageB.Text = "OK! -> ";

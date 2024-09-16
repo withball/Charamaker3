@@ -680,10 +680,15 @@ namespace Charamaker3
         public float volume{ get { return _volume; }
             set { _volume = value; setVolume(); }
         }
-
+        /// <summary>
+        /// 再生が終了したら自動でエンテティから外れる。被ダメ声とか何度も使用したりかぶっちゃダメな場合はtrueにする。
+        /// </summary>
         public bool playThenEnd;
 
-        public int loop { get { return _loop; }set { _loop = value; sound.SetLoop(_loop); } }
+        /// <summary>
+        /// ループ回数255で無限だったかな
+        /// </summary>
+        public int loop { get { return _loop; }set { _loop = value; sound?.SetLoop(_loop); } }
 
 
 
@@ -711,7 +716,7 @@ namespace Charamaker3
             ,float fadein=0,float fadeout = 0,string name=""):base(name:name)
         {
             _sound = SE.playoto(file, volume);
-            this.loop = loop;
+            this._loop = loop;
             this.fadein= fadein;
             this.fadeout = fadeout;
             this.playThenEnd = playThenEnd;
@@ -818,22 +823,24 @@ namespace Charamaker3
             base.onupdate(cl);
 
             setVolume();
-
-            if ((prePlayed && sound.isEnd && playThenEnd ) 
-                || (fadeOutTimer >= 0 && timer >= fadeOutTimer + fadeout))
+            if (sound != null)
             {
+                if ((prePlayed && sound.isEnd && playThenEnd)
+                    || (fadeOutTimer >= 0 && timer >= fadeOutTimer + fadeout))
+                {
 
-                PlayEnd?.Invoke(this, sound);
-                remove();
-                //Debug.WriteLine(timer + "  " + fadeOutTimer + fadeout);
+                    PlayEnd?.Invoke(this, sound);
+                    remove();
+                    //Debug.WriteLine(timer + "  " + fadeOutTimer + fadeout);
+                }
+
+                prePlayed = !sound.isEnd;
             }
-
-            prePlayed = !sound.isEnd;
         }
-        
-        public void Play() 
+
+        public void Play()
         {
-            sound.Start();
+            sound?.Start();
             prePlayed = true;
             resettimer();
         }
@@ -852,7 +859,7 @@ namespace Charamaker3
         {
             if (stopkyousei||fadeout <= 0 || (fadeOutTimer>=0&&timer >= fadeOutTimer + fadeout))
             {
-                sound.Stop();
+                sound?.Stop();
             }
             else
             {
@@ -879,7 +886,7 @@ namespace Charamaker3
                 vol = (1);
             }
 
-            sound.setVolume(vol*volume);
+            sound?.setVolume(vol*volume);
         }
 
     }

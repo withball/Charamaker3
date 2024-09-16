@@ -14,7 +14,7 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// モーションを作る
         /// </summary>
-        /// <returns></returns>
+        /// <returns>__MOVE__</returns>
         static public Motion MakeMotion() 
         {
             return new Motion();
@@ -23,7 +23,7 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 何もしないモーション。時間を作るときだけ使う
         /// </summary>
-        /// <returns></returns>
+        /// <returns>__MOVE__</returns>
         static public Component Wait(float time)
         {
             return new Component(time);
@@ -337,6 +337,16 @@ namespace Charamaker3.CharaModel
                 res.GO = goOption.goAll;
             }
             return res;
+        }
+        /// <summary>
+        /// SEを鳴らすムーブ
+        /// </summary>
+        /// <param name="file">ファイル名</param>
+        /// <param name="volume">=1</param>
+        /// <returns>__MOVE__</returns>
+        static public SoundComponent PlaySound(string file,float volume=1) 
+        {
+            return SoundComponent.MakeSE(FileMan.SE,file,volume,true);
         }
     }
     public partial class DrawableMove : Component
@@ -771,10 +781,13 @@ namespace Charamaker3.CharaModel
             {
                 tags[t].x += (float)(speeds[t][_X] * ratio);
                 tags[t].y += (float)(speeds[t][_Y] * ratio);
+
+                var pos=tags[t].gettxy();
                 tags[t].w += (float)(speeds[t][_W] * ratio);
                 tags[t].h += (float)(speeds[t][_H] * ratio);
                 tags[t].tx += (float)(speeds[t][_TX] * ratio);
                 tags[t].ty += (float)(speeds[t][_TY] * ratio);
+                tags[t].settxy(pos);
 
 
             }

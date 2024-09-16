@@ -9,7 +9,7 @@ namespace Charamaker3
 {
     static public class Debug 
     {
-        static public void WriteLine(string w) 
+        static public void WriteLine(string w)
         {
             System.Diagnostics.Debug.WriteLine(w);
         }
@@ -111,6 +111,27 @@ namespace Charamaker3
         public static FXY operator /(FXY a, float b)
         {
             return new FXY(a.x / b, a.y / b);
+        }
+        /// <summary>
+        /// 要素を掛け算するだけ
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static FXY operator *(FXY a, FXY b)
+        {
+            return new FXY(a.x * b.x, a.y * b.y);
+        }
+
+        /// <summary>
+        /// 要素を割り算するだけ
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static FXY operator /(FXY a, FXY b)
+        {
+            return new FXY(a.x / b.x, a.y / b.y);
         }
         public static implicit operator System.Drawing.Point(FXY xy) 
         {

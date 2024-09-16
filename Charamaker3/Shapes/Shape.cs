@@ -354,7 +354,7 @@ namespace Charamaker3.Shapes
         /// 線がクロスしているのかを判定する
         /// </summary>
         /// <returns></returns>
-        static protected bool crosses(double psx, double psy, double pex, double pey, double qsx, double qsy, double qex, double qey)
+        static public bool crosses(double psx, double psy, double pex, double pey, double qsx, double qsy, double qex, double qey)
         {
 
             double c1 = (pex - psx) * (qsy - psy) - (pey - psy) * (qsx - psx);
