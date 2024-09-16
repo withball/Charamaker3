@@ -137,10 +137,7 @@ namespace Charamaker
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
-                for (int i = 0; i < 40; i++)
-                {
-                    FileMan.loadCharacter("Card").add(w);
-                }
+                
                 var sc = SoundComponent.MakeSE(FileMan.SE, @"TB\jett", 0.01f);
                 sc.add(w.staticEntity);
 
