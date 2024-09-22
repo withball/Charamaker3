@@ -324,10 +324,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Camera.cs" />
+    <Compile Include="CharaModel\Yure.cs" />
+    <Compile Include="Drawings.cs" />
     <Compile Include="CharaModel\AnimeLoader.cs" />
     <Compile Include="CharaModel\Character.cs" />
     <Compile Include="CharaModel\EntityMove.cs" />
+    <Compile Include="Display.cs" />
     <Compile Include="Entity.cs" />
     <Compile Include="FileMan.cs" />
     <Compile Include="Hitboxs\Hitbox.cs" />

@@ -25,7 +25,7 @@ namespace Charamaker3
     /// これによってe.setTxとかもおかしくなる。<br></br>
     /// 二つ追加はできない
     /// </summary>
-    public class Haikei :Component
+    public class Haikei : Component
     {
         /// <summary>
         /// カメラが動くとこのエンテティが動く割合。
@@ -38,7 +38,7 @@ namespace Charamaker3
         /// <param name="px">x方向のスクロール割合</param>
         /// <param name="py">y方向のスクロール割合</param>
         /// <param name="cam">追従するカメラ。nullでも後で設定すればいい</param>
-        public Haikei(float px, float py,Camera cam) 
+        public Haikei(float px, float py, Camera cam)
         {
             this.px = px;
             this.py = py;
@@ -72,7 +72,7 @@ namespace Charamaker3
         /// <summary>
         /// 相対位置のカメラ
         /// </summary>
-        protected Camera cam=null;
+        protected Camera cam = null;
         /// <summary>
         /// 本来の位置
         /// </summary>
@@ -103,22 +103,22 @@ namespace Charamaker3
         {
             base.addtoworld(cl);
             setZahyou(true);
-            
-           // Debug.WriteLine("Haikei Add to world");
+
+            // Debug.WriteLine("Haikei Add to world");
         }
         public override void removetoworld(float cl = 0)
         {
             base.removetoworld(cl);
             e.x = truex;
             e.y = truey;
-           // Debug.WriteLine("Haikei REMOVE to world");
+            // Debug.WriteLine("Haikei REMOVE to world");
         }
 
         /// <summary>
         /// 追従するカメラをセッティングする
         /// </summary>
         /// <param name="cam"></param>
-        public void setCamera(Camera cam) 
+        public void setCamera(Camera cam)
         {
             this.cam = cam;
 
@@ -128,7 +128,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="OnStart">初めて登場した時にtrueにする</param>
         /// <exception cref="Exception"></exception>
-         void setZahyou(bool OnStart) 
+        void setZahyou(bool OnStart)
         {
             if (cam == null)
             {
@@ -163,7 +163,7 @@ namespace Charamaker3
         /// <param name="tx">移動させたい中心位置</param>
         /// <param name="ty">移動させたい中心位置</param>
         /// <returns>このエンテティがHaikeiを持ち、カメラから見ての座標に移動したか</returns>
-        static public bool SetCameraZahyou(Entity e,float tx,float ty) 
+        static public bool SetCameraZahyou(Entity e, float tx, float ty)
         {
             var lis = e.getcompos<Haikei>();
             if (lis.Count <= 0) return false;
@@ -175,13 +175,13 @@ namespace Charamaker3
                 throw new Exception("追従するカメラが無いですやん");
             }
             var center = h.cam.watchRect.gettxy();
-            e.settxy(tx,ty);
+            e.settxy(tx, ty);
             //この辺を逆算
             h.prex = e.x;
             h.prey = e.y;
             h.truex = h.prex - center.x * (h.px - 1);
             h.truey = h.prey - center.y * (h.py - 1);
-            
+
 
             return true;
         }
@@ -195,19 +195,18 @@ namespace Charamaker3
             {
                 throw new Exception("追従するカメラが無いですやん");
             }
-            else 
+            else
             {
                 var center = cam.watchRect.gettxy();
-       
+
                 e.x = e.x - center.x * (px - 1);
                 e.y = e.y - center.y * (py - 1);
-                
+
             }
-       
+
         }
     }
     #endregion
-    #region cameraAndDrawing
     public class ColorC
     {
         public float r, g, b, opa;
@@ -226,7 +225,7 @@ namespace Charamaker3
 
         public static bool operator ==(ColorC a, ColorC b)
         {
-            if(ReferenceEquals(a,null)|| ReferenceEquals(b,null))
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
                 return ReferenceEquals(a, null) == ReferenceEquals(b, null);
             }
@@ -235,14 +234,14 @@ namespace Charamaker3
         }
         public static bool operator !=(ColorC a, ColorC b)
         {
-            if (ReferenceEquals(a,null)|| ReferenceEquals(b,null)) 
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
                 return ReferenceEquals(a, null) != ReferenceEquals(b, null);
             }
             return a.r != b.r || a.g != b.g || a.b != b.b || a.opa != b.opa;
         }
 
-        public DataSaver ToSave() 
+        public DataSaver ToSave()
         {
             var d = new DataSaver();
             d.packAdd("r", r);
@@ -251,7 +250,7 @@ namespace Charamaker3
             d.packAdd("opa", opa);
             return d;
         }
-        public void ToLoad(DataSaver d) 
+        public void ToLoad(DataSaver d)
         {
             r = d.unpackDataF("r");
             g = d.unpackDataF("g");
@@ -259,15 +258,15 @@ namespace Charamaker3
             opa = d.unpackDataF("opa");
         }
     }
-    public abstract class Drawable : Component 
+    public abstract class Drawable : Component
     {
         /// <summary>
         /// 色。大体透明度しか意味ない。
         /// </summary>
-        public ColorC col=new ColorC(0,0,0,0);
+        public ColorC col = new ColorC(0, 0, 0, 0);
         //描画の順番
         public float z;
-        public Drawable(float z,ColorC col, float time = -1, string name = ""):base(time,name)
+        public Drawable(float z, ColorC col, float time = -1, string name = "") : base(time, name)
         {
             this.z = z;
             this.col = col;
@@ -289,9 +288,9 @@ namespace Charamaker3
         {
             var res = base.ToSave();
             res.linechange();
-            res.packAdd("z", this.z); 
+            res.packAdd("z", this.z);
             res.linechange();
-            
+
             res.packAdd("r", this.col.r);
             res.packAdd("g", this.col.g);
             res.packAdd("b", this.col.b);
@@ -314,18 +313,18 @@ namespace Charamaker3
         /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
         virtual public bool goDraw(Camera cam)
         {
-            if (col.opa > 0&&onCamera(cam))
+            if (col.opa > 0 && onCamera(cam))
             {
                 draw(cam);
                 return true;
             }
             return false;
-        }   
+        }
         /// <summary>
-            /// 事前描画をする
-            /// </summary>
-            /// <param name="cam"></param>
-            /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
+        /// 事前描画をする
+        /// </summary>
+        /// <param name="cam"></param>
+        /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
         virtual public bool goPreDraw(Camera cam)
         {
             if (onCamera(cam))
@@ -339,9 +338,9 @@ namespace Charamaker3
         protected abstract void draw(Camera cam);
         protected virtual void PreDraw(Camera cam) { }
 
-        protected bool onCamera(Camera cam) 
+        protected bool onCamera(Camera cam)
         {
-            var s=new Shapes.Rectangle(0);
+            var s = new Shapes.Rectangle(0);
             s.setto(cam.watchRect);
 
 
@@ -349,7 +348,7 @@ namespace Charamaker3
             s2.setto(this.e);
             return s.atarun(s2);
         }
-        
+
         /// <summary>
         /// カメラからの相対座標
         /// </summary>
@@ -360,13 +359,13 @@ namespace Charamaker3
         {
             var watch = cam.watchRect;
             var camupleft = new FXY(watch.x, watch.y);
-            
+
 
             var res = new FXY(xy.x, xy.y) - camupleft;
             res.degree -= watch.degree;
             res.x *= cam.resolx;
             res.y *= cam.resoly;
-           
+
             return res;
         }
         /// <summary>
@@ -378,10 +377,10 @@ namespace Charamaker3
         {
 
             var watch = cam.watchRect;
-          
+
 
             //  左上
-            var upleft = camsoutai(cam,e.gettxy(0, 0));
+            var upleft = camsoutai(cam, e.gettxy(0, 0));
 
             //0.5の中心
             var center = camsoutai(cam, e.gettxy(e.w / 2, e.h / 2));
@@ -395,13 +394,13 @@ namespace Charamaker3
 
                 a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-Mathf.abs(watch.w) * 1, 0), a);
             }
-           // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
-            if (watch.w<0)
+            // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
+            if (watch.w < 0)
             {
                 a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
 
             }
-            if (watch.h<0)
+            if (watch.h < 0)
             {
                 a = Matrix3x2.Multiply(Matrix3x2.CreateScale(1, -1), a);
 
@@ -421,7 +420,7 @@ namespace Charamaker3
 
                 a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(upleft.x) * 2, 0), a);
             }
-        
+
 
             if (e.h < 0)
             {
@@ -430,7 +429,7 @@ namespace Charamaker3
                 a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(0, -(upleft.y) * 2), a);
             }
 
-          
+
 
             return a;
         }
@@ -446,8 +445,8 @@ namespace Charamaker3
             var upleft = camsoutai(cam, e.gettxy(0, 0));
             //wも、hも絶対値で四角形を作り、transformの所で反転させて折り合いをつける。
 
-            var w = Mathf.sameSign((camsoutai(cam, e.gettxy(e.w, 0))-upleft).length,e.w*0+1);
-            var h = Mathf.sameSign((camsoutai(cam, e.gettxy(0, e.h)) - upleft).length, e.h*0+1);
+            var w = Mathf.sameSign((camsoutai(cam, e.gettxy(e.w, 0)) - upleft).length, e.w * 0 + 1);
+            var h = Mathf.sameSign((camsoutai(cam, e.gettxy(0, e.h)) - upleft).length, e.h * 0 + 1);
 
 
             return new RectangleF(upleft.x, upleft.y, w, h);
@@ -460,7 +459,7 @@ namespace Charamaker3
     /// </summary>
     public class DRectangle : Drawable
     {
-        public DRectangle(float z,ColorC c, float time = -1,string name="") : base(z,c,time,name) 
+        public DRectangle(float z, ColorC c, float time = -1, string name = "") : base(z, c, time, name)
         {
         }
         public DRectangle() : base()
@@ -468,11 +467,11 @@ namespace Charamaker3
         }
         protected override void draw(Camera cam)
         {
-            var render=cam.render;
-            
-            render.Transform =rectTrans(cam);
+            var render = cam.render;
+
+            render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
-      
+
             using (var brh = render.CreateSolidColorBrush(col))
             {
                 render.FillRectangle(rect, brh);
@@ -490,19 +489,19 @@ namespace Charamaker3
         /// <summary>
         /// 登録されているテクスチャ―
         /// </summary>
-        public Dictionary<string, string> textures=new Dictionary<string, string>();
+        public Dictionary<string, string> textures = new Dictionary<string, string>();
         /// <summary>
         /// 今選択されているテクスチャの名前
         /// </summary>
-        public string texname="def";
+        public string texname = "def";
         /// <summary>
         /// 現在のテクスチャー
         /// </summary>
-        public string nowtex { get { if(textures.ContainsKey(texname))return textures[texname];
+        public string nowtex { get { if (textures.ContainsKey(texname)) return textures[texname];
                 return FileMan.nothing;
             } }
 
-        public Texture(float z, ColorC c, Dictionary<string,string> texs,float time = -1, string name = "") : base(z, c, time, name)
+        public Texture(float z, ColorC c, Dictionary<string, string> texs, float time = -1, string name = "") : base(z, c, time, name)
         {
             textures = new Dictionary<string, string>(texs);
             if (textures.Keys.Count > 0)
@@ -510,24 +509,24 @@ namespace Charamaker3
                 texname = new List<string>(textures.Keys)[0];
             }
         }
-        public Texture() : base() 
-        {}
+        public Texture() : base()
+        { }
 
         public override void copy(Component c)
         {
             var cc = (Texture)c;
             base.copy(c);
-            cc.texname=this.texname;
+            cc.texname = this.texname;
             cc.textures = new Dictionary<string, string>(textures);
         }
         public override DataSaver ToSave()
         {
             var res = base.ToSave();
             res.linechange();
-            res.packAdd("texname",texname);
+            res.packAdd("texname", texname);
             res.linechange();
             var d = new DataSaver();
-            foreach (var a in textures) 
+            foreach (var a in textures)
             {
                 d.packAdd(a.Key, a.Value);
                 d.linechange();
@@ -543,20 +542,20 @@ namespace Charamaker3
 
             var textures = new Dictionary<string, string>();
             var dd = d.unpackDataD("textures");
-            foreach (var a in dd.getAllPacks()) 
+            foreach (var a in dd.getAllPacks())
             {
                 textures.Add(a, dd.unpackDataS(a));
             }
             this.textures = textures;
         }
-        static public Texture make(float z,float opa, params KeyValuePair<string,string> [] textures) 
+        static public Texture make(float z, float opa, params KeyValuePair<string, string>[] textures)
         {
-            var res=new Texture(z, new ColorC(1, 1, 1, opa),new Dictionary<string, string>());
-            foreach (var a in textures) 
+            var res = new Texture(z, new ColorC(1, 1, 1, opa), new Dictionary<string, string>());
+            foreach (var a in textures)
             {
-                res.textures.Add(a.Key,a.Value);
+                res.textures.Add(a.Key, a.Value);
             }
-            if (textures.Length > 0) 
+            if (textures.Length > 0)
             {
                 res.texname = textures[0].Key;
             }
@@ -570,16 +569,17 @@ namespace Charamaker3
 
             ID2D1Bitmap bitmap;
             bitmap = FileMan.ldtex(nowtex);
-            if (bitmap == null) 
+            if (bitmap == null)
             {
                 bitmap = FileMan.ldtex(FileMan.nothing);
             }
             render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
+            //色のエフェクトを作る
 
-
-            render.DrawBitmap(bitmap
-                   ,rect
+            var blended=cam.d.Blend(bitmap, this.col);
+            render.DrawBitmap(blended
+                   , rect
                    , this.col.opa, BitmapInterpolationMode.Linear
                    , new RawRectF(0, 0, bitmap.Size.Width, bitmap.Size.Height));
 
@@ -592,9 +592,9 @@ namespace Charamaker3
     /// <summary>
     /// フォントを扱うクラス
     /// </summary>
-    public class FontC 
+    public class FontC
     {
-        public enum alignment 
+        public enum alignment
         {
             /// <summary>
             /// 左っかわ
@@ -617,7 +617,7 @@ namespace Charamaker3
         /// <summary>
         /// フォントの名前
         /// </summary>
-        public string fontName= "MS UI Gothic";
+        public string fontName = "MS UI Gothic";
 
         /// <summary>
         /// 斜体
@@ -627,7 +627,7 @@ namespace Charamaker3
         /// <summary>
         /// 太字
         /// </summary>
-        public bool isBold=false;
+        public bool isBold = false;
         /// <summary>
         /// フォントサイズ
         /// </summary>
@@ -641,17 +641,17 @@ namespace Charamaker3
         /// <summary>
         /// ふちの色。透明度は関係ない。
         /// </summary>
-        public ColorC hutiColor = new ColorC(1,1,1,0);
+        public ColorC hutiColor = new ColorC(1, 1, 1, 0);
 
         /// <summary>
         /// 文字を描画できる範囲描画の範囲
         /// </summary>
-        public float w=1, h=1;
+        public float w = 1, h = 1;
 
         /// <summary>
         /// テキストの横のアライメント
         /// </summary>
-        public alignment ali= alignment.left;
+        public alignment ali = alignment.left;
 
 
         /// <summary>
@@ -670,13 +670,13 @@ namespace Charamaker3
         /// <param name="isBold">太字</param>
         /// <param name="alignment">テキストの位置</param>
         /// <param name="alignmentV">テキストの縦の位置</param>
-        public FontC(float size,float w,float h,string fontName="MS UI Gothic"
-            ,bool isItaric=false,bool isBold=false,alignment alignment=alignment.left
-            , alignment alignmentV = alignment.left) 
+        public FontC(float size, float w, float h, string fontName = "MS UI Gothic"
+            , bool isItaric = false, bool isBold = false, alignment alignment = alignment.left
+            , alignment alignmentV = alignment.left)
         {
-            this.size= size;
+            this.size = size;
             this.fontName = fontName;
-            this.isItaric= isItaric;
+            this.isItaric = isItaric;
             this.isBold = isBold;
             this.w = w;
             this.h = h;
@@ -687,26 +687,26 @@ namespace Charamaker3
         /// カラコン
         /// </summary>
         public FontC() { }
-    
+
         /// <summary>
         /// フォントをコピーする
         /// </summary>
         /// <param name="c">コピー先</param>
         public void copy(FontC c)
         {
-            c.size=this.size;
+            c.size = this.size;
             c.w = this.w;
             c.h = this.h;
-            c.fontName=this.fontName;
-            c.isItaric=this.isItaric;
-            c.isBold =this.isBold;
+            c.fontName = this.fontName;
+            c.isItaric = this.isItaric;
+            c.isBold = this.isBold;
             c.ali = this.ali;
             c.aliV = this.aliV;
             c.hutiZure = this.hutiZure;
             c.hutiColor = new ColorC(this.hutiColor);
         }
 
-        public DataSaver ToSave() 
+        public DataSaver ToSave()
         {
             var d = new DataSaver();
             d.packAdd("size", size);
@@ -720,20 +720,20 @@ namespace Charamaker3
             d.packAdd("alignment", ali);
             d.packAdd("alignmentV", aliV);
             d.linechange();
-            d.packAdd("hutiZure",hutiZure);
+            d.packAdd("hutiZure", hutiZure);
             d.packAdd("hutiColor", hutiColor.ToSave());
             return d;
         }
-        public void ToLoad(DataSaver d) 
+        public void ToLoad(DataSaver d)
         {
-            this.size = d.unpackDataF("size",this.size);
-            this.w = d.unpackDataF("w",this.w);
-            this.h = d.unpackDataF("h",this.h);
-            this.fontName = d.unpackDataS("fontName",this.fontName);
-            this.isItaric = d.unpackDataB("isItaric",this.isItaric);
-            this.isBold = d.unpackDataB("isBold",this.isBold);
-            this.ali = d.unpackDataE("alignment",this.ali);
-            this.aliV = d.unpackDataE("alignmentV",this.aliV);
+            this.size = d.unpackDataF("size", this.size);
+            this.w = d.unpackDataF("w", this.w);
+            this.h = d.unpackDataF("h", this.h);
+            this.fontName = d.unpackDataS("fontName", this.fontName);
+            this.isItaric = d.unpackDataB("isItaric", this.isItaric);
+            this.isBold = d.unpackDataB("isBold", this.isBold);
+            this.ali = d.unpackDataE("alignment", this.ali);
+            this.aliV = d.unpackDataE("alignmentV", this.aliV);
             this.hutiZure = d.unpackDataF("hutiZure");
             this.hutiColor.ToLoad(d.unpackDataD("hutiColor"));
         }
@@ -745,15 +745,15 @@ namespace Charamaker3
         {
             var fa = Vortice.DirectWrite.DWrite.DWriteCreateFactory<IDWriteFactory>();
 
-            Vortice.DirectWrite.FontStyle style=Vortice.DirectWrite.FontStyle.Normal;
-            if (isItaric) 
+            Vortice.DirectWrite.FontStyle style = Vortice.DirectWrite.FontStyle.Normal;
+            if (isItaric)
             {
-            style = Vortice.DirectWrite.FontStyle.Italic;
+                style = Vortice.DirectWrite.FontStyle.Italic;
             }
             var Weight = FontWeight.Light;
             if (isBold)
             {
-                Weight=FontWeight.UltraBold;
+                Weight = FontWeight.UltraBold;
             }
             float size = this.size;
             var fom = fa.CreateTextFormat(fontName, Weight, style, size);
@@ -780,21 +780,21 @@ namespace Charamaker3
         }
         static public bool operator ==(FontC a, FontC b)
         {
-           
-            if (ReferenceEquals(a ,null)|| ReferenceEquals(b ,null)) 
+
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
-                return ReferenceEquals(a,null) == ReferenceEquals(b,null);
+                return ReferenceEquals(a, null) == ReferenceEquals(b, null);
             }
 
             return a.size == b.size && a.w == b.w && a.h == b.h &&
                 a.fontName == b.fontName && a.isItaric == b.isItaric
-                && a.isBold == b.isBold && a.hutiZure==b.hutiZure && a.hutiColor==b.hutiColor;
+                && a.isBold == b.isBold && a.hutiZure == b.hutiZure && a.hutiColor == b.hutiColor;
         }
         static public bool operator !=(FontC a, FontC b)
         {
-            if (ReferenceEquals(a,null) || ReferenceEquals(b,null))
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
-                return ReferenceEquals(a,null) != ReferenceEquals(b,null);
+                return ReferenceEquals(a, null) != ReferenceEquals(b, null);
             }
 
 
@@ -926,7 +926,7 @@ namespace Charamaker3
                 SetPast(Text, F, color);
             }
 
-            if (NoChange==false)
+            if (NoChange == false)
             {
                 //Debug.WriteLine(Text + " Drawed!");
                 //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
@@ -968,7 +968,7 @@ namespace Charamaker3
                 }
                 render.PopAxisAlignedClip();
 
-              
+
                 /*
                 {
                     var slb = render.CreateSolidColorBrush(new ColorC(0, 0, 0, 1));
@@ -988,7 +988,7 @@ namespace Charamaker3
         /// <param name="color"></param>
         public void OnDraw(string Text, FontC F, ColorC color)
         {
-            if (NoChange2==false)
+            if (NoChange2 == false)
             {
                 //一番下を決める。上にそろえる場合は必要ないので計算しない。
                 if (F.aliV != FontC.alignment.left)
@@ -1025,21 +1025,21 @@ namespace Charamaker3
     }
 
 
-    public class Text :Drawable
+    public class Text : Drawable
     {
-        public string text="";
-        public FontC font=new FontC();
+        public string text = "";
+        public FontC font = new FontC();
         private TextRenderer _Trender = null;
 
         internal TextRenderer Trender { get { return _Trender; }
 
             set {
-                    _Trender?.Release();
+                _Trender?.Release();
                 _Trender = value;
             }
         }
 
-        public Text(float z, ColorC c, string text,FontC font,float time = -1, string name = "") : base(z, c, time, name)
+        public Text(float z, ColorC c, string text, FontC font, float time = -1, string name = "") : base(z, c, time, name)
         {
             this.text = text;
             this.font = font;
@@ -1071,7 +1071,7 @@ namespace Charamaker3
         protected override void ToLoad(DataSaver d)
         {
             base.ToLoad(d);
-            this.text=d.unpackDataS("text", "なんもない");
+            this.text = d.unpackDataS("text", "なんもない");
             this.font = new FontC();
             var dd = d.unpackDataD("font");
             this.font.ToLoad(dd);
@@ -1102,18 +1102,18 @@ namespace Charamaker3
             var render = cam.render;
 
 
-            float yZure=0;
+            float yZure = 0;
             switch (font.aliV)//無理やり上下にアライメントする
             {
                 case FontC.alignment.left://上揃え。何もしない
 
                     break;
                 case FontC.alignment.center:
-                    yZure = e.h/2- (Trender.bottom *e.h)/2;
-                   // Debug.WriteLine(e.h + " :: " + Trender.bottom + " == " + yZure);
+                    yZure = e.h / 2 - (Trender.bottom * e.h) / 2;
+                    // Debug.WriteLine(e.h + " :: " + Trender.bottom + " == " + yZure);
                     break;
                 case FontC.alignment.right:
-                    yZure = e.h- (Trender.bottom*e.h) ;
+                    yZure = e.h - (Trender.bottom * e.h);
                     break;
                 case FontC.alignment.justify:
                     break;
@@ -1123,8 +1123,8 @@ namespace Charamaker3
             render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
 
-            var zure = new FXY(0,yZure);
-            zure = camsoutai(cam,zure+cam.watchRect.gettxy(0,0));
+            var zure = new FXY(0, yZure);
+            zure = camsoutai(cam, zure + cam.watchRect.gettxy(0, 0));
             zure.degree += e.degree;
             rect.Left += zure.x;
             rect.Right += zure.x;
@@ -1138,566 +1138,11 @@ namespace Charamaker3
             }
 
         }
-        ~Text() 
+        ~Text()
         {
             Trender = null;
         }
     }
-    #endregion
-    /// <summary>
-    /// カメラは現在、コピーSAVE不可
-    /// </summary>
-    public class Camera : Drawable
-    {
-        public Entity watchRect;
-        /// <summary>
-        /// レンダー
-        /// </summary>
-        public ID2D1RenderTarget render;
-        public ID2D1BitmapRenderTarget Brender
-            {  get{
-                if (!isBitmap) return null;
-                return (ID2D1BitmapRenderTarget)render;
-            }}
-        /// <summary>
-        /// このカメラがビットマップか。
-        /// </summary>
-        readonly protected bool isBitmap;
-        /// <summary>
-        /// ディスプレイ
-        /// </summary>
-        public readonly Display d;
 
-        
-        /// <summary>
-        /// カメラのx解像度。draw関数の中だとこっち
-        /// </summary>
-        public float resolx 
-        {
-            get 
-            {
-                return render.Size.Width/Mathf.abs(watchRect.w);
-            }
-        }
-        /// <summary>
-        /// カメラのx解像度。draw関数の中だとこっち
-        /// </summary>
-        public float resoly
-        {
-            get { return render.Size.Height / Mathf.abs(watchRect.h); }
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="WatchRect">この人は別途worldに追加した方がいい</param>
-        /// <param name="z"></param>
-        /// <param name="col"></param>
-        /// <param name="render"></param>
-        /// <param name="d"></param>
-        public Camera(Entity WatchRect,float z,ColorC col,ID2D1RenderTarget render, Display d):base(z,col)
-        {
-            this.d = d;
-            this.render = render;
-            isBitmap = render.GetType() == typeof(ID2D1BitmapRenderTarget);
-            this.watchRect = WatchRect;
-
-        }
-        /// <summary>
-        /// テキストなど事前描画が必要なやつを一気に処理する
-        /// </summary>
-        virtual public void PreDraw(float cl) 
-        {
-            //cl=0でも呼び出される
-            if (watchRect.world != null)
-            {
-                foreach (var a in watchRect.world.Ddic.getresult())
-                {
-                    a.goPreDraw(this);
-                }
-            }
-        }
-        public override void update(float cl)
-        {
-            //この中ではcl=0のとき呼び出されないやつとかある。
-            base.update(cl);
-
-            //cl=0でも呼び出される
-            if (isBitmap)
-            {
-                render.BeginDraw();
-            }
-            if (!(!isBitmap && col.opa <= 0))
-            {
-                render.Clear(col);
-            }
-            if (watchRect.world != null)
-            {
-
-                foreach (var a in watchRect.world.Ddic.getresult())
-                {
-                    a.goDraw(this);
-                }
-                render.Transform = Matrix3x2.CreateRotation(0);
-            }
-            if (isBitmap)
-            {
-                render.EndDraw();
-            }
-        }
-        ~Camera() 
-        {
-            d.removeCamera(this);
-            if (isBitmap)
-            {
-                Brender?.Bitmap.Dispose();
-                Brender.Dispose();
-            }
-        }
-        override protected void draw(Camera cam) 
-        {
-            if (isBitmap)
-            {
-                var render = cam.render;
-                render.Transform = rectTrans(cam);
-                render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, BitmapInterpolationMode.Linear, source);
-            }
-        }
-        /// <summary>
-        /// ビットマップ全体
-        /// </summary>
-        /// <returns></returns>
-        protected RawRectF source{get{return new RawRectF(0, 0, render.Size.Width, render.Size.Height);}}
-    }
-
-    public class Display
-    {
-        /// <summary>
-        /// カメラのWatchRectの標準の名前
-        /// </summary>
-        public const string WatchRectName = "WatchRect";
-        public ID2D1HwndRenderTarget render { get { return _render; } }
-        ID2D1HwndRenderTarget _render;
-
-        /// <summary>
-        /// スクリーンショットに使うレンダー      
-        /// </summary>
-        ID2D1BitmapRenderTarget _SCSRender;
-
-
-        /// <summary>
-        /// Textの一次的な描画に使うレンダーに使うレンダー      
-        /// </summary>
-        ID2D1BitmapRenderTarget _TextRender;
-
-        ID2D1Factory fac;
-        public readonly float resol;
-        public float width { get { return _render.Size.Width; } }
-        public float height { get { return _render.Size.Height; } }
-
-        public Display(ContainerControl f,float resolution) 
-        {
-            resol = resolution;
-            D2D1.D2D1CreateFactory<ID2D1Factory>(Vortice.Direct2D1.FactoryType.SingleThreaded, out fac);
-            var renpro = new RenderTargetProperties();
-            var hrenpro = new HwndRenderTargetProperties();
-            hrenpro.Hwnd = f.Handle;
-            var wi = f.ClientSize.Width;
-            var hei = f.ClientSize.Height;
-            System.Drawing.Size si = new System.Drawing.Size((int)(wi * resolution), (int)(hei * resolution));
-            hrenpro.PixelSize = si;
-            _render=fac.CreateHwndRenderTarget(renpro, hrenpro);
-
-
-            var fom = new Vortice.DCommon.PixelFormat();
-            _SCSRender = render.CreateCompatibleRenderTarget(si, si
-                , fom
-                , CompatibleRenderTargetOptions.GdiCompatible);
-
-            var TextRSize= new System.Drawing.Size((int)((wi+hei) * resolution), (int)((wi+hei) * resolution));
-            _TextRender = render.CreateCompatibleRenderTarget(TextRSize, TextRSize
-                , fom
-                , CompatibleRenderTargetOptions.GdiCompatible);
-        }
-
-        List<Camera> cameras = new List<Camera>();
-        /// <summary>
-        /// 画面に直接描画するカメラを作る。Cameraが追加されてるEntityはマジどうでもいい
-        /// </summary>
-        /// <param name="backcolor"></param>
-        /// <returns></returns>
-        public Camera makeCamera(Entity Watchrect, ColorC backcolor)
-        {
-            Entity back = Entity.make2(0, 0, render.Size.Width, render.Size.Height);
-            Camera res;
-            res = new Camera(Watchrect, 0, backcolor, render, this);
-            res.add(back);
-
-            cameras.Add(res);
-            return res;
-        }
-        
-        /// <summary>
-        /// 画面に直接描画するカメラを作る。Watchrectはあとでworldに追加してね。Cameraが追加されてるEntityはマジどうでもいい
-        /// </summary>
-        /// <returns></returns>
-        public Camera makeCamera( ColorC backcolor)
-        {
-            Entity Watchrect = Entity.make2(0, 0, render.Size.Width/resol, render.Size.Height / resol,name:WatchRectName);
-
-            return makeCamera(Watchrect,backcolor);
-        }
-        /// <summary>
-        /// Cameraデストラクタでだけ呼び出す。
-        /// </summary>
-        /// <param name="c"></param>
-        /// <returns></returns>
-        public bool removeCamera(Camera c)
-        {
-            return cameras.Remove(c);
-        }
-        public void clearCamera()
-        {
-            cameras.Clear();
-        }
-
-        /// <summary>
-        /// カメラを描画(Updateもするよあんま意味ないけど)する
-        /// </summary>
-        /// <param name="cam">描画するカメラ。このカメラはWorldに所属していない方がいい。(二重にUpdateされちゃうし)<br></br>
-        /// また、Cameraはもちろんこのdisplayから創出された画面用のカメラ</param>
-        /// <param name="cl">カメラのフレームスピード</param>
-        public void draw(float cl=1)
-        {
-            PreDraw(cl);
-            render.BeginDraw();
-            foreach (var a in cameras) 
-            {
-                a.e.update(cl);
-            }
-            render.EndDraw();
-        }
-        /// <summary>
-        /// テキストのやつなど、事前に描画が必要なやつなどをまとめて処理する
-        /// </summary>
-        /// <param name="cl"></param>
-        protected void PreDraw(float cl) 
-        {
-            _TextRender.BeginDraw();
-            foreach (var a in cameras)
-            {
-                a.PreDraw(cl);
-            }
-            _TextRender.EndDraw();
-        }
-        /// <summary>
-        /// このカメラのスクショをとる
-        /// <param name="cam">描画するカメラ。</param>
-        /// </summary>
-        public void ShotThisScreen(Camera cam)
-        {
-             var Size = render.PixelSize;
-            //サイズの違いでバグる可能性あり！！！丸めてどうにかしたが、画質の値によっては今後もやばいぞ！
-            foreach (var a in cameras) 
-            {
-                if (a.render == _render)
-                {
-                    a.render = _SCSRender;
-                }
-            }
-            _SCSRender.BeginDraw();
-            draw(0);
-            _SCSRender.EndDraw();
-            foreach (var a in cameras)
-            {
-                if (a.render == _SCSRender)
-                {
-                    a.render = render;
-                }
-            }
-            screenShot(_SCSRender);
-            //screenShot(_TextRender);
-        }
-        /// <summary>
-        /// ビットマップを->扱いやすい形に変える
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="renderTarget"></param>
-        /// <param name="zone">変換する領域。nullで全部</param>
-        /// <returns></returns>
-        static public List<List<ColorC>> GetPixels(ID2D1Bitmap image, ID2D1RenderTarget renderTarget,Rectangle zone=null)
-        {
-            var deviceContext2d = renderTarget.QueryInterface<ID2D1DeviceContext>();
-            var bitmapProperties = new BitmapProperties1();
-            bitmapProperties.BitmapOptions = BitmapOptions.CannotDraw | BitmapOptions.CpuRead;
-            bitmapProperties.PixelFormat = image.PixelFormat;
-
-
-            var bitmap1 = deviceContext2d.CreateBitmap(image.PixelSize, renderTarget.NativePointer
-                , sizeof(int), ref bitmapProperties);
-
-           
-
-            bitmap1.CopyFromBitmap(renderTarget.CreateSharedBitmap(image
-                , new BitmapProperties(image.PixelFormat)));
-            var map = bitmap1.Map(MapOptions.Read);
-            var size = (map.Pitch * image.PixelSize.Height) ;
-            byte[] bytes = new byte[size];
-            Marshal.Copy(map.Bits, bytes, 0, size);
-            bitmap1.Unmap();
-            bitmap1.Release();
-
-            //bitmap1.Dispose();
-            //deviceContext2d.Dispose();
-            var res = new List<List<ColorC>>();
-
-            if (zone == null) 
-            {
-                zone = new Rectangle(0,0, image.PixelSize.Width, image.PixelSize.Height);
-            }
-
-            for (int y = (int)zone.y; y < image.PixelSize.Height&&y<zone.y+zone.h; y++)
-            {
-                res.Add(new List<ColorC>());
-                var yy = y;
-
-                for (int x = (int)zone.x; x < image.PixelSize.Width&&x<zone.x+zone.w; x++)
-                {
-                    var position = map.Pitch * yy + x * (map.Pitch/image.PixelSize.Width);
-                    var c = new ColorC(bytes[position + 2] / 255, bytes[position + 1] / 255f
-                        , bytes[position + 0] / 255f, bytes[position + 3] / 255f);
-                    res[yy-(int)zone.y].Add(c);
-                 
-                }
-            }
-            
-            return res;
-        }
-
-      
-
-        /// <summary>
-        /// 画面のスクリーンショットを取る。effectcharaがぶれるバグあり！
-        /// </summary>
-        /// <param name="h">保存する表示マン</param>
-        /// <param name="format">保存フォーマット</param>
-        /// <param name="addname">追加で付ける名前</param>
-        static public void screenShot(ID2D1BitmapRenderTarget bt, string format = "png", string addname = "")
-        {
-            /*
-            var bt = h.render.CreateCompatibleRenderTarget(size, CompatibleRenderTargetOptions.None);
-            //  var bt = new ID2D1BitmapRenderTarget(bm.NativePointer);
-
-
-            h.hyoji2(bt, 0, true, true, false, false, true);
-            */
-
-            string dir = FileMan.rootpath+@"shots\";
-
-            if (Directory.Exists(dir))
-            {
-            }
-            else
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            
-            var pxs = GetPixels(bt.Bitmap, bt);
-
-            var size = new Size(pxs[0].Count, pxs.Count);
-
-            var save = new Bitmap(size.Width, size.Height);
-
-            //Console.WriteLine(size.Width + " a:ga:la " + size.Height);
-            //  Console.WriteLine(bt.Size.Width + " a:ga:la " + bt.Size.Height);
-            for (int y = 0; y < size.Height; y++)
-            {
-                for (int x = 0; x < size.Width; x++)
-                {
-                    //  Console.WriteLine(pxs[y][x].A+" al:skfa :");
-                    save.SetPixel(x, y, System.Drawing.Color.FromArgb((int)((pxs[y][x].opa)*255)
-                        , (int)(pxs[y][x].r*255), (int)(pxs[y][x].g*255), (int)(pxs[y][x].b*255))
-                        );
-                }
-            }
-            string name = addname + DateTime.Now.ToString() + "." + format;
-
-            name = name.Replace("/", "_");
-            name = name.Replace(" ", "_");
-            name = name.Replace(":", "_");
-            Debug.WriteLine(dir + name+"SHOT");
-            save.Save(dir + name);
-
-
-        }
-
-
-        List<TextRenderer> textRenderers = new List<TextRenderer>();
-        internal TextRenderer makeTextRenderer(float w,float h) 
-        {
-            bool onHani(Rectangle r,float x,float y) 
-            {
-                if ((r.x <= x && x <= r.x + r.w)
-                    && (r.y <= y && y <= r.y + r.h)) 
-                {
-                    return true;
-                }
-                return false;
-            }
-            bool onHani2(Rectangle r, float x, float y, float x2, float y2)
-            {
-                if(onHani(r,x,y))return true;
-                if (onHani(r, x2, y2)) return true;
-
-                if (Shape.crosses(r.x, r.y, r.x + w, r.y, x, y, x2, y2)) return true;
-                if (Shape.crosses(r.x + r.w, r.y, r.x + w, r.y + r.h, x, y, x2, y2)) return true;
-                if (Shape.crosses(r.x + r.w, r.y + r.h, r.x, r.y + r.h, x, y, x2, y2)) return true;
-                if (Shape.crosses(r.x, r.y + r.h, r.x, r.y, x, y, x2, y2)) return true;
-
-                return false;
-            }
-          //  Debug.WriteLine("make TextRendere" + w + " :: " + h);
-            //右下から順に確保していく。
-            w = Mathf.ceil(w);
-            h = Mathf.ceil(h);
-
-            List<FXY> Points = new List<FXY>();
-            Points.Add(new FXY(_TextRender.Bitmap.Size.Width-1, _TextRender.Bitmap.Size.Height - 1));
-            foreach (var a in textRenderers) 
-            {
-                //上に追加
-                {
-                    var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
-                    if (np.x > 0 && np.y>0)
-                    {
-                        bool ok = true;
-                        for (int i = 0; i < textRenderers.Count; i++)
-                        {
-                            var b = textRenderers[i];
-                            if (onHani(b.rendZone,np.x, np.y ))
-                            {
-                                ok = false;
-                                break;
-                            }
-                        }
-                        if (ok)
-                        {
-                            Points.Add(np);
-                        }
-                    }
-                }
-                //左に追加
-                {
-                    var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
-                    if (np.x > 0 && np.y > 0)
-                    {
-                        bool ok = true;
-
-                        for (int i = 0; i <textRenderers.Count; i++)
-                        {
-                            var b = textRenderers[i];
-                            if (onHani(b.rendZone, np.x, np.y))
-                            {
-                                ok = false;
-                                break;
-                            }
-                        }
-                        if (ok)
-                        {
-                            Points.Add(np);
-                        }
-                    }
-                }
-            }
-
-            List<Shapes.Rectangle> rects = new List<Shapes.Rectangle>();
-            foreach (var a in Points) 
-            {
-                float maxx=0, maxy=0;
-                foreach (var b in textRenderers) 
-                {
-                    if (onHani2(b.rendZone, a.x , a.y 
-                        , a.x - _TextRender.Size.Width, a.y)) 
-                    {
-                        maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w,0).x,maxx);
-                    }
-                }
-                foreach (var b in textRenderers)
-                {
-                    if (onHani2(b.rendZone, a.x , a.y 
-                        , a.x , a.y - _TextRender.Size.Height))
-                    {
-                        maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y,maxy);
-                    }
-                }
-                if (a.x - maxx > 0 &&  a.y- maxy > 0)
-                {
-                    
-                    rects.Add(new Shapes.Rectangle(maxx, maxy, a.x - maxx, a.y - maxy));
-                }
-
-            }
-            Shapes.Rectangle res = null;
-            foreach (var a in rects) 
-            {
-                //なるべく面積の大きいやつを選ぶ
-                if (res == null || res.menseki < a.menseki) 
-                {
-                    if (a.w >= w && a.h >= h) 
-                    {
-                        res = a;
-                    }
-                }
-            }
-            //何もなかったら無理やり左上の点を取る。
-            if (res == null) 
-            {
-                res = new Shapes.Rectangle(0, 0, w, h);
-            }
-            {
-                var fxy = res.gettxy(res.w, res.h);
-                res = new Shapes.Rectangle(Mathf.max(fxy.x-w,0), Mathf.max(fxy.y - h, 0)
-                    ,w,h);
-            }
-            var returns = new TextRenderer(this, _TextRender, res);
-            textRenderers.Add(returns);
-            //右下順に並べる
-            var ss = new supersort<TextRenderer>();
-            foreach (var a in textRenderers) 
-            {
-                ss.add(a, a.rendZone.x + a.rendZone.y);
-            }
-            ss.sort(true);
-            textRenderers = ss.getresult();
-           // Debug.WriteLine("returns "+returns.rendZone.ToSave().getData());
-           
-            return returns;   
-        }
-
-        internal void ReleaseTextRenderer(TextRenderer D)
-        {
-            textRenderers.Remove(D);
-        }
-        internal void Drawed(TextRenderer D)
-        {
-            foreach (var a in textRenderers) 
-            {
-                if (a!=D) 
-                {
-                    //境界線を含まないためこのざま
-                    foreach (var b in a.rendZone.getzettaipoints())
-                    {
-                        if (D.rendZone.onhani(b.x, b.y, 0.9999f))
-                        {
-                            
-                            a.Changed();
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
     #endregion
 }

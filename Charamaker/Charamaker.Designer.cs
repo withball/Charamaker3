@@ -45,8 +45,12 @@
             printoutB = new Button();
             texturelabel = new Label();
             rootpathbox = new TextBox();
+            selectB = new Button();
+            SpeedBar = new TrackBar();
+            speedLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)zoomUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PointB).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)SpeedBar).BeginInit();
             SuspendLayout();
             // 
             // timer1
@@ -223,11 +227,46 @@
             rootpathbox.TabIndex = 14;
             rootpathbox.TextChanged += textBox1_TextChanged;
             // 
+            // selectB
+            // 
+            selectB.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            selectB.Location = new Point(12, 797);
+            selectB.Name = "selectB";
+            selectB.Size = new Size(75, 23);
+            selectB.TabIndex = 15;
+            selectB.Text = "select";
+            selectB.UseVisualStyleBackColor = true;
+            selectB.Click += selectB_Click;
+            // 
+            // SpeedBar
+            // 
+            SpeedBar.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            SpeedBar.Location = new Point(1105, 3);
+            SpeedBar.Margin = new Padding(2);
+            SpeedBar.Maximum = 100;
+            SpeedBar.Name = "SpeedBar";
+            SpeedBar.Size = new Size(127, 45);
+            SpeedBar.TabIndex = 16;
+            SpeedBar.Value = 100;
+            // 
+            // speedLabel
+            // 
+            speedLabel.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            speedLabel.AutoSize = true;
+            speedLabel.Location = new Point(1237, 7);
+            speedLabel.Name = "speedLabel";
+            speedLabel.Size = new Size(39, 15);
+            speedLabel.TabIndex = 17;
+            speedLabel.Text = "Speed";
+            // 
             // Charamaker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 861);
+            Controls.Add(speedLabel);
+            Controls.Add(SpeedBar);
+            Controls.Add(selectB);
             Controls.Add(rootpathbox);
             Controls.Add(texturelabel);
             Controls.Add(printoutB);
@@ -254,6 +293,7 @@
             Resize += Resized;
             ((System.ComponentModel.ISupportInitialize)zoomUD).EndInit();
             ((System.ComponentModel.ISupportInitialize)PointB).EndInit();
+            ((System.ComponentModel.ISupportInitialize)SpeedBar).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -276,5 +316,8 @@
         private Button printoutB;
         private Label texturelabel;
         private TextBox rootpathbox;
+        private Button selectB;
+        private TrackBar SpeedBar;
+        private Label speedLabel;
     }
 }

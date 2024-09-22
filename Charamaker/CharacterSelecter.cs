@@ -202,6 +202,18 @@ namespace Charamaker
             }
             else { }
         }
+        public void SelectByName(string name) 
+        {
+            var lis = new List<Entity>();
+            foreach (var a in c.getTree("", false))
+            {
+                if (a.name==name)
+                {
+                    SelectReef(name);
+                    break;
+                }
+            }
+        }
             protected void SelectReef(string name) 
         {
             var sel=c.getEntity(name);

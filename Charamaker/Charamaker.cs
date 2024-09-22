@@ -123,10 +123,10 @@ namespace Charamaker
             }
 
 
+            float cl = SpeedBar.Value / (float)SpeedBar.Maximum;
+            w.update(cl);
 
-            w.update(1);
-
-            display.draw(1);
+            display.draw(cl);
 
             moveCamera();
             moveSelected();
@@ -137,7 +137,7 @@ namespace Charamaker
             if (km.ok(new IButton(MouseButtons.Left), itype.down))
             {
 
-                
+
                 var sc = SoundComponent.MakeSE(FileMan.SE, @"TB\jett", 0.01f);
                 sc.add(w.staticEntity);
 
@@ -419,7 +419,7 @@ namespace Charamaker
             else
             {
                 //var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".ctc");
-                var newe = FileMan.loadCharacter(textB.Text,true);
+                var newe = FileMan.loadCharacter(textB.Text, true);
                 if (newe.getcompos<Character>().Count > 0)
                 {
                     newe.add(w);
@@ -547,20 +547,29 @@ namespace Charamaker
         {
 
         }
-        void ChangeRootpath(string newPath) 
+        void ChangeRootpath(string newPath)
         {
 
             FileMan.rootpath = rootpathbox.Text;
             save = new DataSaver();
-            save.packAdd("rootpath",FileMan.rootpath.Replace("\\","/"));
+            save.packAdd("rootpath", FileMan.rootpath.Replace("\\", "/"));
             this.rootpathbox.Text = newPath;
             save.saveToPath(@".\save");
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             ChangeRootpath(rootpathbox.Text);
-//            FileMan.rootpath= rootpathbox.Text; 
-           
+            //            FileMan.rootpath= rootpathbox.Text; 
+
+        }
+
+        private void selectB_Click(object sender, EventArgs e)
+        {
+            if (sel != null) 
+            {
+                sel.SelectByName(this.textB.Text);
+                Select();
+            }
         }
     }
 }
