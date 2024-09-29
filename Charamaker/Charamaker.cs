@@ -5,7 +5,8 @@ using Charamaker3.ParameterFile;
 using Charamaker3.Utils;
 namespace Charamaker
 {
-
+    
+          
     public partial class Charamaker : Form
     {
         public Display display;
@@ -24,8 +25,12 @@ namespace Charamaker
 
             {
                 save = DataSaver.loadFromPath(@".\save");
+                LastLoad = save.unpackDataS("LastLoad", @"yoshino");
 
+                Debug.WriteLine(save.getData());
                 ChangeRootpath(save.unpackDataS("rootpath", @".\"));
+                
+                LoadCharacter(save.unpackDataS("LastLoad", @"yoshino"));
             }
 
             ClientSize = BaseSize;
@@ -75,7 +80,7 @@ namespace Charamaker
 
                 SLP.e.add(w);
                 TXYP.e.add(w);
-            }
+            }/*
             {
                 var c = Entity.ToLoadEntity(DataSaver.loadFromPath(@".\character\yoshino", ext: ".ctc"));
 
@@ -85,13 +90,13 @@ namespace Charamaker
 
                 Select(c);
 
-            }
+            }*/
 
 
 
             var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
                , new FontC(16, 16 * 40, 16 * 30, isBold: false, alignment: FontC.alignment.left
-               , alignmentV: FontC.alignment.center));
+               , alignmentV: FontC.alignment.right));
             text.add(cam.watchRect);
             text.font.hutiZure = 0.05f;
             text.font.hutiColor = new ColorC(1, 1, 1, 1);
@@ -115,6 +120,7 @@ namespace Charamaker
 
         private void ticked(object sender, EventArgs e)
         {
+           // w = new World();
             this.Text = cam.watchRect.gettxy() + " a ";
             km.setpointer(this);
 
@@ -138,8 +144,10 @@ namespace Charamaker
             {
 
 
-                var sc = SoundComponent.MakeSE(FileMan.SE, @"TB\jett", 0.01f);
-                sc.add(w.staticEntity);
+                var sc = SoundComponent.MakeSE(FileMan.SE, @"TB\jett", 0.11f);
+                var m = EntityMove.MakeMotion();
+                m.addmove(sc);
+                m.add(w.staticEntity);
 
                 var FXY = km.GetCursourPoint(cam);
                 if (1 == 0)
@@ -418,17 +426,9 @@ namespace Charamaker
             }
             else
             {
+                LoadCharacter(textB.Text);
                 //var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".ctc");
-                var newe = FileMan.loadCharacter(textB.Text, true);
-                if (newe.getcompos<Character>().Count > 0)
-                {
-                    newe.add(w);
-                    Select(newe); ;
-                }
-                else
-                {
-                    messageB.Text = textB.Text + Environment.NewLine + "は存在しないか、キャラクターのファイルではない！！！";
-                }
+                
             }
         }
 
@@ -547,13 +547,39 @@ namespace Charamaker
         {
 
         }
+        string LastLoad="";
+        void LoadCharacter(string load) 
+        {
+            Debug.WriteLine(load+" LOADED");
+            FileMan.loadCharacter(load);
+            this.textB.Text = load;
+            LastLoad = load;
+            var newe = FileMan.loadCharacter(textB.Text, true);
+            if (newe.getcompos<Character>().Count > 0)
+            {
+                newe.add(w);
+                Select(newe); ;
+            }
+            else
+            {
+                messageB.Text = textB.Text + Environment.NewLine + "は存在しないか、キャラクターのファイルではない！！！";
+            }
+            Save();
+        }
         void ChangeRootpath(string newPath)
         {
 
             FileMan.rootpath = rootpathbox.Text;
+            this.rootpathbox.Text = newPath;
+            Save();
+        }
+        void Save()
+        {
+
             save = new DataSaver();
             save.packAdd("rootpath", FileMan.rootpath.Replace("\\", "/"));
-            this.rootpathbox.Text = newPath;
+            save.packAdd("LastLoad", LastLoad);
+
             save.saveToPath(@".\save");
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -565,11 +591,16 @@ namespace Charamaker
 
         private void selectB_Click(object sender, EventArgs e)
         {
-            if (sel != null) 
+            if (sel != null)
             {
                 sel.SelectByName(this.textB.Text);
                 Select();
             }
+        }
+
+        private void ResetTextureB_Click(object sender, EventArgs e)
+        {
+            FileMan.setupTextureLoader(display);
         }
     }
 }

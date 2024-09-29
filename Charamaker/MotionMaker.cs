@@ -37,7 +37,10 @@ namespace Charamaker
             {
                 cm.anmE.SetText(m.ToSave());
             }
-            m.add(cm.sel.c.e);
+            if (cm.sel.c!=null&&cm.sel.c.e != null)
+            {
+                m.add(cm.sel.c.e);
+            }
             m.speed = (float)speedUD.Value;
         }
         private void pathB_KeyDown(object sender, KeyEventArgs e)
@@ -45,10 +48,10 @@ namespace Charamaker
             if (e.KeyCode == Keys.Enter)
             {
                 var m = FileMan.loadMotion(pathB.Text,true);
-                if (m.Motion!=null&& (!m.Motion.empty||1==1))
+                if (m!=null&&m.Motion!=null&&m.Script!=null&& (!m.Motion.empty||1==1))
                 {
-                 
                     //setmotionjouhou(m);
+                    if (m.Script == "") m.Script = " ";
                     Clipboard.SetText(m.Script);
                     addmotion(m.Motion);
 
@@ -57,23 +60,23 @@ namespace Charamaker
                 }
                 else 
                 {
-                    if (Directory.Exists(@".\motion\" + pathB.Text))
+                    if (Directory.Exists(FileMan.rootpath+@".\motion\" + pathB.Text))
                     {
                         messageB.Text = "";
-                        string[] filesM = System.IO.Directory.GetFiles(@".\motion\" + pathB.Text, "*.ctm", System.IO.SearchOption.AllDirectories);
+                        string[] filesM = System.IO.Directory.GetFiles(FileMan.rootpath + @".\motion\" + pathB.Text, "*.ctm", System.IO.SearchOption.AllDirectories);
                         for (int i = 0; i < filesM.Count(); i++)
                         {
-                            messageB.Text += filesM[i].Replace(@".\motion\", @"") + Environment.NewLine;
+                            messageB.Text += filesM[i].Replace(FileMan.rootpath + @".\motion\", @"") + Environment.NewLine;
                             
                         }
                     }
                     else 
                     {
                         messageB.Text = "";
-                        string[] filesC = System.IO.Directory.GetFiles(@".\character\" , "*.ctc", System.IO.SearchOption.AllDirectories);
+                        string[] filesC = System.IO.Directory.GetFiles(FileMan.rootpath + @".\character\" , "*.ctc", System.IO.SearchOption.AllDirectories);
                         for (int i = 0; i < filesC.Count(); i++)
                         {
-                            messageB.Text += filesC[i] + Environment.NewLine;
+                            messageB.Text += filesC[i].Replace(FileMan.rootpath + @".\character\", @"character\") + Environment.NewLine;
 
                         }
                     }
@@ -215,7 +218,10 @@ namespace Charamaker
         {
             var m=new Motion();
             m.addmove(EntityMove.ResetMove("",0,false));
-            addmotion(m);
+            if (cm.sel.c != null && cm.sel.c.e != null)
+            {
+                m.addAndRemove(cm.sel.c.e, 100);
+            }
         }
 
         private void DRB_Click(object sender, EventArgs e)
@@ -223,21 +229,30 @@ namespace Charamaker
 
             var m = new Motion();
             m.addmove(EntityMove.RotateToBace(0,"",0,rotatePath.shorts,true));
-            addmotion(m);
+            if (cm.sel.c != null && cm.sel.c.e != null)
+            {
+                m.addAndRemove(cm.sel.c.e, 100);
+            }
         }
 
         private void TRB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
             m.addmove(DrawableMove.ResetMove("",0,false));
-            addmotion(m);
+            if (cm.sel.c != null && cm.sel.c.e != null)
+            {
+                m.addAndRemove(cm.sel.c.e, 100);
+            }
         }
 
         private void ReverseB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
             m.addmove(EntityMove.Mirror("", 0,true));
-            addmotion(m);
+            if (cm.sel.c != null && cm.sel.c.e != null)
+            {
+                m.addAndRemove(cm.sel.c.e, 100);
+            }
         }
         void setmanual() 
         {

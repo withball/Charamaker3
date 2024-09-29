@@ -270,6 +270,7 @@ namespace Charamaker3.CharaModel
             {
                 res.SO = scaleOption.scale;
             }
+            res.GO = goOption.onlyRoot;
             return res;
         }
         /// <summary>
@@ -339,14 +340,17 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
-        /// SEを鳴らすムーブ
+        /// SEを鳴らすムーブ。SoundComponentはMotionと相性が悪いのでAfterでくるんで渡す。
         /// </summary>
         /// <param name="file">ファイル名</param>
         /// <param name="volume">=1</param>
         /// <returns>__MOVE__</returns>
-        static public SoundComponent PlaySound(string file,float volume=1) 
+        static public Component PlaySound(string file,float volume=1) 
         {
-            return SoundComponent.MakeSE(FileMan.SE,file,volume,true);
+            var sc = SoundComponent.MakeSE(FileMan.SE, file, volume, true);
+            var c=new Component(0);
+            c.afters.Add(sc);
+            return c;
         }
     }
     public partial class DrawableMove : Component
@@ -526,12 +530,16 @@ namespace Charamaker3.CharaModel
         List<float[]> speeds = new List<float[]>();
         List<Entity> tags = new List<Entity>();
         List<Entity> tagBases = new List<Entity>();
+
+        List<Joint> Jtags = new List<Joint>();
+        List<Joint> JtagBases = new List<Joint>();
+
         float[] basespeeds = new float[9];
 
         //旧世代setumageのごり押し実装。0>=以上
         float degreeSpeedLimit = -1;
-        Joint Parent = null;
-        Joint BaseParent = null;
+        //Joint Parent = null;
+        //Joint BaseParent = null;
 
         const int _X = 0;
         const int _Y = 1;
@@ -685,9 +693,9 @@ namespace Charamaker3.CharaModel
                     {
                         distance = Mathf.st180(tagBases[0].degree + baseDegree - tags[0].degree);
                     }
-                    else if (Parent != null)
+                    else if (Jtags[0] != null)
                     {
-                        distance = Mathf.st180(Parent.parent.degree + baseDegree - tags[0].degree);
+                        distance = Mathf.st180(Jtags[0].parent.degree + baseDegree - tags[0].degree);
                     }
                     else if (tags.Count > 0)//キャラクターを持ってるエンテティが対象だったら自動でワールド角度に
                     {
@@ -789,13 +797,13 @@ namespace Charamaker3.CharaModel
                 tags[t].ty += (float)(speeds[t][_TY] * ratio);
                 tags[t].settxy(pos);
 
-
+                if (Jtags[t] != null)
+                {
+                    Jtags[t].px += speeds[t][_DX] * ratio;
+                    Jtags[t].py += speeds[t][_DY] * ratio;
+                }
             }
-            if (Parent != null)
-            {
-                Parent.px += speeds[0][_DX] * ratio;
-                Parent.py += speeds[0][_DY] * ratio;
-            }
+            
         }
         protected override void onadd(float cl)
         {
@@ -809,16 +817,12 @@ namespace Charamaker3.CharaModel
             {
 
                 tags.Add(e);
+                Jtags.Add(null);
                 tagBases.Add(e);
+                JtagBases.Add(null);
             }
             else
             {
-                if (cs.Count > 0)
-                {
-                    Parent = cs[0].getParentJoint(name);
-                    BaseParent = cs[0].BaseCharacter.getParentJoint(name);
-
-                }
                 if (SO == scaleOption.basescale || RO != rotateOption.F)
                 {
                     //こっちはキャラクターのベースね。後で実装
@@ -844,6 +848,23 @@ namespace Charamaker3.CharaModel
                             tagBases.Add(b);
                         }
                     }
+                }
+                //ジョイントも設定。ジョイントはエンテティと1対1対応していないので注意
+                for (int i = 0; i < tags.Count; i++)
+                {
+                    Jtags.Add(cs[0].getParentJoint(tags[i].name));
+                    JtagBases.Add(cs[0].BaseCharacter.getParentJoint(tagBases[i].name));
+                }
+                //一斉に指定して子供までついてきた場合、親のジョイントがかぶる場合がある。Rootは絶対にかぶらないけども、かぶったやつはnullにする。
+                for (int i = 0; i < tags.Count; i++)
+                {
+                    if (Jtags[i] != null) for (int t = i + 1; t < tags.Count; t++)
+                        {
+                            if (Jtags[i] == Jtags[t])
+                            {
+                                Jtags[t] = null;
+                            }
+                        }
                 }
             }
             for (int t = 0; t < tags.Count; t++)
@@ -975,9 +996,9 @@ namespace Charamaker3.CharaModel
 
                                 case _DX:
 
-                                    if (!float.IsNaN(basespeeds[i]) && Parent != null)
+                                    if (!float.IsNaN(basespeeds[i]) && Jtags[t] != null)
                                     {
-                                        speeds[t][i] = basespeeds[i] + BaseParent.px - Parent.px;
+                                        speeds[t][i] = basespeeds[i] + JtagBases[t].px - Jtags[t].px;
 
 
                                     }
@@ -988,9 +1009,9 @@ namespace Charamaker3.CharaModel
                                     break;
                                 case _DY:
 
-                                    if (!float.IsNaN(basespeeds[i]) && Parent != null)
+                                    if (!float.IsNaN(basespeeds[i]) && Jtags[t] != null)
                                     {
-                                        speeds[t][i] = basespeeds[i] + BaseParent.py - Parent.py;
+                                        speeds[t][i] = basespeeds[i] + JtagBases[t].py - Jtags[t].py;
                                     }
                                     else
                                     {
@@ -1031,10 +1052,10 @@ namespace Charamaker3.CharaModel
                                 }
                                 if (RO == rotateOption.joint)
                                 {
-                                    if (Parent != null)
+                                    if (Jtags[t] != null)
                                     {
 
-                                        speeds[t][i] = Mathf.st180(baseDegree + Parent.parent.degree - tags[t].degree);
+                                        speeds[t][i] = Mathf.st180(baseDegree + Jtags[t].parent.degree - tags[t].degree);
                                     }
                                     else//キャラクターの一番上なら自動でワールド角度に 
                                     {
@@ -1095,7 +1116,7 @@ namespace Charamaker3.CharaModel
                     }
                     else if (GO == goOption.def)//Characterの傘下。scaleは計算しなおすけど、回転とかは根本と同じ
                     {
-                        if (SO != scaleOption.F)
+                        if (SO != scaleOption.F)//相対的な変化だったら
                         {
                             var baseE = tagBases[t];
                             switch (i)
@@ -1148,17 +1169,32 @@ namespace Charamaker3.CharaModel
                                     }
                                     break;
                                 case _DX:
-                                    speeds[t][i] = 0;
+                                        if (Jtags[t] != null && !float.IsNaN(basespeeds[i]))
+                                        {
+                                            speeds[t][i] = basespeeds[i] * JtagBases[t].px - Jtags[t].px;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i] = 0;
+                                        } 
+                                    
                                     break;
                                 case _DY:
-                                    speeds[t][i] = 0;
+                                    if (Jtags[t] != null && !float.IsNaN(basespeeds[i]))
+                                    {
+                                        speeds[t][i] = basespeeds[i] * JtagBases[t].py - Jtags[t].py;
+                                    }
+                                    else
+                                    {
+                                        speeds[t][i] = 0;
+                                    }
                                     break;
                                 default:
                                     speeds[t][i] = speeds[0][i];
                                     break;
                             }
                         }
-                        else
+                        else//絶対的な変化だったら。
                         {
                             switch (i)
                             {
@@ -1637,7 +1673,6 @@ namespace Charamaker3.CharaModel
                     tags[t][i].col.b += (float)(speeds[t][i][_B] * ratio);
                   
                     tags[t][i].col.opa += (float)(speeds[t][i][_OPA] * ratio);
-
                 }
             }
         }

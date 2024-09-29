@@ -577,7 +577,7 @@ namespace Charamaker3
             var rect = rectRectF(cam);
             //色のエフェクトを作る
 
-            var blended=cam.d.Blend(bitmap, this.col);
+            var blended =cam.d.Blend(bitmap, this.col);
             render.DrawBitmap(blended
                    , rect
                    , this.col.opa, BitmapInterpolationMode.Linear
@@ -994,7 +994,7 @@ namespace Charamaker3
                 if (F.aliV != FontC.alignment.left)
                 {
 
-
+                    
                     var list = Display.GetPixels(render.Bitmap, render, rendZone);
 
                     bool breaked = false;

@@ -110,7 +110,10 @@ namespace Charamaker3.CharaModel
         /// <param name="opacity"></param>
         static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai=1, float opacity = 1)
         {
-            e.name = name;
+            if (name != null)
+            {
+                e.name = name;
+            }
             var cs = e.getcompos<Character>();
             foreach (var c in cs) 
             {
@@ -217,22 +220,42 @@ namespace Charamaker3.CharaModel
             base.onupdate(cl);
             assembleCharacter();
         }
-
+        /// <summary>
+        /// キャラクターを作る
+        /// </summary>
+        /// <param name="tex">元テクスチャー</param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="size">サイズ+テクスチャーの横幅に合わせる<br></br>-でたて幅に合わせる</param>
+        /// <param name="tpx">中心の割合</param>
+        /// <param name="tpy"></param>
+        /// <param name="z"></param>
+        /// <param name="corename"></param>
+        /// <returns></returns>
         static public Entity MakeCharacter(string tex,float x,float y,float size,
             float tpx=0.5f,float tpy=0.5f,float z=10000,string corename="core") 
         {
             var bmp=FileMan.ldtex(tex);
+            
             float w, h;
-            if (size > 0)
+            if (bmp != null)
             {
-                w = size;
-                h = bmp.Size.Height * size / bmp.Size.Width;
-            } 
+                if (size > 0)
+                {
+                    w = size;
+                    h = bmp.Size.Height * size / bmp.Size.Width;
+                }
+                else
+                {
+
+                    w = bmp.Size.Width * -size / bmp.Size.Height;
+                    h = -size;
+                }
+            }
             else 
             {
-
-                w = bmp.Size.Width * - size / bmp.Size.Height;
-                h = - size;
+                w = size;
+                h = size;
             }
             var res=Entity.make(x,y,w,h,w*tpx,h*tpy,0,corename);
 
@@ -459,15 +482,30 @@ namespace Charamaker3.CharaModel
         /// <returns></returns>
         public List<Joint> getJoint(string Parentname)
         {
-            var res = new List<Joint>();
-            foreach (var a in joints)
+            if (Parentname == "")
             {
-                if (a.parent.name == Parentname)
+                var res = new List<Joint>();
+                foreach (var a in joints)
                 {
-                    res.Add(a);
+                    if (a.parent==e)
+                    {
+                        res.Add(a);
+                    }
                 }
+                return res;
             }
-            return res;
+            else 
+            {
+                var res = new List<Joint>();
+                foreach (var a in joints)
+                {
+                    if (a.parent.name == Parentname)
+                    {
+                        res.Add(a);
+                    }
+                }
+                return res;
+            }
 
         }
         /// <summary>

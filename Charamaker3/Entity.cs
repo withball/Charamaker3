@@ -297,42 +297,14 @@ namespace Charamaker3
             return lis;
         }
 
-        /// <summary>
-        /// タイプで絞り込んで技のリストを取得する
-        /// </summary>
-        /// <typeparam name="T">タイプ</typeparam>
-        /// <returns>技のリスト</returns>
-        public List<T> getcompos<T>()
-        where T : Component
-        {
-            var res = new List<T>();
-            if (typeof(T) == typeof(Component))
-            {
-                foreach (var a in _components)
-                {
-                    res.Add((T)a);
-                }
-                return res;
-            }
-
-            Type tt;
-            foreach (var a in _components)
-            {
-                tt = a.GetType();
-                if (tt == typeof(T) || tt.IsSubclassOf(typeof(T)))
-                {
-                    res.Add((T)a);
-                }
-            }
-            return res;
-        }
+        
 
         /// <summary>
         /// 名前で絞り込んで技のリストを取得する
         /// </summary>
         /// <typeparam name="T">タイプ</typeparam>
         /// <returns>技のリスト</returns>
-        public List<T> getcompos<T>(string tag)
+        public List<T> getcompos<T>(string name=null)
         where T : Component
         {
             var res = new List<T>();
@@ -340,7 +312,7 @@ namespace Charamaker3
             {
                 foreach (var a in _components)
                 {
-                    if (tag == a.name)
+                    if (name==null||name == a.name)
                     {
                         res.Add((T)a);
                     }
@@ -352,7 +324,7 @@ namespace Charamaker3
             foreach (var a in _components)
             {
                 tt = a.GetType();
-                if ((tt == typeof(T) || tt.IsSubclassOf(typeof(T))) && tag == a.name)
+                if ((tt == typeof(T) || tt.IsSubclassOf(typeof(T))) && (name == null || name == a.name))
                 {
                     res.Add((T)a);
                 }
@@ -999,10 +971,14 @@ namespace Charamaker3
             }
             return res;
         }
-        void fakeadd(Component c,float cl=0) 
+        void fakeadd(Component c,float cl=0) //fakeRemoveは要らないなぜならonRemoveは問題なく発動するから。
         {
-            c.add(this.e,cl);
-            e.comporemove(c);
+            if (this.e != null)
+            {
+                c.add(this.e, cl);
+                e.comporemove(c);
+            }
+            
         }
         public override void resettimer()
         {
@@ -1022,6 +998,14 @@ namespace Charamaker3
                 fakeadd(cs[idx]);
                 cs[idx].resettimer();
             }
+        }
+        /// <summary>
+        /// 追加したmoveを全て消す。MotionMakaerで使うと便利
+        /// </summary>
+        public void Clear() 
+        {
+            cs.Clear();
+            stops.Clear();
         }
         public void addmove(Component c,bool stop=false)
         {
@@ -1056,15 +1040,24 @@ namespace Charamaker3
             }
             
             float endcl = cl*2;
-
             for (int i = 0; i <= idx && i < cs.Count; i++)
             {
                 float clocked = cs[i].canclocktime(ncl);
 
                 //余った時間。これが0より大きければこのupdateで終わったということになる。
-                endcl = Mathf.min(endcl, ncl - clocked);
+                if (cs[i].ended == false)
+                {
+                    cs[i].update(ncl);
+                }
+                if (cs[i].ended == true) //終わっていた嫌でも1の余りを出すってことにする
+                {
+                    endcl = Mathf.min(endcl, 1);
+                }
+                else 
+                {
+                    endcl = Mathf.min(endcl, ncl - clocked);
+                }
 
-                cs[i].update(ncl);
                 if (i == idx)
                 {
                     if (stops[i])
@@ -1090,8 +1083,6 @@ namespace Charamaker3
                 {
                     if (!loop)
                     {
-
-                       // Debug.WriteLine("removed !!! ");
                         remove(endcl);
                     }
                     else 

@@ -66,6 +66,7 @@ namespace Charamaker3
         /// <param name="Tfile">.\oto\*.wavの*部分</param>
         public void loadoto(string Tfile)
         {
+            //Debug.WriteLine(Tfile + "  oto play dayo ");
             var file = slashFormat(Tfile);
             var a = Path.GetExtension(file);
             var filem = file;
@@ -721,6 +722,8 @@ namespace Charamaker3
             this.fadeout = fadeout;
             this.playThenEnd = playThenEnd;
             this.SE = SE;
+
+           // Debug.WriteLine("Sound Component Made!");
         }
 
         /// <summary>
@@ -748,7 +751,7 @@ namespace Charamaker3
         static public SoundComponent MakeBGM(SoundEngine SE, string file, float volume = 1
             , float fadein = 0, float fadeout = 0)
         {
-            Debug.WriteLine("Make Bgm " + file);
+            //Debug.WriteLine("Make Bgm " + file);
             return new SoundComponent(SE, file, volume, false,255,fadein,fadeout, name:BGMname);
         }
 
@@ -810,7 +813,7 @@ namespace Charamaker3
         {
             base.addtoworld(cl);
             Play();
-            //Debug.WriteLine(sound.path + " Sound Started");
+            //Debug.WriteLine(sound.path + " Sound Component Started");
         }
         public override void removetoworld(float cl = 0)
         {

@@ -48,6 +48,7 @@
             selectB = new Button();
             SpeedBar = new TrackBar();
             speedLabel = new Label();
+            ResetTextureB = new Button();
             ((System.ComponentModel.ISupportInitialize)zoomUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PointB).BeginInit();
             ((System.ComponentModel.ISupportInitialize)SpeedBar).BeginInit();
@@ -199,7 +200,7 @@
             // printoutB
             // 
             printoutB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            printoutB.Location = new Point(1291, 719);
+            printoutB.Location = new Point(1235, 720);
             printoutB.Name = "printoutB";
             printoutB.Size = new Size(75, 23);
             printoutB.TabIndex = 12;
@@ -259,11 +260,23 @@
             speedLabel.TabIndex = 17;
             speedLabel.Text = "Speed";
             // 
+            // ResetTextureB
+            // 
+            ResetTextureB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            ResetTextureB.Location = new Point(1351, 720);
+            ResetTextureB.Name = "ResetTextureB";
+            ResetTextureB.Size = new Size(75, 23);
+            ResetTextureB.TabIndex = 18;
+            ResetTextureB.Text = "ResetTexture";
+            ResetTextureB.UseVisualStyleBackColor = true;
+            ResetTextureB.Click += ResetTextureB_Click;
+            // 
             // Charamaker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 861);
+            Controls.Add(ResetTextureB);
             Controls.Add(speedLabel);
             Controls.Add(SpeedBar);
             Controls.Add(selectB);
@@ -319,5 +332,6 @@
         private Button selectB;
         private TrackBar SpeedBar;
         private Label speedLabel;
+        private Button ResetTextureB;
     }
 }

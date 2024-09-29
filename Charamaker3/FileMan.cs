@@ -62,6 +62,7 @@ namespace Charamaker3
 
         static public void setupTextureLoader(Display d)
         {
+            texs.Clear();
             baseRender = d.render;
             Dictionary<string, System.Drawing.Color> basebitnames = new Dictionary<string, System.Drawing.Color>
                 {
@@ -425,7 +426,7 @@ namespace Charamaker3
         /// <returns></returns>
         static public SoundEngine GetSoundEngine(string name) 
         {
-            foreach (var a in SoundEngines) 
+            foreach (var a in SoundEngines)
             {
                 if (a.name == name) 
                 {

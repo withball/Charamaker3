@@ -148,7 +148,16 @@ namespace Charamaker3
         /// <returns></returns>
         protected RawRectF source { get { return new RawRectF(0, 0, render.Size.Width, render.Size.Height); } }
     }
-
+    /// <summary>
+    /// なぜか解放できないレンダーのセット
+    /// </summary>
+    public class RenderSet
+    {
+        public RenderSet() 
+        {
+            ID2D1RenderTarget render;
+        }
+    }
     public class Display
     {
         /// <summary>
@@ -336,11 +345,13 @@ namespace Charamaker3
             var size = (map.Pitch * image.PixelSize.Height);
             byte[] bytes = new byte[size];
             Marshal.Copy(map.Bits, bytes, 0, size);
-            bitmap1.Unmap();
+            //bitmap1.Unmap();
+            //bitmap1.Dispose();
             bitmap1.Release();
 
             //bitmap1.Dispose();
-            //deviceContext2d.Dispose();
+            //deviceContext2d.Release();
+            deviceContext2d.Dispose();
             var res = new List<List<ColorC>>();
 
             if (zone == null)
@@ -633,6 +644,7 @@ namespace Charamaker3
             
             blend.Matrix = colormatrix;
 
+
             //_BlendRender.BeginDraw();
             d2dContext.BeginDraw();
             
@@ -648,8 +660,9 @@ namespace Charamaker3
 
             d2dContext.Dispose();
 
+            blend.Release();
+            //blend.Dispose();
             //_BlendRender.PopAxisAlignedClip();
-
             return _BlendRender.Bitmap;
         
         }

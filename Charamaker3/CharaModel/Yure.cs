@@ -80,9 +80,10 @@ namespace Charamaker3.CharaModel
                 DegreeTo = -MaxDegree;
             }
 
+            var parent = e.getCharacter().getParent(Target);
             var tag = e.getCharacter().getEntity(Target);
             var Btag = e.getCharacter().BaseCharacter.getEntity(Target);
-            if (tag != null && Btag != null)
+            if (parent!=null&&tag != null && Btag != null)
             {
                 if (Mathf.st180(DegreeTo - tag.degree) > 0)
                 {
@@ -99,10 +100,10 @@ namespace Charamaker3.CharaModel
 
                 if (MaxDegree < 180)
                 {
-                    var tdeg = tag.degree - Btag.degree;
-                    var sptdeg = tag.degree - Btag.degree + speed;
-                    var tyouka = Mathf.abs(sptdeg) - MaxDegree + MaxDegreeSpeed * 0;
-                    var tyoukapre = Mathf.abs(tdeg) - MaxDegree + MaxDegreeSpeed * 0;
+                    var tdeg = tag.degree - Btag.degree + parent.degree;
+                    var sptdeg = tag.degree - Btag.degree + speed + parent.degree;
+                    var tyouka = Mathf.abs(sptdeg - parent.degree) - (MaxDegree) + MaxDegreeSpeed * 0;
+                    var tyoukapre = Mathf.abs(tdeg - parent.degree) - (MaxDegree) + MaxDegreeSpeed * 0;
                     if (tyouka > 0 && tyouka > tyoukapre)//超過が小さくなる方向には動ける
                     {
                         speed -= Mathf.sameSign(tyouka, speed);
@@ -256,6 +257,7 @@ namespace Charamaker3.CharaModel
                 DegreeTo = -MaxDegree;
             }
 
+            var parent = e.getCharacter().getParent(Target);
             var tag = e.getCharacter().getEntity(Target);
             var Btag = e.getCharacter().BaseCharacter.getEntity(Target);
             if (tag != null&&Btag!=null)
@@ -276,9 +278,10 @@ namespace Charamaker3.CharaModel
                 if (MaxDegree<180) 
                 {
                     var tdeg = tag.degree -  Btag.degree;
-                    var sptdeg = tag.degree - Btag.degree  + speed;
-                    var tyouka = Mathf.abs(sptdeg) - MaxDegree + MaxDegreeSpeed*0;
-                    var tyoukapre = Mathf.abs(tdeg) - MaxDegree + MaxDegreeSpeed * 0;
+                    var sptdeg = tag.degree - Btag.degree  + speed ;
+                    var tyouka = Mathf.abs(sptdeg- parent.degree) - (MaxDegree ) + MaxDegreeSpeed*0;
+                    var tyoukapre = Mathf.abs(tdeg- parent.degree) - (MaxDegree ) + MaxDegreeSpeed * 0;
+
                     if (tyouka > 0&&tyouka>tyoukapre)//超過が小さくなる方向には動ける
                     {
                         speed -= Mathf.sameSign(tyouka,speed);
