@@ -816,6 +816,11 @@ namespace Charamaker3
         /// </summary>
         public Shapes.Rectangle rendZone;
 
+        bool _MustReset = false;
+        /// <summary>
+        /// 領域がかぶってしまったので別の場所に確保すべきフラグ
+        /// </summary>
+        public bool MustReset { get { return _MustReset; } }
         bool NoChange = false;
         bool NoChange2 = false;
 
@@ -832,16 +837,21 @@ namespace Charamaker3
             rendZone = drawto;
 
         }
+        ~TextRenderer()
+        {
+           // Release();//ここ、マジ意味ない
+        }
         /// <summary>
         /// こいつを管理している親
         /// </summary>
         readonly Display parent;
 
         /// <summary>
-        /// 確保した場所が変化した場合に呼びだす。
+        /// 確保した場所がほかのTEXTRENDERの描画で変化した場合に呼びだす。
         /// </summary>
         public void Changed()
         {
+            _MustReset = true;
             NoChange = false;
             NoChange2 = false;
         }
@@ -937,7 +947,9 @@ namespace Charamaker3
                 float R = 1, G = 0.98f, B = 0.97f;
                 {
 
-                    render.Clear(new ColorC(R, G, B, 0));
+                    //render.Clear(new ColorC(FileMan.whrandhani(R), FileMan.whrandhani(G), FileMan.whrandhani(B)
+                    //    , 0.5f));
+                    render.Clear(new ColorC(R,G,B,0));
                 }
                 if (F.hutiZure > 0)
                 {
@@ -1038,7 +1050,6 @@ namespace Charamaker3
                 _Trender = value;
             }
         }
-
         public Text(float z, ColorC c, string text, FontC font, float time = -1, string name = "") : base(z, c, time, name)
         {
             this.text = text;
@@ -1084,9 +1095,9 @@ namespace Charamaker3
                 //ここでテンポラリなやつをもらう。
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
-            else if (Trender.rendZone.w != font.w && Trender.rendZone.h != font.h)
+            else if (Trender.MustReset||(Trender.rendZone.w != font.w && Trender.rendZone.h != font.h))
             {
-                cam.d.ReleaseTextRenderer(Trender);
+                Trender.Release();
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
             return base.goPreDraw(cam);
@@ -1140,6 +1151,7 @@ namespace Charamaker3
         }
         ~Text()
         {
+            _Trender?.Release();
             Trender = null;
         }
     }

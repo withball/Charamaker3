@@ -435,31 +435,59 @@ namespace Charamaker3
 
         }
 
+        /// <summary>
+        /// 高速正確四角形の当たり判定
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        static bool onHani(Rectangle r, float x, float y)
+        {
+            if ((r.x <= x && x <= r.x + r.w)
+                && (r.y <= y && y <= r.y + r.h))
+            {
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        /// 高速正確四角形の当たり判定
+        /// </summary>
+        /// <param name="r"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        static bool onHani(Rectangle r, float x, float y, float x2, float y2)
+        {
+            if (onHani(r, x, y)) return true;
+            if (onHani(r, x2, y2)) return true;
 
+            if (Shape.crosses(r.x, r.y, r.x + r.w, r.y, x, y, x2, y2)) return true;
+            if (Shape.crosses(r.x + r.w, r.y, r.x + r.w, r.y + r.h, x, y, x2, y2)) return true;
+            if (Shape.crosses(r.x + r.w, r.y + r.h, r.x, r.y + r.h, x, y, x2, y2)) return true;
+            if (Shape.crosses(r.x, r.y + r.h, r.x, r.y, x, y, x2, y2)) return true;
+
+            return false;
+        }
+        /// <summary>
+        /// 高速正確四角形の当たり判定
+        /// </summary>
+        /// <param name="r"></param>
+        /// <returns></returns>
+        static bool onHani(Rectangle r, Rectangle r2)
+        {
+            if (onHani(r, r2.x       , r2.y       , r2.x + r2.w, r2.y)) return true;
+            if (onHani(r, r2.x + r2.w, r2.y       , r2.x + r2.w, r2.y + r2.h)) return true;
+            if (onHani(r, r2.x + r2.w, r2.y + r2.h, r2.x       , r2.y + r2.h)) return true;
+            if (onHani(r, r2.x       , r2.y + r2.h, r2.x       , r2.y)) return true;
+
+            return false;
+        }
         List<TextRenderer> textRenderers = new List<TextRenderer>();
         internal TextRenderer makeTextRenderer(float w, float h)
         {
-            bool onHani(Rectangle r, float x, float y)
-            {
-                if ((r.x <= x && x <= r.x + r.w)
-                    && (r.y <= y && y <= r.y + r.h))
-                {
-                    return true;
-                }
-                return false;
-            }
-            bool onHani2(Rectangle r, float x, float y, float x2, float y2)
-            {
-                if (onHani(r, x, y)) return true;
-                if (onHani(r, x2, y2)) return true;
-
-                if (Shape.crosses(r.x, r.y, r.x + w, r.y, x, y, x2, y2)) return true;
-                if (Shape.crosses(r.x + r.w, r.y, r.x + w, r.y + r.h, x, y, x2, y2)) return true;
-                if (Shape.crosses(r.x + r.w, r.y + r.h, r.x, r.y + r.h, x, y, x2, y2)) return true;
-                if (Shape.crosses(r.x, r.y + r.h, r.x, r.y, x, y, x2, y2)) return true;
-
-                return false;
-            }
+           
             //  Debug.WriteLine("make TextRendere" + w + " :: " + h);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
@@ -520,7 +548,7 @@ namespace Charamaker3
                 float maxx = 0, maxy = 0;
                 foreach (var b in textRenderers)
                 {
-                    if (onHani2(b.rendZone, a.x, a.y
+                    if (onHani(b.rendZone, a.x, a.y
                         , a.x - _TextRender.Size.Width, a.y))
                     {
                         maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w, 0).x, maxx);
@@ -528,7 +556,7 @@ namespace Charamaker3
                 }
                 foreach (var b in textRenderers)
                 {
-                    if (onHani2(b.rendZone, a.x, a.y
+                    if (onHani(b.rendZone, a.x, a.y
                         , a.x, a.y - _TextRender.Size.Height))
                     {
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
@@ -580,23 +608,22 @@ namespace Charamaker3
 
         internal void ReleaseTextRenderer(TextRenderer D)
         {
+
             textRenderers.Remove(D);
         }
         internal void Drawed(TextRenderer D)
         {
-            foreach (var a in textRenderers)
+
+            var lis = new List<TextRenderer>(textRenderers);
+            foreach (var a in lis)
             {
                 if (a != D)
                 {
-                    //境界線を含まないためこのざま
-                    foreach (var b in a.rendZone.getzettaipoints())
+                    if(onHani(D.rendZone,a.rendZone))
                     {
-                        if (D.rendZone.onhani(b.x, b.y, 0.9999f))
-                        {
 
-                            a.Changed();
-                            break;
-                        }
+                        a.Changed();
+                        
                     }
                 }
             }

@@ -83,6 +83,38 @@ namespace Charamaker3
         }
 
         /// <summary>
+        /// entityの回転に合わせた位置を(w,hに対する割合で)
+        /// </summary>
+        /// <param name="cx">画像上のwの点。NaNで回転中心</param>
+        /// <param name="cy">画像上のhの点。NaNで回転中心</param>
+        /// <returns></returns>
+        public FXY gettxy2(float ww = float.NaN, float hh = float.NaN)
+        {
+
+            if (float.IsNaN(ww))
+            {
+                ww = tx;
+            }
+            else 
+            {
+                ww = ww * w;
+            }
+            if (float.IsNaN(hh))
+            {
+                hh = ty;
+            }
+            else 
+            {
+                hh = hh * h;
+            }
+            float W; if (mirror) W = w - ww; else W = ww;
+            float H; if (mirror && 1 == 0) H = h - hh; else H = hh;
+            float rx = x + W * Mathf.cos(degree) - H * Mathf.sin(degree);
+            float ry = y + W * Mathf.sin(degree) + H * Mathf.cos(degree);
+            return new FXY(rx, ry);
+        }
+
+        /// <summary>
         /// 任意の一点をxy座標にセットする
         /// </summary>
         /// <param name="xx">セットするx座標</param>
