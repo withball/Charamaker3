@@ -367,7 +367,7 @@ namespace Charamaker3
                 for (int x = (int)zone.x; x < image.PixelSize.Width && x < zone.x + zone.w; x++)
                 {
                     var position = map.Pitch * yy + x * (map.Pitch / image.PixelSize.Width);
-                    var c = new ColorC(bytes[position + 2] / 255, bytes[position + 1] / 255f
+                    var c = new ColorC(bytes[position + 2] / 255f, bytes[position + 1] / 255f
                         , bytes[position + 0] / 255f, bytes[position + 3] / 255f);
                     res[yy - (int)zone.y].Add(c);
 
@@ -416,13 +416,20 @@ namespace Charamaker3
             //  Console.WriteLine(bt.Size.Width + " a:ga:la " + bt.Size.Height);
             for (int y = 0; y < size.Height; y++)
             {
+                string r = "";
                 for (int x = 0; x < size.Width; x++)
                 {
                     //  Console.WriteLine(pxs[y][x].A+" al:skfa :");
-                    save.SetPixel(x, y, System.Drawing.Color.FromArgb((int)((pxs[y][x].opa) * 255)
-                        , (int)(pxs[y][x].r * 255), (int)(pxs[y][x].g * 255), (int)(pxs[y][x].b * 255))
+                    save.SetPixel(x, y, System.Drawing.Color.FromArgb((byte)((pxs[y][x].opa) * 255)
+                        , (byte)(pxs[y][x].r * 255), (byte)(pxs[y][x].g * 255), (byte)(pxs[y][x].b * 255))
                         );
-                }
+                    /*
+                    r = (byte)((pxs[y][x].opa) * 255) + " A "
+                        + (byte)(pxs[y][x].r * 255) + " R "
+                        + (byte)(pxs[y][x].g * 255) + " G "
+                        + (byte)(pxs[y][x].b * 255) + " B ";
+                */}
+                //Debug.WriteLine(r);
             }
             string name = addname + DateTime.Now.ToString() + "." + format;
 
