@@ -92,7 +92,7 @@ namespace Charamaker3.CharaModel
         /// <param name="basescale">ベースに対する変化にするか=true</param>
         /// <param name="onlyroot">根のスケールだけ変更=false</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMove scalechange(float time, string name = "", float scw = float.NaN, float scy = float.NaN
+        static public EntityMove ScaleChange(float time, string name = "", float scw = float.NaN, float scy = float.NaN
             , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false)
         {
             var res = new EntityMove(time, 0, 0, scw, scy, sctx, scty, 0, float.NaN, float.NaN, name);

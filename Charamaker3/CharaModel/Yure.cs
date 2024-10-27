@@ -69,7 +69,7 @@ namespace Charamaker3.CharaModel
             power += Gravoty;
 
 
-            float DegreeTo = power.degree - BaseDegree;
+            float DegreeTo = power.degree  - BaseDegree;
 
             if (DegreeTo > MaxDegree)
             {
@@ -79,6 +79,7 @@ namespace Charamaker3.CharaModel
             {
                 DegreeTo = -MaxDegree;
             }
+
 
             var parent = e.getCharacter().getParent(Target);
             var tag = e.getCharacter().getEntity(Target);
@@ -109,7 +110,8 @@ namespace Charamaker3.CharaModel
                         speed -= Mathf.sameSign(tyouka, speed);
                     }
                 }
-                EntityMove.XYD(1, "", 0, 0, speed)
+                
+                EntityMove.XYD(1, "", 0, 0, speed * FileMan.plusminus(e.mirror, false))
                     .addAndRemove(tag, 1);
 
 
@@ -260,13 +262,13 @@ namespace Charamaker3.CharaModel
             var parent = e.getCharacter().getParent(Target);
             var tag = e.getCharacter().getEntity(Target);
             var Btag = e.getCharacter().BaseCharacter.getEntity(Target);
-            if (tag != null&&Btag!=null)
+            if (tag != null && Btag != null)
             {
                 if (Mathf.st180(DegreeTo - tag.degree) > 0)
                 {
                     DegreeSpeed += power.length;
                 }
-                else 
+                else
                 {
                     DegreeSpeed -= power.length;
 
@@ -275,19 +277,20 @@ namespace Charamaker3.CharaModel
 
                 var speed = cl * Mathf.sameSign(Mathf.min(Mathf.abs(DegreeSpeed), MaxDegreeSpeed), DegreeSpeed);
 
-                if (MaxDegree<180) 
+                if (MaxDegree < 180)
                 {
-                    var tdeg = tag.degree -  Btag.degree;
-                    var sptdeg = tag.degree - Btag.degree  + speed ;
-                    var tyouka = Mathf.abs(sptdeg- parent.degree) - (MaxDegree ) + MaxDegreeSpeed*0;
-                    var tyoukapre = Mathf.abs(tdeg- parent.degree) - (MaxDegree ) + MaxDegreeSpeed * 0;
+                    var tdeg = tag.degree - Btag.degree;
+                    var sptdeg = tag.degree - Btag.degree + speed;
+                    var tyouka = Mathf.abs(sptdeg - parent.degree) - (MaxDegree) + MaxDegreeSpeed * 0;
+                    var tyoukapre = Mathf.abs(tdeg - parent.degree) - (MaxDegree) + MaxDegreeSpeed * 0;
 
-                    if (tyouka > 0&&tyouka>tyoukapre)//超過が小さくなる方向には動ける
+                    if (tyouka > 0 && tyouka > tyoukapre)//超過が小さくなる方向には動ける
                     {
-                        speed -= Mathf.sameSign(tyouka,speed);
+                        speed -= Mathf.sameSign(tyouka, speed);
                     }
                 }
-                    EntityMove.XYD(1, "", 0, 0, speed)
+
+                EntityMove.XYD(1, "", 0, 0, speed * FileMan.plusminus(e.mirror, false))
                         .addAndRemove(tag, 1);
 
 

@@ -185,8 +185,8 @@ namespace Charamaker3.Utils
         {
             base.onremove(cl);
             var c = FileMan.ldCharacter(charaPath);
-            EntityMove.scalechange(10, "", scale, scale, scale, scale).add(c.e,100);
-            EntityMove.scalechange(10, "", scale, scale, scale, scale).add(c.BaseCharacter.e, 100);
+            EntityMove.ScaleChange(10, "", scale, scale, scale, scale).add(c.e,100);
+            EntityMove.ScaleChange(10, "", scale, scale, scale, scale).add(c.BaseCharacter.e, 100);
             c.e.name = charaName;
             c.BaseCharacter.e.name= charaName;
             e.settxy(0, 0);

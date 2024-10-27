@@ -122,7 +122,7 @@ namespace Charamaker3.CharaModel
                     var lis = new List<Character> {c,c.BaseCharacter };
                     foreach (var cc in lis)
                     {
-                        EntityMove.scalechange(0, "", scale, scale).add(cc.e, 10);
+                        EntityMove.ScaleChange(0, "", scale, scale).add(cc.e, 10);
                         DrawableMove.ZChange("", dz, 0).add(cc.e, 10);
                         DrawableMove.BaseColorChange(0, "", opacity).add(cc.e, 10);
                         foreach (var a in cc.getTree(""))
@@ -138,7 +138,7 @@ namespace Charamaker3.CharaModel
                 }
                 else 
                 {
-                    EntityMove.scalechange(0, "", scale, scale).add(c.e,10);
+                    EntityMove.ScaleChange(0, "", scale, scale).add(c.e,10);
                     DrawableMove.ZChange("", dz,0).add(c.e,10);
                     DrawableMove.BaseColorChange(0, "", opacity).add(c.e, 10);
                     foreach (var a in c.getTree("")) 

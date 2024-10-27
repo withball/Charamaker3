@@ -48,7 +48,7 @@ namespace Charamaker
             if (e.KeyCode == Keys.Enter)
             {
                 var m = FileMan.loadMotion(pathB.Text,true);
-                if (m!=null&&m.Motion!=null&&m.Script!=null&& (!m.Motion.empty||1==1))
+                if (m!=null&&m.Motion!=null&&m.Script!=null&& m.Script!="")
                 {
                     //setmotionjouhou(m);
                     if (m.Script == "") m.Script = " ";
