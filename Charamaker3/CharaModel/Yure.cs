@@ -111,7 +111,7 @@ namespace Charamaker3.CharaModel
                     }
                 }
                 
-                EntityMove.XYD(1, "", 0, 0, speed * FileMan.plusminus(e.mirror, false))
+                EntityMove.XYD(1, "", 0, 0, speed * FileMan.plusminus(tag.mirror, false))
                     .addAndRemove(tag, 1);
 
 
@@ -290,7 +290,7 @@ namespace Charamaker3.CharaModel
                     }
                 }
 
-                EntityMove.XYD(1, "", 0, 0, speed * FileMan.plusminus(e.mirror, false))
+                EntityMove.XYD(1, "", 0, 0, speed * FileMan.plusminus(tag.mirror, false))
                         .addAndRemove(tag, 1);
 
 

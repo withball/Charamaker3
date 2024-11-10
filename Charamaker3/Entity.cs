@@ -48,7 +48,7 @@ namespace Charamaker3
         private float _degree = 0;
 
         bool _added = false;
-        World _world = null;
+        WeakReference<World> _world = null;
         public string name="";
 
         /// <summary>
@@ -56,7 +56,20 @@ namespace Charamaker3
         /// </summary>
         public float bigs { get { return (Mathf.abs(w) + Mathf.abs(h)) / 2; } }
         public bool added { get { return _added; } }
-        public World world { get { return _world; } }
+        public World world { get 
+            {
+                World res; 
+                if (_world == null)
+                {
+                    return null;
+                }
+                if (_world.TryGetTarget(out res))
+                {
+
+                    return res;
+                }
+                return null;
+            } }
 
         public float degree { get { return _degree; } 
             set {
@@ -370,7 +383,7 @@ namespace Charamaker3
             {
                 if (w.add(this))
                 {
-                    _world = w;
+                    _world = new WeakReference<World>(w);
                     _added = true;
                     onadd();
                     return true;
@@ -570,13 +583,77 @@ namespace Charamaker3
             y = s.y;
         }
     }
+    /// <summary>
+    /// コンポーネントを保持したいときに使うクラス。
+    /// </summary>
+    /// <typeparam name="Cmp"></typeparam>
+    public class CP<Cmp>
+    where Cmp:Component
+    {
+        Entity e;
+        Cmp component;
+        public Cmp c { get { return component; } }
 
+        public CP(Cmp c) 
+        {
+            component = c;
+            Refresh();
+        }
+        /// <summary>
+        /// エンテティに追加する
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public bool add(Entity e) 
+        {
+            if (component.add(e)) 
+            {
+                e = component.e;
+                return true;
+            }
+            Refresh();
+            return false;
+        }
+        /// <summary>
+        /// エンテティから削除する
+        /// </summary>
+        /// <returns></returns>
+        public bool remove()
+        {
+            if (component.remove())
+            {
+                e = null;
+                return true;
+            }
+            Refresh();
+            return false;
+        }
+        /// <summary>
+        /// Entityのポインタを再設定する。
+        /// </summary>
+        public void Refresh() 
+        {
+            e = component.e;
+        }
+        static public CP<Cmp> GetPointer<Cmp>(Cmp c)
+            where Cmp : Component
+        {
+            return new CP<Cmp>(c);
+        }
+    }
 
     /// <summary>
     /// コンポーネント。次元式でないものはEntityに残り続ける。
+    /// 変数として持っておきたい場合はComponentPointerを使用する。
     /// </summary>
     public class Component
     {
+        static public CP<Cmp> ToPointer<Cmp>(Cmp c)
+            where Cmp : Component
+        {
+            return new CP<Cmp>(c);
+        }
+
         static public T ToLoadComponent<T>(DataSaver d)
            where T : Component
         {
@@ -638,13 +715,24 @@ namespace Charamaker3
         {
             freeEvent?.Invoke(this, input);
         }
-        protected Entity _e;
-        public Entity e { get { return _e; } }
+        protected WeakReference<Entity> _e;
+        public Entity e { get {
+                if (_e == null) 
+                {
+                    return null;
+                }
+                Entity res;
+                if (_e.TryGetTarget(out res))
+                {
+                    return res;
+                }
+                return null;
+            } }
         public bool ended { get { return _e == null; } }
         /// <summary>
         /// worldのショートカット
         /// </summary>
-        public World world { get { if (e == null) return null; return _e.world; } }
+        public World world { get { if (e == null) return null; return e.world; } }
         protected bool _onWorld=false;
         public bool onWorld { get { return _onWorld; } }
         public string name="";
@@ -784,7 +872,7 @@ namespace Charamaker3
         {
             if (e == null)
             {
-                this._e = ee;
+                this._e = new WeakReference<Entity>(ee);
                 this.e.compoadd(this, cl);
                 onadd(cl);
                 return true;

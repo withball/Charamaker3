@@ -126,7 +126,7 @@ namespace Charamaker3
         }
         ~Camera()
         {
-            d.removeCamera(this);
+            //d.removeCamera(this);//いらないよね？
             if (isBitmap)
             {
                 Brender?.Bitmap.Dispose();
@@ -219,7 +219,7 @@ namespace Charamaker3
 
         }
 
-        List<Camera> cameras = new List<Camera>();
+        List<CP<Camera>> cameras = new List<CP<Camera>>();
         /// <summary>
         /// 画面に直接描画するカメラを作る。Cameraが追加されてるEntityはマジどうでもいい
         /// </summary>
@@ -232,7 +232,7 @@ namespace Charamaker3
             res = new Camera(Watchrect, 0, backcolor, render, this);
             res.add(back);
 
-            cameras.Add(res);
+            cameras.Add(Component.ToPointer(res));
             return res;
         }
 
@@ -251,7 +251,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
-        public bool removeCamera(Camera c)
+        public bool removeCamera(CP<Camera> c)
         {
             return cameras.Remove(c);
         }
@@ -272,7 +272,7 @@ namespace Charamaker3
             render.BeginDraw();
             foreach (var a in cameras)
             {
-                a.e.update(cl);
+                a.c.e.update(cl);
             }
             render.EndDraw();
         }
@@ -285,7 +285,7 @@ namespace Charamaker3
             _TextRender.BeginDraw();
             foreach (var a in cameras)
             {
-                a.PreDraw(cl);
+                a.c.PreDraw(cl);
             }
             _TextRender.EndDraw();
         }
@@ -299,9 +299,9 @@ namespace Charamaker3
             //サイズの違いでバグる可能性あり！！！丸めてどうにかしたが、画質の値によっては今後もやばいぞ！
             foreach (var a in cameras)
             {
-                if (a.render == _render)
+                if (a.c.render == _render)
                 {
-                    a.render = _SCSRender;
+                    a.c.render = _SCSRender;
                 }
             }
             _SCSRender.BeginDraw();
@@ -309,9 +309,9 @@ namespace Charamaker3
             _SCSRender.EndDraw();
             foreach (var a in cameras)
             {
-                if (a.render == _SCSRender)
+                if (a.c.render == _SCSRender)
                 {
-                    a.render = render;
+                    a.c.render = render;
                 }
             }
             screenShot(_SCSRender);
@@ -492,6 +492,10 @@ namespace Charamaker3
             return false;
         }
         List<TextRenderer> textRenderers = new List<TextRenderer>();
+        /// <summary>
+        /// テキスト描画用の奴の数
+        /// </summary>
+        public int TextRenderesNum { get { return textRenderers.Count; } }
         internal TextRenderer makeTextRenderer(float w, float h)
         {
            

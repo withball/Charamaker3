@@ -18,7 +18,7 @@ namespace Charamaker
         Charamaker charamaker;
         FileInfo? preinfo = null;
         World w;
-        Camera cam;
+        CP<Camera> cam;
         bool started = false;
 
         float timer = 0;
@@ -28,13 +28,13 @@ namespace Charamaker
         {
             this.charamaker = c;
             InitializeComponent();
-            cam = charamaker.display.makeCamera(new ColorC(0, 0, 0, 0));
+            cam = Component.ToPointer(charamaker.display.makeCamera(new ColorC(0, 0, 0, 0)));
             newWorld();
         }
         void newWorld() 
         {
 
-            cam.watchRect.remove();
+            cam.c.watchRect.remove();
             foreach (var a in FileMan.SoundEngines) 
             {
                 a.stopAll();
@@ -48,8 +48,8 @@ namespace Charamaker
             }
             w = new World();
             charamaker.display.removeCamera(cam);
-            cam = charamaker.display.makeCamera(new ColorC(0, 0, 0, 0));
-            cam.watchRect.add(w);
+            cam = Component.ToPointer(charamaker.display.makeCamera(new ColorC(0, 0, 0, 0)));
+            cam.c.watchRect.add(w);
         }
 
         private void AnimeEditor_Load(object sender, EventArgs e)
