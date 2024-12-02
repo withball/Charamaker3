@@ -560,4 +560,57 @@ namespace Charamaker3
            
         }
     };
+    /// <summary>
+    /// タイマー
+    /// </summary>
+    public class SuperTimer
+    {
+        /// <summary>
+        /// 最大の時間
+        /// </summary>
+        public float MaxTime = 0;
+        /// <summary>
+        /// 最小の時間
+        /// </summary>
+        public float MinTime = 0;
+        /// <summary>
+        /// 今の時間
+        /// </summary>
+        public float Timer = 0;
+
+        /// <summary>
+        /// タイマーを進める。Max,Minどちらかが0いかなら作動しない。
+        /// </summary>
+        /// <param name="clock"></param>
+        /// <returns>何回タイマーが作動したか</returns>
+        public int Update(float clock)
+        {
+            if (MaxTime > 0 && MinTime > 0)
+            {
+                Timer -= clock;
+                int timercount = 0;
+                while ((Timer >= 0) == false)
+                {
+                    Timer += FileMan.whrandhani(MaxTime - MinTime) + MinTime;
+                    timercount++;
+                }
+                return timercount;
+            }
+            return 0;
+        }
+        /// <summary>
+        /// タイマーをリセットする
+        /// </summary>
+        public void Reset()
+        {
+            Timer = FileMan.whrandhani(MaxTime - MinTime) + MinTime;
+        }
+
+        public SuperTimer(float MinTime,float MaxTime) 
+        {
+            this.MinTime = MinTime;
+            this.MaxTime = MaxTime;
+            Reset();
+        }
+    }
 }

@@ -1,4 +1,5 @@
-﻿ComponentとEntityは相互参照だが、ComponentからはWeakなので持ちたい場合は
+﻿ComponentとEntityは相互参照だが、ComponentからはWeakなので
+EntityごとComponentの参照を持ちたい場合は
 ComponentPointerを使うべし。
 
 
@@ -17,14 +18,15 @@ ComponentPointerを使うべし。
 ！！TEXTRENDERがかぶった時、元の奴が再描画してくれないので文字が変になる？！！！
 ->文字描画領域が何らかの手違いで被った場合、それが訂正されず、残り続ける。<-直した！！
 でもまだゴミは残るけど。
+!あと、モリ解放の際に文字が混線しておかしくなるっぽい。
+
+・Blendが悪さしてる->直した。
 
 モーション移植計画！！！！
 1.work.addmoves->res,addmoveに
 2.関数を新しく作る。
 stopはどうする？
 底はめんどいので主導でいっか。
-
-
 
 [F:FunctionName:Name]{[]{arguments}[]{arguments}}
 Name= ""でpackに名前を付けずにその場に置く。つまり、summonのときは

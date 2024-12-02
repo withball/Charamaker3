@@ -492,13 +492,19 @@ namespace Charamaker3
             return false;
         }
         List<TextRenderer> textRenderers = new List<TextRenderer>();
+        List<TextRenderer> textRenderersRemove = new List<TextRenderer>();
         /// <summary>
         /// テキスト描画用の奴の数
         /// </summary>
         public int TextRenderesNum { get { return textRenderers.Count; } }
+        public int TextRenderesRemoveNum { get { return textRenderersRemove.Count; } }
         internal TextRenderer makeTextRenderer(float w, float h)
         {
-           
+            for (int i=textRenderersRemove.Count-1;i>=0;i--)
+            {
+                textRenderers.Remove(textRenderersRemove[i]);
+                textRenderersRemove.RemoveAt(i);
+            }
             //  Debug.WriteLine("make TextRendere" + w + " :: " + h);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
@@ -506,6 +512,7 @@ namespace Charamaker3
 
             List<FXY> Points = new List<FXY>();
             Points.Add(new FXY(_TextRender.Bitmap.Size.Width - 1, _TextRender.Bitmap.Size.Height - 1));
+            
             foreach (var a in textRenderers)
             {
                 //上に追加
@@ -603,9 +610,9 @@ namespace Charamaker3
                     , w, h);
             }
             var returns = new TextRenderer(this, _TextRender, res);
-            textRenderers.Add(returns);
             //右下順に並べる
             var ss = new supersort<TextRenderer>();
+            ss.add(returns, returns.rendZone.x + returns.rendZone.y);
             foreach (var a in textRenderers)
             {
                 ss.add(a, a.rendZone.x + a.rendZone.y);
@@ -619,8 +626,7 @@ namespace Charamaker3
 
         internal void ReleaseTextRenderer(TextRenderer D)
         {
-
-            textRenderers.Remove(D);
+            textRenderersRemove.Add(D);
         }
         internal void Drawed(TextRenderer D)
         {
@@ -648,7 +654,6 @@ namespace Charamaker3
         /// <returns></returns>
         public ID2D1Bitmap Blend(ID2D1Bitmap bitmap,ColorC color) 
         {
-
             var d2dContext = _BlendRender.QueryInterface<ID2D1DeviceContext>();
 
 
@@ -657,7 +662,8 @@ namespace Charamaker3
 
 
             var blend = new Vortice.Direct2D1.Effects.ColorMatrix(d2dContext);
-            blend.SetInput(0,bitmap, new SharpGen.Runtime.RawBool(false));
+            blend.SetInput(0,bitmap, new SharpGen.Runtime.RawBool(true));
+            
             var colormatrix = new Matrix5x4();
             colormatrix.M11 = color.r;
             colormatrix.M12 = 0;
@@ -681,7 +687,7 @@ namespace Charamaker3
             colormatrix.M54 = 0;
             
             blend.Matrix = colormatrix;
-
+            
 
             //_BlendRender.BeginDraw();
             d2dContext.BeginDraw();
@@ -701,6 +707,7 @@ namespace Charamaker3
             blend.Release();
             //blend.Dispose();
             //_BlendRender.PopAxisAlignedClip();
+            
             return _BlendRender.Bitmap;
         
         }

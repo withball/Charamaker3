@@ -121,7 +121,7 @@ namespace Charamaker
         private void ticked(object sender, EventArgs e)
         {
            // w = new World();
-            this.Text = cam.watchRect.gettxy() + " a ";
+            this.Text = cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
             km.setpointer(this);
 
             {

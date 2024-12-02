@@ -89,7 +89,6 @@ namespace Charamaker3
             if (!_Entities.Contains(e))
             {
                 _Entities.Add(e);
-
                 return true;
             }
             return false;

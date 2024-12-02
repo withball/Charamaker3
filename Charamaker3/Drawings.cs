@@ -581,7 +581,7 @@ namespace Charamaker3
             render.DrawBitmap(blended
                    , rect
                    , this.col.opa, BitmapInterpolationMode.Linear
-                   , new RawRectF(0, 0, bitmap.Size.Width, bitmap.Size.Height));
+                   , new RawRectF(0, 0, bitmap.Size.Width-0.5f, bitmap.Size.Height - 0.5f));//-0.5しないと1マスが2マスになって絶望したりする。
 
 
         }
@@ -594,6 +594,7 @@ namespace Charamaker3
     /// </summary>
     public class FontC
     {
+        //EncodehはUTF-8BOMつきでお願い。
         public enum alignment
         {
             /// <summary>
@@ -802,6 +803,11 @@ namespace Charamaker3
                 a.fontName != b.fontName || a.isItaric != b.isItaric
                 || a.isBold != b.isBold || a.hutiZure != b.hutiZure || a.hutiColor != b.hutiColor;
         }
+        static public int ByteCount(string s)
+        {
+            var encode = System.Text.Encoding.UTF8;
+            return encode.GetByteCount(s);
+        }
     }
 
     /// <summary>
@@ -823,7 +829,6 @@ namespace Charamaker3
         public bool MustReset { get { return _MustReset; } }
         bool NoChange = false;
         bool NoChange2 = false;
-
         /// <summary>
         /// 
         /// </summary>
@@ -835,11 +840,11 @@ namespace Charamaker3
             this.parent = parent;
             this.render = render;
             rendZone = drawto;
-
+     
         }
         ~TextRenderer()
         {
-           // Release();//ここ、マジ意味ない
+           Release();//ここ、マジ意味ない
         }
         /// <summary>
         /// こいつを管理している親
@@ -1147,12 +1152,24 @@ namespace Charamaker3
                   , this.col.opa, BitmapInterpolationMode.Linear
                     , Trender.rendZone);
             }
+            if (onWorld==false)
+            {
 
+                _Trender?.Release();
+                _Trender = null;
+            }
+        }
+        public override void removetoworld(float cl = 0)
+        {
+            base.removetoworld(cl);
+
+            _Trender?.Release();
+            _Trender = null;
         }
         ~Text()
         {
             _Trender?.Release();
-            Trender = null;
+            _Trender = null;
         }
     }
 
