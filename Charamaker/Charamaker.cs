@@ -19,17 +19,18 @@ namespace Charamaker
 
         Texture SLP, TXYP;
         DataSaver save;
+
         public Charamaker()
         {
             InitializeComponent();
 
             {
-                save = DataSaver.loadFromPath(@".\save");
+                save = DataSaver.loadFromPath(@".\save",false);
                 LastLoad = save.unpackDataS("LastLoad", @"yoshino");
 
-                Debug.WriteLine(save.getData());
+                MotionString = save.unpackDataS("MotionString", "");
+                Debug.WriteLine("SaveData "+save.getData());
                 ChangeRootpath(save.unpackDataS("rootpath", @".\"));
-                
                 LoadCharacter(save.unpackDataS("LastLoad", @"yoshino"));
             }
 
@@ -464,7 +465,7 @@ namespace Charamaker
 
 
 
-
+        public string MotionString="";
         private void motionB_Click(object sender, EventArgs e)
         {
             /*
@@ -573,12 +574,17 @@ namespace Charamaker
             this.rootpathbox.Text = newPath;
             Save();
         }
-        void Save()
+
+        /// <summary>
+        /// バックアップデータをセーブ
+        /// </summary>
+        public void Save()
         {
 
             save = new DataSaver();
             save.packAdd("rootpath", FileMan.rootpath.Replace("\\", "/"));
             save.packAdd("LastLoad", LastLoad);
+            save.packAdd("MotionString", MotionString);
 
             save.saveToPath(@".\save");
         }

@@ -25,6 +25,7 @@ namespace Charamaker
         {
             InitializeComponent();
             this.cm = cm;
+            this.ScriptB.Text = setstringtobox(cm.MotionString);
             setmanual();
         }
         string setstringtobox(string s) 
@@ -131,7 +132,10 @@ namespace Charamaker
             if (e.KeyCode == Keys.F5) 
             {
                 var m = build();
+                cm.MotionString = ScriptB.Text.Replace(Environment.NewLine,"\n");
+                cm.Save();
                 addmotion(m);
+                
             }
             if (e.KeyCode == Keys.F2)
             {

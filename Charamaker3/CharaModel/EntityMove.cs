@@ -305,10 +305,11 @@ namespace Charamaker3.CharaModel
         /// <param name="mo">=Reverse,No,Mirror</param>
         /// <param name="goreef">リーフの方向も変えるか=true</param>
         /// <param name="time">=0</param>
+        /// <param name="isMoveDegree">=角度もいい感じに回転させるか=true</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMirror Mirror(string name, MirrorOption mo = MirrorOption.Reverse, bool goreef = true, float time = 0)
+        static public EntityMirror Mirror(string name, MirrorOption mo = MirrorOption.Reverse, bool goreef = true, float time = 0, bool isMoveDegree = true)
         {
-            return new EntityMirror(name, time, mo,goreef);
+            return new EntityMirror(name, time, mo,goreef,isMoveDegree);
         }
 
 
@@ -1335,6 +1336,7 @@ namespace Charamaker3.CharaModel
         MirrorOption MO;
 
         bool goall = true;
+        bool isMoveDegree = false;
 
         bool mirrored = false;
         float degree = 0;
@@ -1343,11 +1345,12 @@ namespace Charamaker3.CharaModel
         const int _TX = 2;
         const int _TY = 3;
         const int _DEGREE = 4;
+        const int _MIRRORED = 5;
         bool instant { get { return time == 0; } }
         
       
         public EntityMirror() { }
-        public EntityMirror(string name,float time,MirrorOption mo,bool goall):base(time,name) 
+        public EntityMirror(string name,float time,MirrorOption mo,bool goall,bool isMoveDegree = true):base(time,name) 
         {
             this.MO = mo;
             if (time == 0)
@@ -1363,6 +1366,7 @@ namespace Charamaker3.CharaModel
 
             }
             this.goall = goall;
+            this.isMoveDegree = isMoveDegree;
         }
         public override void copy(Component c)
         {
@@ -1371,7 +1375,9 @@ namespace Charamaker3.CharaModel
             cc.MO = this.MO;
             cc.mirrored = this.mirrored;
             cc.degree = this.degree;
-            cc.goall = goall;
+            cc.goall = this.goall;
+
+            cc.isMoveDegree = this.isMoveDegree;
         }
 
         public override DataSaver ToSave()
@@ -1380,6 +1386,7 @@ namespace Charamaker3.CharaModel
             res.linechange();
             res.packAdd("MO", (int)MO);
             res.packAdd("goall", goall);
+            res.packAdd("isMoveDegree", isMoveDegree);
             return res;
         }
         protected override void ToLoad(DataSaver d)
@@ -1387,6 +1394,7 @@ namespace Charamaker3.CharaModel
             base.ToLoad(d);
             MO = (MirrorOption)d.unpackDataF("MO");
             goall = d.unpackDataB("goall");
+            isMoveDegree = d.unpackDataB("isMoveDegree", isMoveDegree);
         }
 
         public override void resettimer()
@@ -1441,6 +1449,7 @@ namespace Charamaker3.CharaModel
 
                     if (topmirrored && degree)
                     {
+                        speeds[i][_MIRRORED] = 1;
                         a.degree = Mathf.st180(tagBases[i].degree - Mathf.st180(a.degree - tagBases[i].degree));
                     }
                 }
@@ -1452,6 +1461,7 @@ namespace Charamaker3.CharaModel
                     }
                     if (topmirrored && degree)
                     {
+                        speeds[i][_MIRRORED] = 1;
                         a.degree = Mathf.st180(tagBases[i].degree - Mathf.st180(a.degree - tagBases[i].degree));
                     }
                 }
@@ -1471,7 +1481,7 @@ namespace Charamaker3.CharaModel
 
                 tags.Add(e);
                 tagBases.Add(e);
-                speeds.Add(new float[] { e.w , 0 ,e.tx,0});
+                speeds.Add(new float[] { e.w , 0 ,e.tx,0,0});
             }
             else
             {
@@ -1492,11 +1502,12 @@ namespace Charamaker3.CharaModel
                             speeds.Add(new float[] { tags[i].w, 0, tags[i].tx, 0
                             ,
                          Mathf.st180(tagBases[i].degree - Mathf.st180(tags[i].degree - tagBases[i].degree)-tags[i].degree)
-                        });
+                        ,0});
                         }
                         else 
                         {
                             speeds.Add(new float[] { 0, 0, 0, 0
+                            ,0
                             ,0
                         });
                         }
@@ -1508,6 +1519,15 @@ namespace Charamaker3.CharaModel
             {
                 mirrored = true;
                 enmirror(true);
+                var ratio = 1;
+                for (int i = 0; i < tagBases.Count; i++)
+                {
+                    var a = tags[i];
+                    if (isMoveDegree && speeds[i][_MIRRORED] == 1)
+                    {
+                        a.degree += speeds[i][_DEGREE] * ratio;
+                    }
+                }
             }
             base.onadd(cl);
         }
@@ -1516,28 +1536,35 @@ namespace Charamaker3.CharaModel
             base.onupdate(cl);
             if (!instant)
             {
-                if (!mirrored && timer>time/2) 
+                if (!mirrored && timer > time / 2)
                 {
                     mirrored = true;
                     enmirror(false);
                 }
                 float ddegree = cl / time * 180;
                 float ratio = Mathf.abs(Mathf.cos(degree + ddegree)) - Mathf.abs(Mathf.cos(degree));
-                float ratio2 = cl/time;
-                
+                float ratio2 = cl / time;
+
                 for (int i = 0; i < tagBases.Count; i++)
                 {
-                    var a = tags[i];
-                    var xy = a.gettxy();
-                    a.w += speeds[i][_W] * ratio;
-                    a.h += speeds[i][_H] * ratio;
+                    if (speeds[i][_MIRRORED] == 1)
+                    {
+                        var a = tags[i];
+                        var xy = a.gettxy();
+                        a.w += speeds[i][_W] * ratio;
+                        a.h += speeds[i][_H] * ratio;
 
-                    a.tx += speeds[i][_TX] * ratio;
-                    a.ty += speeds[i][_TY] * ratio;
-                    a.degree += speeds[i][_DEGREE] * ratio2;
-                    a.settxy(xy);
+                        a.tx += speeds[i][_TX] * ratio;
+                        a.ty += speeds[i][_TY] * ratio;
+                        if (isMoveDegree)
+                        {
+                            a.degree += speeds[i][_DEGREE] * ratio2;
+                        }
+                        a.settxy(xy);
+                    }
                 }
                 degree += ddegree;
+
             }
         }
     }
