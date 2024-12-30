@@ -1286,6 +1286,121 @@ namespace Charamaker3
             return st;
         }
 
+
+        /// <summary>
+        /// 中身のデータを 簡易記法(  name:value\n   )をパックに変える エスケープはしといた方がいいかも
+        /// </summary>
+        /// <param name="nameEnd"></param>
+        /// <param name="packEnd"></param>
+        /// <returns></returns>
+        public DataSaver KaniPack(char nameEnd=':', char packEnd=';') 
+        {
+            var res = new DataSaver(); ;
+            var sp = this.getData().Split(packEnd);
+            foreach (var a in sp) 
+            {
+                var d = new DataSaver(a);
+                var kugis = d.splitDataS(nameEnd);
+
+                if (kugis.Count >= 2) 
+                {
+                    var data = "";
+                    for (int i = 1; i < kugis.Count; i++) 
+                    {
+                        if (i > 1) { data += ":"; }
+                        data += kugis[i];
+                    }
+                    res.packAdd(kugis[0], data);
+
+                }
+            }
+
+            return res;
+        }
+        /// <summary>
+        /// 中身のデータを 簡易記法(  name: )を階層に変え KaniPackより先にこっちやる
+        /// </summary>
+        /// <param name="nameEnd"></param>
+        /// <param name="packEnd"></param>
+        /// <param name="kaisous"></param>
+        /// <returns></returns>
+        public DataSaver KaniKaisou(char nameEnd, char packEnd,params string[] kaisous)
+        {
+            var kaisou = new List<string>(kaisous);
+            var res = new DataSaver();
+            string nowkaisou = "";
+            var sp= this.getData().Split(packEnd);
+            List<DataSaver> horyudata = new List<DataSaver>();
+            List<string> horyuname = new List<string>();
+            foreach (var a in sp)
+            {
+                var kugis = new DataSaver(a).splitDataS(nameEnd);
+                bool add = true;
+                if (kugis.Count >= 2)
+                {
+                    var kaisounumber = kaisou.IndexOf(kugis[0]);
+                    var packname = "";
+                    for (int i = 1; i < kugis.Count; i++)
+                    {
+                        if (i > 1) { packname += ":"; }
+                        packname += kugis[i];
+                    }
+
+
+
+                    if (kaisounumber >= 0)
+                    {
+                        for (int i = horyudata.Count - 1; i >= kaisounumber; i--)
+                        {
+                            if (i == 0)
+                            {
+                                res.packAdd(kaisou[i] + horyuname[i], horyudata[i]);
+                                horyudata.RemoveAt(i);
+                            }
+                            else
+                            {
+                                horyudata[i - 1].packAdd(kaisou[i] + horyuname[i], horyudata[i]);
+                                horyudata.RemoveAt(i);
+                            }
+                        }
+                    }
+
+                    if (kaisounumber == horyudata.Count)
+                    {
+                        horyudata.Add(new DataSaver());
+                        horyuname.Add(packname);
+                        add = false;
+                    }
+                    else if(kaisounumber>=0)
+                    {
+                        Debug.WriteLine(packname+" kaisouError "+res.getData() + " kaisouError " + getData()); 
+                        return res;
+                    }
+                }
+                if (add && horyudata.Count > 0)
+                {
+                    horyudata[horyudata.Count - 1] = new DataSaver(
+                        horyudata[horyudata.Count - 1].getData() + a + packEnd);
+                }
+
+
+            }
+            for (int i = horyudata.Count - 1; i >=0; i--)
+            {
+                if (i == 0)
+                {
+                    res.packAdd(kaisou[i] + horyuname[i], horyudata[i]);
+                    horyudata.RemoveAt(i);
+                }
+                else
+                {
+                    horyudata[i - 1].packAdd(kaisou[i] + horyuname[i], horyudata[i]);
+                    horyudata.RemoveAt(i);
+                }
+            }
+            return res;
+        }
+
     }
 
 }

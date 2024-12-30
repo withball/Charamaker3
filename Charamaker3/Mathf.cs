@@ -589,7 +589,7 @@ namespace Charamaker3
             {
                 Timer -= clock;
                 int timercount = 0;
-                while ((Timer >= 0) == false)
+                while ((Timer > 0) == false)
                 {
                     Timer += FileMan.whrandhani(MaxTime - MinTime) + MinTime;
                     timercount++;

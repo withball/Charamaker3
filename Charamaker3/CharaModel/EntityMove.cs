@@ -67,6 +67,24 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
+        /// JointXYに動かすムーブ
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">=""</param>
+        /// <param name="dpx">=0</param>
+        /// <param name="dpy">=0</param>
+        /// <returns>__MOVE__</returns>
+        static public EntityMove JXY(float time, string name = "", float dpx = 0, float dpy = 0)
+        {
+            EntityMove res;
+           
+            {
+                res = new EntityMove(time, 0,0, 0, 0, 0, 0, 0, dpx, dpy, name);
+                res.SO = scaleOption.F;
+            }
+            return res;
+        }
+        /// <summary>
         /// W,H,TX,TY,DX,DYを動かすムーブ
         /// </summary>
         /// <param name="time"></param>
@@ -1405,6 +1423,7 @@ namespace Charamaker3.CharaModel
         }
         void enmirror(bool degree)
         {
+            if (tags.Count <= 0) return;
             bool topmirrored = tags[0].mirror;
             for (int i = 0; i < tags.Count; i++)
             {
@@ -1481,7 +1500,7 @@ namespace Charamaker3.CharaModel
 
                 tags.Add(e);
                 tagBases.Add(e);
-                speeds.Add(new float[] { e.w , 0 ,e.tx,0,0});
+                speeds.Add(new float[] { e.w , 0 ,e.tx,0,0,0});
             }
             else
             {
@@ -1714,7 +1733,10 @@ namespace Charamaker3.CharaModel
                 }
                 else 
                 {
-                    lis.Add(tags[0]);
+                    if (tags.Count > 0)
+                    {
+                        lis.Add(tags[0]);
+                    }
                 }
                 for (int i=0;i<lis.Count;i++)
                 {
