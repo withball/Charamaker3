@@ -117,6 +117,7 @@ namespace Charamaker
             {
                 zoomUD_ValueChanged(null, null);
             }
+            
         }
 
         private void ticked(object sender, EventArgs e)

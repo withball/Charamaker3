@@ -79,10 +79,20 @@ namespace Charamaker3
         {
             this.next = next;
             sc = s;
+
             cam = sc.display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
-            wol = new World();
-            cam.watchRect.add(wol);
+
+            WorldReset();
         }
+
+        /// <summary>
+        /// ワールドを全消しする。
+        /// </summary>
+        public void WorldReset() 
+        {
+            wol = new World();
+        }
+
         private bool _started = false;
         /// <summary>
         /// start(),end()が複数回発動しないようにする。start=falseであるとUpdateすら発動しない。startでtrueになる。
@@ -104,11 +114,13 @@ namespace Charamaker3
             }
         }
         /// <summary>
-        /// シーンの正しきスタート時に呼び出される。標準ではアップデートが呼び出される
+        /// シーンの正しきスタート時に呼び出される。標準ではカメラのwatchrectが追加される
         /// </summary>
         /// <param name="cl">ついでに呼びだされるアップデートの時間</param>
         virtual protected void onStart(float cl)
         {
+
+            cam.watchRect.add(wol);
             onStarts?.Invoke(this, cl);
             Update(cl);
         }

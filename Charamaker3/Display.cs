@@ -272,7 +272,10 @@ namespace Charamaker3
             render.BeginDraw();
             foreach (var a in cameras)
             {
-                a.c.e.update(cl);
+                if (a.c.watchRect.added)
+                {
+                    a.c.e.update(cl);
+                }
             }
             render.EndDraw();
         }

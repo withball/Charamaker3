@@ -340,6 +340,19 @@ namespace Charamaker3
             return Mathf.abs(value);
         }
         /// <summary>
+        /// 同じ+-かどうか判定。0は+-両方
+        /// </summary>
+        /// <param name="a"></param>
+        /// <param name="b"></param>
+        /// <returns></returns>
+        public static bool IsSameSign(float a, float b)
+        {
+            if (a > 0 && b > 0) return true;
+            if (a < 0 && b < 0) return true;
+            if (a == 0 || b == 0) return true;
+            return false;
+        }
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="value">falseなら1,trueなら-1</param>
@@ -380,7 +393,7 @@ namespace Charamaker3
     };
 
     /// <summary>
-    /// 任意の物体をソートするためのクラス
+    /// 任意の物体をソートするためのクラス(安定ソート)
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class supersort<T>
@@ -395,6 +408,19 @@ namespace Charamaker3
         public void add(T obj, float value)
         {
             list.Add(new sortnode<T>(obj, value));
+        }
+        /// <summary>
+        /// 同じ値をランダムに並び変える(安定ソートなのでぐちゃぐちゃにするだけ)
+        /// </summary>
+        public void SameRandom() 
+        {
+            var sot = new supersort<sortnode<T>>();
+            foreach (var a in list)
+            {
+                sot.add(a, FileMan.whrandhani(list.Count));
+            }
+            sot.sort(false);
+            list = sot.getresult();
         }
         /// <summary>
         /// ソートを行う

@@ -945,7 +945,7 @@ namespace Charamaker3
             }
             if (hiraki > 0)
             {
-                Debug.WriteLine(Data + " asdasdas d " + name);
+                Debug.WriteLine("PackHirakiErrorStart " + Data + " PackHirakiError " + name);
                 return Data.Substring(start, Data.Length - start);
             }
             //   Console.WriteLine("nakattayo " + name);
@@ -1318,7 +1318,7 @@ namespace Charamaker3
             return res;
         }
         /// <summary>
-        /// 中身のデータを 簡易記法(  name: )を階層に変え KaniPackより先にこっちやる
+        /// 中身のデータを 簡易記法(  name: )を階層に変え 中身も再帰的に簡易記法から返還する。
         /// </summary>
         /// <param name="nameEnd"></param>
         /// <param name="packEnd"></param>
@@ -1356,11 +1356,13 @@ namespace Charamaker3
                             {
                                 res.packAdd(kaisou[i] + horyuname[i], horyudata[i]);
                                 horyudata.RemoveAt(i);
+                                horyuname.RemoveAt(i);
                             }
                             else
                             {
                                 horyudata[i - 1].packAdd(kaisou[i] + horyuname[i], horyudata[i]);
                                 horyudata.RemoveAt(i);
+                                horyuname.RemoveAt(i);
                             }
                         }
                     }
@@ -1379,8 +1381,12 @@ namespace Charamaker3
                 }
                 if (add && horyudata.Count > 0)
                 {
-                    horyudata[horyudata.Count - 1] = new DataSaver(
-                        horyudata[horyudata.Count - 1].getData() + a + packEnd);
+                    var data = new DataSaver(a + packEnd).KaniPack(nameEnd,packEnd);
+
+                    foreach (var b in data.getAllPacks())
+                    {
+                        horyudata[horyudata.Count - 1].packAdd(b, data.unpackDataD(b),false);
+                    }
                 }
 
 

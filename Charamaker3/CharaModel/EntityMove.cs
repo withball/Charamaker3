@@ -421,7 +421,7 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
-        /// 色を絶対的に変える
+        /// 色を絶対的に増減させる
         /// </summary>
         /// <param name="time">=0</param>
         /// <param name="name">=""</param>
@@ -431,8 +431,8 @@ namespace Charamaker3.CharaModel
         /// <param name="b">=0</param>
         /// <param name="onlyroot">根本のみ変更=0</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ChangeColor(float time = 0, string name = "", float opa = 1, float r = 1
-            , float g = 1, float b = 1, bool onlyroot = false)
+        static public DrawableMove ChangeColor(float time = 0, string name = "", float opa = 0, float r = 0
+            , float g = 0, float b = 0, bool onlyroot = false)
         {
             var res = new DrawableMove(time, 0, r, g, b, opa, "_", name);
             if (onlyroot)

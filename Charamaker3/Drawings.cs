@@ -340,13 +340,17 @@ namespace Charamaker3
 
         protected bool onCamera(Camera cam)
         {
-            var s = new Shapes.Rectangle(0);
-            s.setto(cam.watchRect);
+            if (e != null)
+            {
+                var s = new Shapes.Rectangle(0);
+                s.setto(cam.watchRect);
 
 
-            var s2 = new Shapes.Rectangle(0);
-            s2.setto(this.e);
-            return s.atarun(s2);
+                var s2 = new Shapes.Rectangle(0);
+                s2.setto(this.e);
+                return s.atarun(s2);
+            }
+            return false;
         }
 
         /// <summary>

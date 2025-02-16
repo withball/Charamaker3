@@ -379,14 +379,27 @@ namespace Charamaker3
 
         public bool add(World w)
         {
-            if (!added)
+            if (added == false || w != this.world)
             {
-                if (w.add(this))
+                if (added) //世界を切り替えるだけだから onAddは使わない。
                 {
-                    _world = new WeakReference<World>(w);
-                    _added = true;
-                    onadd();
-                    return true;
+                    if (w.add(this))
+                    {
+
+                        _world = new WeakReference<World>(w);
+                        _added = true;
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (w.add(this))
+                    {
+                        _world = new WeakReference<World>(w);
+                        _added = true;
+                        onadd();
+                        return true;
+                    }
                 }
             }
             return false;
@@ -414,12 +427,22 @@ namespace Charamaker3
         {
             if (added)
             {
-                if (world.remove(this))
+                if (world != null)
+                {
+                    if (world.remove(this))
+                    {
+                        onremove();
+                        _added = false;
+                        return true;
+                    }
+                }
+                else 
                 {
                     onremove();
                     _added = false;
                     return true;
                 }
+
             }
             return false;
         }
@@ -878,7 +901,7 @@ namespace Charamaker3
                 return true;
             }
             
-                Debug.WriteLine(name+this.GetType().ToString()+" is already added");
+            Debug.WriteLine(name+this.GetType().ToString()+" is already added");
             return false;
         }
 
@@ -1129,9 +1152,15 @@ namespace Charamaker3
         }
         public void addmove(Component c,bool stop=false)
         {
+            if (idx >= cs.Count) //既にidxが進んでいたら
+            {
+                fakeadd(c);
+                c.resettimer();
+            }
             cs.Add(c);
             stops.Add(stop);
             time = sumtime;
+            
         }
         /// <summary>
         /// 
