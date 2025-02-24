@@ -16,6 +16,7 @@ using System.IO.Compression;
 using Vortice.DirectWrite;
 using Charamaker3.Shapes;
 using Rectangle = Charamaker3.Shapes.Rectangle;
+using System.Threading;
 
 namespace Charamaker3
 {
@@ -82,19 +83,25 @@ namespace Charamaker3
             this.watchRect = WatchRect;
 
         }
+        
         /// <summary>
         /// テキストなど事前描画が必要なやつを一気に処理する
         /// </summary>
-        virtual public void PreDraw(float cl)
+        virtual public void PreDraw(float cl,DisplaySemaphores semaphores)
         {
+            List<Task>tasks = new List<Task>();
             //cl=0でも呼び出される
             if (watchRect.world != null)
             {
-                foreach (var a in watchRect.world.Ddic.getresult())
+                tasks.Add(Task.Run(() =>
                 {
-                    a.goPreDraw(this);
-                }
+                    foreach (var a in watchRect.world.Ddic.getresult())
+                    {
+                        a.goPreDraw(this, semaphores);
+                    }
+                }));
             }
+            foreach (var task in tasks) { task.Wait(); }
         }
         public override void update(float cl)
         {
@@ -158,6 +165,10 @@ namespace Charamaker3
             ID2D1RenderTarget render;
         }
     }
+    public class DisplaySemaphores
+    {
+        public SemaphoreSlim TextRender=new SemaphoreSlim(1,1);
+    }
     public class Display
     {
         /// <summary>
@@ -212,6 +223,11 @@ namespace Charamaker3
             _TextRender = render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible);
+
+            _TextRender.BeginDraw();
+
+            _TextRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
+            _TextRender.EndDraw();
 
             _BlendRender = render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
@@ -279,6 +295,13 @@ namespace Charamaker3
             }
             render.EndDraw();
         }
+
+
+        //事前描画のセマフォア
+        private DisplaySemaphores Semaphores =new DisplaySemaphores();
+
+        
+
         /// <summary>
         /// テキストのやつなど、事前に描画が必要なやつなどをまとめて処理する
         /// </summary>
@@ -288,7 +311,7 @@ namespace Charamaker3
             _TextRender.BeginDraw();
             foreach (var a in cameras)
             {
-                a.c.PreDraw(cl);
+                a.c.PreDraw(cl,Semaphores);
             }
             _TextRender.EndDraw();
         }
@@ -513,92 +536,109 @@ namespace Charamaker3
             w = Mathf.ceil(w);
             h = Mathf.ceil(h);
 
-            List<FXY> Points = new List<FXY>();
-            Points.Add(new FXY(_TextRender.Bitmap.Size.Width - 1, _TextRender.Bitmap.Size.Height - 1));
-            
-            foreach (var a in textRenderers)
-            {
-                //上に追加
-                {
-                    var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
-                    if (np.x > 0 && np.y > 0)
-                    {
-                        bool ok = true;
-                        for (int i = 0; i < textRenderers.Count; i++)
-                        {
-                            var b = textRenderers[i];
-                            if (onHani(b.rendZone, np.x, np.y))
-                            {
-                                ok = false;
-                                break;
-                            }
-                        }
-                        if (ok)
-                        {
-                            Points.Add(np);
-                        }
-                    }
-                }
-                //左に追加
-                {
-                    var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
-                    if (np.x > 0 && np.y > 0)
-                    {
-                        bool ok = true;
-
-                        for (int i = 0; i < textRenderers.Count; i++)
-                        {
-                            var b = textRenderers[i];
-                            if (onHani(b.rendZone, np.x, np.y))
-                            {
-                                ok = false;
-                                break;
-                            }
-                        }
-                        if (ok)
-                        {
-                            Points.Add(np);
-                        }
-                    }
-                }
-            }
+            var hanteis = new List<Task>();
 
             List<Shapes.Rectangle> rects = new List<Shapes.Rectangle>();
-            foreach (var a in Points)
+
+            void addrect(FXY np) 
             {
                 float maxx = 0, maxy = 0;
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, a.x, a.y
-                        , a.x - _TextRender.Size.Width, a.y))
+                    if (onHani(b.rendZone, np.x, np.y
+                        , np.x - _TextRender.Size.Width, np.y))
                     {
                         maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w, 0).x, maxx);
                     }
                 }
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, a.x, a.y
-                        , a.x, a.y - _TextRender.Size.Height))
+                    if (onHani(b.rendZone, np.x, np.y
+                        , np.x, np.y - _TextRender.Size.Height))
                     {
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
                     }
                 }
-                if (a.x - maxx > 0 && a.y - maxy > 0)
+                if (np.x - maxx > 0 && np.y - maxy > 0)
                 {
+                    var rect = new Shapes.Rectangle(maxx, maxy, np.x - maxx, np.y - maxy);
 
-                    rects.Add(new Shapes.Rectangle(maxx, maxy, a.x - maxx, a.y - maxy));
+                    rects.Add(rect);
+
                 }
-
             }
+
+            hanteis.Add(Task.Run(() => { addrect(new FXY(_TextRender.Bitmap.Size.Width - 1, _TextRender.Bitmap.Size.Height - 1)); }));
+
+            for ( int t=0;t< textRenderers.Count;t++)
+            {
+                var a=textRenderers[t];
+                hanteis.Add(Task.Run(() =>
+                {
+                    FXY left=null,up=null;
+                    //上に追加
+                    {
+                        var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
+                        if (np.x > 0 && np.y > 0)
+                        {
+                            bool ok = true;
+                            for (int i = 0; i < textRenderers.Count; i++)
+                            {
+                                var b = textRenderers[i];
+                                if (onHani(b.rendZone, np.x, np.y))
+                                {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok )
+                            {
+                                addrect(np);
+                            }
+                        }
+                    }
+                    //左に追加
+                    {
+                        var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
+                        if (np.x > 0 && np.y > 0)
+                        {
+                            bool ok = true;
+
+                            for (int i = 0; i < textRenderers.Count; i++)
+                            {
+                                var b = textRenderers[i];
+                                if (onHani(b.rendZone, np.x, np.y))
+                                {
+                                    ok = false;
+                                    break;
+                                }
+                            }
+                            if (ok)
+                            {
+                                addrect(np);
+                            }
+                        }
+                    }
+                }));
+            }
+            foreach (var a in hanteis) 
+            {
+                a.Wait();
+            }
+
+            
             Shapes.Rectangle res = null;
             foreach (var a in rects)
             {
-                //なるべく面積の大きいやつを選ぶ
-                if (res == null || res.menseki < a.menseki)
+                if (a != null)
                 {
-                    if (a.w >= w && a.h >= h)
+                    //なるべく面積の大きいやつを選ぶ
+                    if (res == null || res.menseki < a.menseki)
                     {
-                        res = a;
+                        if (a.w >= w && a.h >= h)
+                        {
+                            res = a;
+                        }
                     }
                 }
             }

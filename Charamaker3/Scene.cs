@@ -86,7 +86,7 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// ワールドを全消しする。
+        /// ワールドを全消しする。カメラもなくなるのでWacthrect.addもしなさい
         /// </summary>
         public void WorldReset() 
         {
@@ -165,13 +165,13 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// シーンの正しきエンド時に呼び出される。標準では何もしない。<br></br>
+        /// シーンの正しきエンド時に呼び出される。標準ではカメラのWatchrectリムーブ。<br></br>
         /// ここに次のシーンを何にするか描くといい。
         /// </summary>
         virtual protected void onEnd(float cl)
         {
-
             onEnds?.Invoke(this, cl);
+            cam.watchRect.remove();
         }
 
 

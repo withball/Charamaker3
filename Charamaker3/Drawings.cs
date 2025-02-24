@@ -324,19 +324,20 @@ namespace Charamaker3
         /// 事前描画をする
         /// </summary>
         /// <param name="cam"></param>
+        /// <param name="semaphores">並列実行するのでセマフォアが必要かも</param>
         /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
-        virtual public bool goPreDraw(Camera cam)
+        virtual public bool goPreDraw(Camera cam,DisplaySemaphores semaphores)
         {
             if (onCamera(cam))
             {
-                PreDraw(cam);
+                PreDraw(cam,semaphores);
                 return true;
             }
             return false;
         }
 
         protected abstract void draw(Camera cam);
-        protected virtual void PreDraw(Camera cam) { }
+        protected virtual void PreDraw(Camera cam, DisplaySemaphores semaphores) { }
 
         protected bool onCamera(Camera cam)
         {
@@ -938,7 +939,7 @@ namespace Charamaker3
         private string PastText = null;
         private FontC PastFont = null;
         private ColorC PastColor = null;
-        public void Draw(string Text, FontC F, ColorC color)
+        public void Draw(string Text, FontC F, ColorC color,DisplaySemaphores semaphores)
         {
             if (CheckChange(Text, F, color))
             {
@@ -950,6 +951,16 @@ namespace Charamaker3
                 //Debug.WriteLine(Text + " Drawed!");
                 //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
                 var raw = (RawRectF)rendZone;
+
+                /*
+                raw.Top -= 1f;
+                raw.Left -= 1f;
+                raw.Right += 1f;
+                raw.Bottom += 1f;
+                */
+
+                semaphores.TextRender.Wait();
+                
                 render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
                 render.Transform = Matrix3x2.CreateTranslation(0, 0);
 
@@ -980,15 +991,13 @@ namespace Charamaker3
                     {
                         render.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
-
-
                 }
                 {
                     var slb = render.CreateSolidColorBrush(color);
                     render.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
                 render.PopAxisAlignedClip();
-
+                semaphores.TextRender.Release();
 
                 /*
                 {
@@ -1097,7 +1106,7 @@ namespace Charamaker3
             this.font.ToLoad(dd);
 
         }
-        public override bool goPreDraw(Camera cam)
+        public override bool goPreDraw(Camera cam, DisplaySemaphores semaphores)
         {
             if (Trender == null)
             {
@@ -1109,12 +1118,12 @@ namespace Charamaker3
                 Trender.Release();
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
-            return base.goPreDraw(cam);
+            return base.goPreDraw(cam, semaphores);
         }
-        protected override void PreDraw(Camera cam)
+        protected override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
-            base.PreDraw(cam);
-            Trender.Draw(text, font, col);
+            base.PreDraw(cam, semaphores);
+            Trender.Draw(text, font, col,semaphores);
         }
         protected override void draw(Camera cam)
         {
@@ -1151,10 +1160,16 @@ namespace Charamaker3
             rect.Top += zure.y;
             rect.Bottom += zure.y;
             {
+                var source = new Rectangle();
+                Trender.rendZone.copy(source);
+                source.x += 1;
+                source.w -= 2;
+                source.y += 1;
+                source.h -= 2;
                 render.DrawBitmap(Trender.render.Bitmap
                   , rect
                   , this.col.opa, BitmapInterpolationMode.Linear
-                    , Trender.rendZone);
+                    , source);
             }
             if (onWorld==false)
             {
