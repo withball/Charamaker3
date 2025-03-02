@@ -399,6 +399,23 @@ namespace Charamaker3
     public class supersort<T>
         where T : class
     {
+        /// <summary>
+        /// ランダムに並べ替える
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        static public List<T> Random(List<T> list) 
+        {
+            var sort=new supersort<T>();
+            foreach (var a in list) 
+            {
+                sort.add(a, 0);
+            }
+            sort.SameRandom();
+            sort.sort(false);
+            return sort.getresult();
+        }
+
         List<sortnode<T>> list = new List<sortnode<T>>();
         /// <summary>
         /// ソートするものを追加する

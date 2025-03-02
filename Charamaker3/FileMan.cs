@@ -445,7 +445,12 @@ namespace Charamaker3
 
         #region DataSaverManager
 
-        static Dictionary<string,DataSaver> LoadedDS = new Dictionary<string, DataSaver>();
+        /// <summary>
+        /// ロード済みのデータセーバーのパス。消せばリロードしてくれる
+        /// </summary>
+        static public Dictionary<string,DataSaver> LoadedDS = new Dictionary<string, DataSaver>();
+
+        
 
         /// <summary>
         /// データセーバーをロードし、アセット的に保存しておく。

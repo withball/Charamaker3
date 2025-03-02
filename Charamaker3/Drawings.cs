@@ -581,7 +581,6 @@ namespace Charamaker3
             render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
             //色のエフェクトを作る
-
             var blended =cam.d.Blend(bitmap, this.col);
             render.DrawBitmap(blended
                    , rect
