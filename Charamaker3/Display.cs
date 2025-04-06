@@ -243,7 +243,7 @@ namespace Charamaker3
         /// <summary>
         /// スクリーンショットに使うレンダー      
         /// </summary>
-        ID2D1BitmapRenderTarget _SCSRender;
+        C3RenderSet _SCSRender;
 
 
         /// <summary>
@@ -277,9 +277,9 @@ namespace Charamaker3
 
 
             var fom = new Vortice.DCommon.PixelFormat();
-            _SCSRender = render.Render.CreateCompatibleRenderTarget(si, si
+            _SCSRender = new C3RenderSet(render.Render.CreateCompatibleRenderTarget(si, si
                 , fom
-                , CompatibleRenderTargetOptions.GdiCompatible);
+                , CompatibleRenderTargetOptions.GdiCompatible));
 
             var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution)*3, (int)((wi + hei) * resolution)*3);
             _TextRender = render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
@@ -387,22 +387,22 @@ namespace Charamaker3
             //サイズの違いでバグる可能性あり！！！丸めてどうにかしたが、画質の値によっては今後もやばいぞ！
             foreach (var a in cameras)
             {
-                if (a.c.render.Render == render.Render)
+                if (a.c.render == render)
                 {
-                    a.c.render.Render = _SCSRender;
+                    a.c.render = _SCSRender;
                 }
             }
-            _SCSRender.BeginDraw();
+            _SCSRender.Render.BeginDraw();
             draw(0);
-            _SCSRender.EndDraw();
+            _SCSRender.Render.EndDraw();
             foreach (var a in cameras)
             {
-                if (a.c.render.Render == _SCSRender)
+                if (a.c.render == _SCSRender)
                 {
-                    a.c.render.Render = render.Render;
+                    a.c.render = render;
                 }
             }
-            screenShot(_SCSRender);
+            screenShot((ID2D1BitmapRenderTarget)_SCSRender.Render);
             //screenShot(_TextRender);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);
