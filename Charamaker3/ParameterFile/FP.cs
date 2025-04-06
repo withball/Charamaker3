@@ -28,7 +28,7 @@ namespace Charamaker3.ParameterFile
         {
             var res = "";
 
-            using (var fs = new StreamReader(@".\" + path + ".txt"))
+            using (var fs = new StreamReader(FileMan.s_rootpath + path + ".txt"))
             {
                 res = fs.ReadToEnd();
             }
@@ -261,7 +261,7 @@ namespace Charamaker3.ParameterFile
         }
         private void loadparam(string file)
         {
-            using (var fs = new StreamReader(@".\" + file + ".txt"))
+            using (var fs = new StreamReader(FileMan.s_rootpath + file + ".txt"))
             {
                 string load;
                 string region = "";
@@ -297,7 +297,7 @@ namespace Charamaker3.ParameterFile
         }
         private void loadtexts(string file)
         {
-            using (var fs = new StreamReader(@".\" + file + ".txt"))
+            using (var fs = new StreamReader(FileMan.s_rootpath + file + ".txt"))
             {
                 string load;
                 string region = "";
@@ -369,7 +369,7 @@ namespace Charamaker3.ParameterFile
 
         private void loadcsv(string file)
         {
-            using (var fs = new StreamReader(@".\" + file + ".csv"))
+            using (var fs = new StreamReader(FileMan.s_rootpath + file + ".csv"))
             {
                 string load;
                 List<string> names = new List<string>();

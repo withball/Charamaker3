@@ -20,7 +20,52 @@ using System.Threading;
 
 namespace Charamaker3
 {
+    /// <summary>
+    /// レンダーのセット！
+    /// </summary>
+    public class C3RenderSet 
+    {
+        public ID2D1RenderTarget Render;
 
+        public ID2D1DeviceContext DeviceContext;
+
+        /// <summary>
+        /// テクスチャ描画に使うエフェクトたち
+        /// </summary>
+        public Vortice.Direct2D1.Effects.AffineTransform2D ECrop0;
+        public Vortice.Direct2D1.Effects.Crop ECrop1;
+        public Vortice.Direct2D1.Effects.AffineTransform2D ECrop2;
+        public Vortice.Direct2D1.Effects.ColorMatrix EBlend;
+        public Vortice.Direct2D1.Effects.AffineTransform2D ETrans;
+
+        /// <summary>
+        /// エフェクトとかも確保してくれる
+        /// </summary>
+        /// <param name="render"></param>
+        public C3RenderSet(ID2D1RenderTarget render) 
+        {
+        this.Render = render;
+            this.DeviceContext=this.Render.QueryInterface<ID2D1DeviceContext>();
+            this.ECrop0 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
+            this.ECrop1 = new Vortice.Direct2D1.Effects.Crop(DeviceContext);
+            this.ECrop2 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
+            this.EBlend = new Vortice.Direct2D1.Effects.ColorMatrix(DeviceContext);
+            this.ETrans = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
+        }
+        /// <summary>
+        /// レンダーまでは開放しない
+        /// </summary>
+         ~C3RenderSet() 
+        {
+            ECrop0.Release();
+            ECrop1.Release();
+            ECrop2.Release();
+            EBlend.Release();
+            ETrans.Release();
+            DeviceContext.Release();
+
+        }
+    }
     /// <summary>
     /// カメラは現在、コピーSAVE不可
     /// </summary>
@@ -30,13 +75,14 @@ namespace Charamaker3
         /// <summary>
         /// レンダー
         /// </summary>
-        public ID2D1RenderTarget render;
+        public C3RenderSet render;
+
         public ID2D1BitmapRenderTarget Brender
         {
             get
             {
                 if (!isBitmap) return null;
-                return (ID2D1BitmapRenderTarget)render;
+                return (ID2D1BitmapRenderTarget)render.Render;
             }
         }
         /// <summary>
@@ -56,7 +102,7 @@ namespace Charamaker3
         {
             get
             {
-                return render.Size.Width / Mathf.abs(watchRect.w);
+                return render.Render.Size.Width / Mathf.abs(watchRect.w);
             }
         }
         /// <summary>
@@ -64,7 +110,7 @@ namespace Charamaker3
         /// </summary>
         public float resoly
         {
-            get { return render.Size.Height / Mathf.abs(watchRect.h); }
+            get { return render.Render.Size.Height / Mathf.abs(watchRect.h); }
         }
 
         /// <summary>
@@ -75,7 +121,7 @@ namespace Charamaker3
         /// <param name="col"></param>
         /// <param name="render"></param>
         /// <param name="d"></param>
-        public Camera(Entity WatchRect, float z, ColorC col, ID2D1RenderTarget render, Display d) : base(z, col)
+        public Camera(Entity WatchRect, float z, ColorC col,C3RenderSet render, Display d) : base(z, col)
         {
             this.d = d;
             this.render = render;
@@ -93,11 +139,16 @@ namespace Charamaker3
             //cl=0でも呼び出される
             if (watchRect.world != null)
             {
+
                 tasks.Add(Task.Run(() =>
                 {
                     foreach (var a in watchRect.world.Ddic.getresult())
                     {
-                        a.goPreDraw(this, semaphores);
+                        if (a.CanDraw(this))
+                        {
+                            a.PreDraw(this, semaphores);
+                        }
+
                     }
                 }));
             }
@@ -111,24 +162,44 @@ namespace Charamaker3
             //cl=0でも呼び出される
             if (isBitmap)
             {
-                render.BeginDraw();
+                render.Render.BeginDraw();
             }
             if (!(!isBitmap && col.opa <= 0))
             {
-                render.Clear(col);
+                render.Render.Clear(col);
             }
             if (watchRect.world != null)
             {
 
-                foreach (var a in watchRect.world.Ddic.getresult())
+
+                var lis = watchRect.world.Ddic.getresult();
+                var oks = new bool[lis.Count];
+
+                List<Task> tasks = new List<Task>();
+
+                for (int i = 0; i < lis.Count; i++)//描画判定を先に済ませる
                 {
-                    a.goDraw(this);
+                    int ii = i;
+                    tasks.Add(Task.Run(() =>
+                    {
+                        oks[ii] = lis[ii].CanDraw(this);
+                    }));
                 }
-                render.Transform = Matrix3x2.CreateRotation(0);
+
+                foreach (var task in tasks) { task.Wait(); }
+
+                for (int i = 0;i<lis.Count;i++)
+                {
+                    if (oks[i])
+                    {
+                        lis[i].draw(this);
+                    }
+                }
+                render.Render.Transform = Matrix3x2.CreateRotation(0);
             }
             if (isBitmap)
             {
-                render.EndDraw();
+                render.Render.EndDraw();
             }
         }
         ~Camera()
@@ -140,30 +211,20 @@ namespace Charamaker3
                 Brender.Dispose();
             }
         }
-        override protected void draw(Camera cam)
+        override public void draw(Camera cam)
         {
             if (isBitmap)
             {
                 var render = cam.render;
-                render.Transform = rectTrans(cam);
-                render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, BitmapInterpolationMode.Linear, source);
+                render.Render.Transform = rectTrans(cam);
+                render.Render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, BitmapInterpolationMode.Linear, source);
             }
         }
         /// <summary>
         /// ビットマップ全体
         /// </summary>
         /// <returns></returns>
-        protected RawRectF source { get { return new RawRectF(0, 0, render.Size.Width, render.Size.Height); } }
-    }
-    /// <summary>
-    /// なぜか解放できないレンダーのセット
-    /// </summary>
-    public class RenderSet
-    {
-        public RenderSet() 
-        {
-            ID2D1RenderTarget render;
-        }
+        protected RawRectF source { get { return new RawRectF(0, 0, render.Render.Size.Width, render.Render.Size.Height); } }
     }
     public class DisplaySemaphores
     {
@@ -175,8 +236,9 @@ namespace Charamaker3
         /// カメラのWatchRectの標準の名前
         /// </summary>
         public const string WatchRectName = "WatchRect";
-        public ID2D1HwndRenderTarget render { get { return _render; } }
-        ID2D1HwndRenderTarget _render;
+        public C3RenderSet render { get { return _render; } }
+        C3RenderSet _render;
+
 
         /// <summary>
         /// スクリーンショットに使うレンダー      
@@ -197,8 +259,8 @@ namespace Charamaker3
 
         ID2D1Factory fac;
         public readonly float resol;
-        public float width { get { return _render.Size.Width; } }
-        public float height { get { return _render.Size.Height; } }
+        public float width { get { return _render.Render.Size.Width; } }
+        public float height { get { return _render.Render.Size.Height; } }
 
         public Display(ContainerControl f, float resolution)
         {
@@ -211,16 +273,16 @@ namespace Charamaker3
             var hei = f.ClientSize.Height;
             System.Drawing.Size si = new System.Drawing.Size((int)(wi * resolution), (int)(hei * resolution));
             hrenpro.PixelSize = si;
-            _render = fac.CreateHwndRenderTarget(renpro, hrenpro);
+            _render = new C3RenderSet(fac.CreateHwndRenderTarget(renpro, hrenpro));
 
 
             var fom = new Vortice.DCommon.PixelFormat();
-            _SCSRender = render.CreateCompatibleRenderTarget(si, si
+            _SCSRender = render.Render.CreateCompatibleRenderTarget(si, si
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible);
 
-            var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution), (int)((wi + hei) * resolution));
-            _TextRender = render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+            var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution)*3, (int)((wi + hei) * resolution)*3);
+            _TextRender = render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible);
 
@@ -229,7 +291,7 @@ namespace Charamaker3
             _TextRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
             _TextRender.EndDraw();
 
-            _BlendRender = render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+            _BlendRender = render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible);
 
@@ -243,7 +305,7 @@ namespace Charamaker3
         /// <returns></returns>
         public Camera makeCamera(Entity Watchrect, ColorC backcolor)
         {
-            Entity back = Entity.make2(0, 0, render.Size.Width, render.Size.Height);
+            Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height);
             Camera res;
             res = new Camera(Watchrect, 0, backcolor, render, this);
             res.add(back);
@@ -258,7 +320,7 @@ namespace Charamaker3
         /// <returns></returns>
         public Camera makeCamera(ColorC backcolor)
         {
-            Entity Watchrect = Entity.make2(0, 0, render.Size.Width / resol, render.Size.Height / resol, name: WatchRectName);
+            Entity Watchrect = Entity.make2(0, 0, render.Render.Size.Width / resol, render.Render.Size.Height / resol, name: WatchRectName);
 
             return makeCamera(Watchrect, backcolor);
         }
@@ -285,7 +347,7 @@ namespace Charamaker3
         public void draw(float cl = 1)
         {
             PreDraw(cl);
-            render.BeginDraw();
+            render.Render.BeginDraw();
             foreach (var a in cameras)
             {
                 if (a.c.watchRect.added)
@@ -293,7 +355,7 @@ namespace Charamaker3
                     a.c.e.update(cl);
                 }
             }
-            render.EndDraw();
+            render.Render.EndDraw();
         }
 
 
@@ -321,13 +383,13 @@ namespace Charamaker3
         /// </summary>
         public void ShotThisScreen(Camera cam)
         {
-            var Size = render.PixelSize;
+            var Size = render.Render.PixelSize;
             //サイズの違いでバグる可能性あり！！！丸めてどうにかしたが、画質の値によっては今後もやばいぞ！
             foreach (var a in cameras)
             {
-                if (a.c.render == _render)
+                if (a.c.render.Render == render.Render)
                 {
-                    a.c.render = _SCSRender;
+                    a.c.render.Render = _SCSRender;
                 }
             }
             _SCSRender.BeginDraw();
@@ -335,9 +397,9 @@ namespace Charamaker3
             _SCSRender.EndDraw();
             foreach (var a in cameras)
             {
-                if (a.c.render == _SCSRender)
+                if (a.c.render.Render == _SCSRender)
                 {
-                    a.c.render = render;
+                    a.c.render.Render = render.Render;
                 }
             }
             screenShot(_SCSRender);
@@ -421,7 +483,7 @@ namespace Charamaker3
             h.hyoji2(bt, 0, true, true, false, false, true);
             */
 
-            string dir = FileMan.rootpath + @"shots\";
+            string dir = FileMan.s_rootpath + @"shots\";
 
             if (Directory.Exists(dir))
             {
@@ -690,13 +752,14 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// ビットマップに色を付けて返す。
+        /// ビットマップに色を付けて返す。少しでも色付けちゃうと重くなる悪いシステム
         /// </summary>
         /// <param name=""></param>
-        /// <param name=""></param>
+        /// <param name="color">opacityは関係ない</param>
         /// <returns></returns>
-        public ID2D1Bitmap Blend(ID2D1Bitmap bitmap,ColorC color) 
+        public ID2D1Bitmap Blend(ID2D1Bitmap bitmap, ColorC color)
         {
+            if (color.r == 1 && color.g == 1 && color.b == 1) { return bitmap; }
             var d2dContext = _BlendRender.QueryInterface<ID2D1DeviceContext>();
 
 
@@ -705,9 +768,12 @@ namespace Charamaker3
 
 
             var blend = new Vortice.Direct2D1.Effects.ColorMatrix(d2dContext);
-            blend.SetInput(0,bitmap, new SharpGen.Runtime.RawBool(true));
-            
-            var colormatrix = new Matrix5x4();
+            blend.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(true));
+
+            var trans=new Vortice.Direct2D1.Effects.AffineTransform2D(d2dContext);
+            trans.SetInputEffect(0,blend, new SharpGen.Runtime.RawBool(true));
+
+           var colormatrix = new Matrix5x4();
             colormatrix.M11 = color.r;
             colormatrix.M12 = 0;
             colormatrix.M13 = 0;
@@ -723,25 +789,25 @@ namespace Charamaker3
             colormatrix.M41 = 0;
             colormatrix.M42 = 0;
             colormatrix.M43 = 0;
-            colormatrix.M44 = color.opa;
+            colormatrix.M44 = 1;
             colormatrix.M51 = 0;
             colormatrix.M52 = 0;
             colormatrix.M53 = 0;
             colormatrix.M54 = 0;
-            
+
             blend.Matrix = colormatrix;
-            
+
 
             //_BlendRender.BeginDraw();
             d2dContext.BeginDraw();
-            
-            
+
+
             d2dContext.Clear(new ColorC(0, 0, 0, 0));
             //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
-        
+
 
             d2dContext.DrawImage(blend);
-         
+
             d2dContext.EndDraw();
             //_BlendRender.BeginDraw();
 
@@ -750,9 +816,9 @@ namespace Charamaker3
             blend.Release();
             //blend.Dispose();
             //_BlendRender.PopAxisAlignedClip();
-            
+
             return _BlendRender.Bitmap;
-        
+
         }
     }
 }

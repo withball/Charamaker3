@@ -7,7 +7,7 @@ using Charamaker3.Utils;
 
 namespace Charamaker3.CharaModel
 {
-    public partial class EntityMove : Component 
+    public partial class EntityMove : Component
     {
 
 
@@ -15,7 +15,7 @@ namespace Charamaker3.CharaModel
         /// モーションを作る
         /// </summary>
         /// <returns>__MOVE__</returns>
-        static public Motion MakeMotion() 
+        static public Motion MakeMotion()
         {
             return new Motion();
         }
@@ -35,7 +35,7 @@ namespace Charamaker3.CharaModel
         /// <param name="time"></param>
         /// <param name="eventName"></param>
         /// <returns>__MOVE__</returns>
-        static public FreeEventer FreeEventer(float time, string eventName) 
+        static public FreeEventer FreeEventer(float time, string eventName)
         {
             return new FreeEventer(time, eventName);
         }
@@ -51,9 +51,9 @@ namespace Charamaker3.CharaModel
         /// <param name="ddegree">=0</param>
         /// <param name="withbigs">dx,dyを(w+h)/2に依存するか=false</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMove XYD(float time, string name = "", float dx = 0, float dy = 0, float ddegree = 0, bool withbigs=false)
+        static public EntityMove XYD(float time, string name = "", float dx = 0, float dy = 0, float ddegree = 0, bool withbigs = false)
         {
-            EntityMove res; 
+            EntityMove res;
             if (withbigs)
             {
                 res = new EntityMove(time, dx, dy, float.NaN, float.NaN, float.NaN, float.NaN, ddegree, float.NaN, float.NaN, name);
@@ -77,9 +77,9 @@ namespace Charamaker3.CharaModel
         static public EntityMove JXY(float time, string name = "", float dpx = 0, float dpy = 0)
         {
             EntityMove res;
-           
+
             {
-                res = new EntityMove(time, 0,0, 0, 0, 0, 0, 0, dpx, dpy, name);
+                res = new EntityMove(time, 0, 0, 0, 0, 0, 0, 0, dpx, dpy, name);
                 res.SO = scaleOption.F;
             }
             return res;
@@ -167,7 +167,7 @@ namespace Charamaker3.CharaModel
         /// <param name="joint">ジョイント依存にする=true</param>
         /// <returns>__MOVE__</returns>
         static public EntityMove RotateToLim(float time, string name = "", float degree = 0, float speedlimit = 0
-            , bool shortestPath=true
+            , bool shortestPath = true
             , bool joint = true)
         {
             var res = new EntityMove(time, 0, 0, 0, 0, 0, 0, degree, 0, 0, name);
@@ -183,7 +183,7 @@ namespace Charamaker3.CharaModel
             {
                 res.RP = rotatePath.shorts;
             }
-            else 
+            else
             {
                 if (speedlimit > 0)
                 {
@@ -236,7 +236,7 @@ namespace Charamaker3.CharaModel
         /// <param name="goall">リーフにも適用するか=true</param>
         /// <returns>__MOVE__</returns>
         static public EntityMove RotateToLimBase(float time, string name = "", float degree = 0, float speedlimit = 0
-            , bool shortestPath=true, bool goall = true)
+            , bool shortestPath = true, bool goall = true)
         {
             var res = new EntityMove(time, 0, 0, 0, 0, 0, 0, degree, 0, 0, name);
             res.RO = rotateOption.baseCharacter;
@@ -327,7 +327,7 @@ namespace Charamaker3.CharaModel
         /// <returns>__MOVE__</returns>
         static public EntityMirror Mirror(string name, MirrorOption mo = MirrorOption.Reverse, bool goreef = true, float time = 0, bool isMoveDegree = true)
         {
-            return new EntityMirror(name, time, mo,goreef,isMoveDegree);
+            return new EntityMirror(name, time, mo, goreef, isMoveDegree);
         }
 
 
@@ -364,10 +364,10 @@ namespace Charamaker3.CharaModel
         /// <param name="file">ファイル名</param>
         /// <param name="volume">=1</param>
         /// <returns>__MOVE__</returns>
-        static public Component PlaySound(string file,float volume=1) 
+        static public Component PlaySound(string file, float volume = 1)
         {
             var sc = SoundComponent.MakeSE(FileMan.SE, file, volume, true);
-            var c=new Component(0);
+            var c = new Component(0);
             c.afters.Add(sc);
             return c;
         }
@@ -509,37 +509,95 @@ namespace Charamaker3.CharaModel
             res.CO = changeOption.fromBase;
             return res;
         }
+
+
+        /// <summary>
+        /// テキストを消去する
+        /// </summary>
+        /// <param name="time">=0</param>
+        /// <param name="name">=""</param>
+        /// <returns>__MOVE__</returns>
+        static public TextMove ClearText(float time = 0,string name = "")
+        {
+            var font = new FontC();
+            font.ali = FontC.alignment.None;
+            font.aliV = FontC.alignment.None;
+            font.hutiZure = float.NaN;
+            font.hutiColor.r = float.NaN;
+            font.hutiColor.g = float.NaN;
+            font.hutiColor.b = float.NaN;
+            font.hutiColor.opa = float.NaN;
+            font.isBold = -1;
+            font.isItaric = -1;
+            font.fontName = "";
+            font.size = float.NaN;
+            font.w = float.NaN;
+            font.h = float.NaN;
+
+            var res = new TextMove(name, time, "", 0, font, name);
+
+            return res;
+        }
+
+        /// <summary>
+        /// テキストをセットする。ちょっとずつやりたいなら消してからやってね
+        /// </summary>>
+        /// <param name="time">=0</param>
+        /// <param name="name">=""</param>
+        /// <param name="Text">=""</param
+        /// <returns>__MOVE__</returns>
+        static public TextMove SetText(float time = 0,string name = "",string Text="")
+        {
+            var font = new FontC();
+            font.ali = FontC.alignment.None;
+            font.aliV = FontC.alignment.None;
+            font.hutiZure = float.NaN;
+            font.hutiColor.r = float.NaN;
+            font.hutiColor.g = float.NaN;
+            font.hutiColor.b = float.NaN;
+            font.hutiColor.opa = float.NaN;
+            font.isBold = -1;
+            font.isItaric = -1;
+            font.fontName = "";
+            font.size = float.NaN;
+            font.w = float.NaN;
+            font.h = float.NaN;
+
+            var res = new TextMove(name, time, Text, Text.Length, font, name);
+
+            return res;
+        }
     }
-    public enum scaleOption { 
+    public enum scaleOption {
         /// <summary>
         /// スケールしない
         /// </summary>
-        F=-1
-                                  , scale=1
-            , basescale=2};
-    public enum rotateOption { F=-1, world=0, joint=1, baseCharacter=2 };
-    public enum rotatePath { shorts=0, plus=1, minus=-1 };
-    public enum goOption 
+        F = -1
+                                  , scale = 1
+            , basescale = 2 };
+    public enum rotateOption { F = -1, world = 0, joint = 1, baseCharacter = 2 };
+    public enum rotatePath { shorts = 0, plus = 1, minus = -1 };
+    public enum goOption
     {
         /// <summary>
         /// 親と同じ動きを子供にも適用
         /// </summary>
-        def=0, 
+        def = 0,
         /// <summary>
         /// 親だけに適用
         /// </summary>
-        onlyRoot=-1, 
+        onlyRoot = -1,
         /// <summary>
         /// 親子すべてに対して効果を計算し、適用。
         /// </summary>
-        goAll=1
+        goAll = 1
     };
     public enum MirrorOption
     {
         No = 1, Mirror = -1, Reverse = 0
     }
 
-    public enum changeOption { difference=1, fromBase=2 };
+    public enum changeOption { difference = 1, fromBase = 2 };
     /// <summary>
     /// 値を直接的に変更するクラス。もう一つはmirrorのクラス。
     /// WARNING: basew=0のときあやしい
@@ -571,7 +629,7 @@ namespace Charamaker3.CharaModel
         const int _DY = 8;
         bool instant { get { return time <= 0; } }
 
-        
+
 
         /// <summary>
         /// scaleをどう変化させるか
@@ -589,12 +647,12 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// サイズ、角度、中心、dxyを無理やり全体に適用する。
         /// </summary>
-        goOption GO=goOption.def;
+        goOption GO = goOption.def;
 
 
         public EntityMove() { }
         public EntityMove(float time, float dx = 0, float dy = 0, float dw = 0, float dh = 0, float dtx = 0, float dty = 0
-            , float ddegree = 0, float ddx = 0, float ddy=0, string name = "") : base(time, name)
+            , float ddegree = 0, float ddx = 0, float ddy = 0, string name = "") : base(time, name)
         {
 
             basespeeds[_X] = dx;
@@ -638,7 +696,7 @@ namespace Charamaker3.CharaModel
         }
         public override DataSaver ToSave()
         {
-            var res= base.ToSave();
+            var res = base.ToSave();
             res.linechange();
             res.packAdd("GO", (int)GO);
             res.packAdd("_X", basespeeds[_X]);
@@ -655,7 +713,7 @@ namespace Charamaker3.CharaModel
 
             res.packAdd("RO", (int)RO);
             res.packAdd("RP", (int)RP);
-            res.packAdd("degreeSpeedLimit", degreeSpeedLimit);            
+            res.packAdd("degreeSpeedLimit", degreeSpeedLimit);
             res.packAdd("_DEGREE", basespeeds[_DEGREE]);
 
             res.linechange();
@@ -685,7 +743,7 @@ namespace Charamaker3.CharaModel
             basespeeds[_DX] = d.unpackDataF("_DX");
             basespeeds[_DY] = d.unpackDataF("_DY");
 
-        
+
         }
         public override string ToString()
         {
@@ -763,10 +821,10 @@ namespace Charamaker3.CharaModel
 
 
 
-                  
+
                     if (Mathf.abs(Mathf.st180(distance)) < 0.1f) //行き過ぎ回転しないように
                     {
-                       // Debug.WriteLine(distance + " : " + degreeSpeedLimit + " to " + tags[0].name);
+                        // Debug.WriteLine(distance + " : " + degreeSpeedLimit + " to " + tags[0].name);
 
                         for (int t = 0; t < tags.Count; t++)
                         {
@@ -775,7 +833,7 @@ namespace Charamaker3.CharaModel
                     }
                     else if (degreeSpeedLimit * ratio <= Mathf.abs(distance))
                     {
-                      //  Debug.WriteLine("bigger than limit" + distance);
+                        //  Debug.WriteLine("bigger than limit" + distance);
                         for (int t = 0; t < tags.Count; t++)
                         {
                             tags[t].degree += Mathf.sameSign(degreeSpeedLimit * ratio, distance);
@@ -783,7 +841,7 @@ namespace Charamaker3.CharaModel
                     }
                     else
                     {
-                       // Debug.WriteLine("less than limit" + distance);
+                        // Debug.WriteLine("less than limit" + distance);
                         for (int t = 0; t < tags.Count; t++)
                         {
                             tags[t].degree += distance;
@@ -794,7 +852,7 @@ namespace Charamaker3.CharaModel
             }
             else
             {
-               // Debug.WriteLine("default degreee");
+                // Debug.WriteLine("default degreee");
 
                 for (int t = 0; t < tags.Count; t++)
                 {
@@ -809,7 +867,7 @@ namespace Charamaker3.CharaModel
                 tags[t].x += (float)(speeds[t][_X] * ratio);
                 tags[t].y += (float)(speeds[t][_Y] * ratio);
 
-                var pos=tags[t].gettxy();
+                var pos = tags[t].gettxy();
                 tags[t].w += (float)(speeds[t][_W] * ratio);
                 tags[t].h += (float)(speeds[t][_H] * ratio);
                 tags[t].tx += (float)(speeds[t][_TX] * ratio);
@@ -822,7 +880,7 @@ namespace Charamaker3.CharaModel
                     Jtags[t].py += speeds[t][_DY] * ratio;
                 }
             }
-            
+
         }
         protected override void onadd(float cl)
         {
@@ -902,7 +960,7 @@ namespace Charamaker3.CharaModel
                                 case _X:
                                     if (!float.IsNaN(basespeeds[i]))
                                     {
-                                        speeds[t][i] = basespeeds[i] * tagBases[t].w ;
+                                        speeds[t][i] = basespeeds[i] * tagBases[t].w;
                                     }
                                     else
                                     {
@@ -1188,15 +1246,15 @@ namespace Charamaker3.CharaModel
                                     }
                                     break;
                                 case _DX:
-                                        if (Jtags[t] != null && !float.IsNaN(basespeeds[i]))
-                                        {
-                                            speeds[t][i] = basespeeds[i] * JtagBases[t].px - Jtags[t].px;
-                                        }
-                                        else
-                                        {
-                                            speeds[t][i] = 0;
-                                        } 
-                                    
+                                    if (Jtags[t] != null && !float.IsNaN(basespeeds[i]))
+                                    {
+                                        speeds[t][i] = basespeeds[i] * JtagBases[t].px - Jtags[t].px;
+                                    }
+                                    else
+                                    {
+                                        speeds[t][i] = 0;
+                                    }
+
                                     break;
                                 case _DY:
                                     if (Jtags[t] != null && !float.IsNaN(basespeeds[i]))
@@ -1241,7 +1299,7 @@ namespace Charamaker3.CharaModel
                             }
                         }
                     }
-                    else 
+                    else
                     {
                         speeds[t][i] = 0;
                     }
@@ -1249,7 +1307,7 @@ namespace Charamaker3.CharaModel
             }
             if (degreeSpeedLimit >= 0) //無理やりの実装
             {
-            //    addDefference(cl);
+                //    addDefference(cl);
             }
             else if (instant)
             {
@@ -1299,7 +1357,7 @@ namespace Charamaker3.CharaModel
 
                 if (tname == "setumageman")
                 {
-                   
+
 
                     res.addmove(
                         EntityMove.RotateToLim(ddd.unpackDataF("time"), ddd.unpackDataS("name")
@@ -1320,11 +1378,11 @@ namespace Charamaker3.CharaModel
                         DrawableMove.ChangeTexture(ddd.unpackDataS("name"), ddd.unpackDataS("tex"))
                         , false);
                 }
-                else if (tname == "setuidouman") 
+                else if (tname == "setuidouman")
                 {
                     res.addmove(
-                        EntityMove.XYD(ddd.unpackDataF("time"),ddd.unpackDataS("name"),
-                        ddd.unpackDataF("vdx")*ddd.unpackDataF("time")
+                        EntityMove.XYD(ddd.unpackDataF("time"), ddd.unpackDataS("name"),
+                        ddd.unpackDataF("vdx") * ddd.unpackDataF("time")
                         , ddd.unpackDataF("vdy") * ddd.unpackDataF("time")
                         , ddd.unpackDataF("vsita") * ddd.unpackDataF("time"))
 
@@ -1335,7 +1393,7 @@ namespace Charamaker3.CharaModel
                     res.addmove(
                         DrawableMove.BaseZChange(ddd.unpackDataS("name"), ddd.unpackDataS("toname"),
                         ddd.unpackDataF("dz"))
-                        ,false);
+                        , false);
                 }
             }
             return res;
@@ -1365,10 +1423,10 @@ namespace Charamaker3.CharaModel
         const int _DEGREE = 4;
         const int _MIRRORED = 5;
         bool instant { get { return time == 0; } }
-        
-      
+
+
         public EntityMirror() { }
-        public EntityMirror(string name,float time,MirrorOption mo,bool goall,bool isMoveDegree = true):base(time,name) 
+        public EntityMirror(string name, float time, MirrorOption mo, bool goall, bool isMoveDegree = true) : base(time, name)
         {
             this.MO = mo;
             if (time == 0)
@@ -1472,9 +1530,9 @@ namespace Charamaker3.CharaModel
                         a.degree = Mathf.st180(tagBases[i].degree - Mathf.st180(a.degree - tagBases[i].degree));
                     }
                 }
-                else if(goall)
+                else if (goall)
                 {
-                    if (topmirrored) 
+                    if (topmirrored)
                     {
                         a.mirror = !a.mirror;
                     }
@@ -1484,7 +1542,7 @@ namespace Charamaker3.CharaModel
                         a.degree = Mathf.st180(tagBases[i].degree - Mathf.st180(a.degree - tagBases[i].degree));
                     }
                 }
-                
+
 
 
             }
@@ -1500,7 +1558,7 @@ namespace Charamaker3.CharaModel
 
                 tags.Add(e);
                 tagBases.Add(e);
-                speeds.Add(new float[] { e.w , 0 ,e.tx,0,0,0});
+                speeds.Add(new float[] { e.w, 0, e.tx, 0, 0, 0 });
             }
             else
             {
@@ -1514,16 +1572,16 @@ namespace Charamaker3.CharaModel
                     {
                         tagBases.Add(b);
                     }
-                    for (int i = 0; i < tagBases.Count; i++) 
+                    for (int i = 0; i < tagBases.Count; i++)
                     {
-                        if (i == 0||goall==true)
+                        if (i == 0 || goall == true)
                         {
                             speeds.Add(new float[] { tags[i].w, 0, tags[i].tx, 0
                             ,
                          Mathf.st180(tagBases[i].degree - Mathf.st180(tags[i].degree - tagBases[i].degree)-tags[i].degree)
                         ,0});
                         }
-                        else 
+                        else
                         {
                             speeds.Add(new float[] { 0, 0, 0, 0
                             ,0
@@ -1534,7 +1592,7 @@ namespace Charamaker3.CharaModel
                 }
 
             }
-            if (instant&&!mirrored) 
+            if (instant && !mirrored)
             {
                 mirrored = true;
                 enmirror(true);
@@ -1605,7 +1663,7 @@ namespace Charamaker3.CharaModel
         /// "\\"で、ベース。
         /// </summary>
         string texture = "_";
-        string zname="_";
+        string zname = "_";
 
         goOption GO = goOption.def;
 
@@ -1621,11 +1679,11 @@ namespace Charamaker3.CharaModel
 
 
 
-        
+
         protected changeOption CO = changeOption.difference;
 
         public DrawableMove() { }
-        public DrawableMove(float time, float dz = 0, float dr = 0, float dg = 0, float db = 0, float dopa = 0, string texture=""
+        public DrawableMove(float time, float dz = 0, float dr = 0, float dg = 0, float db = 0, float dopa = 0, string texture = ""
             , string name = "") : base(time, name)
         {
 
@@ -1649,7 +1707,7 @@ namespace Charamaker3.CharaModel
 
             }
         }
-      
+
         public override void copy(Component c)
         {
             var cc = (DrawableMove)c;
@@ -1678,14 +1736,14 @@ namespace Charamaker3.CharaModel
             res.packAdd("texture", texture);
             res.packAdd("zname", zname);
             res.packAdd("CO", (changeOption)CO);
-            
+
             return res;
         }
         protected override void ToLoad(DataSaver d)
         {
             base.ToLoad(d);
 
-            GO = d.unpackDataE<goOption>("GO",goOption.def);
+            GO = d.unpackDataE<goOption>("GO", goOption.def);
             basespeeds[_Z] = d.unpackDataF("_Z");
             basespeeds[_R] = d.unpackDataF("_R");
             basespeeds[_G] = d.unpackDataF("_G");
@@ -1695,7 +1753,7 @@ namespace Charamaker3.CharaModel
             texture = d.unpackDataS("texture");
             zname = d.unpackDataS("zname");
 
-            CO = d.unpackDataE<changeOption>("CO",changeOption.difference);
+            CO = d.unpackDataE<changeOption>("CO", changeOption.difference);
         }
 
 
@@ -1711,13 +1769,13 @@ namespace Charamaker3.CharaModel
         {
             for (int t = 0; t < tags.Count; t++)
             {
-                for(int i=0;i< tags[t].Count;i++)
+                for (int i = 0; i < tags[t].Count; i++)
                 {
                     tags[t][i].z += (float)(speeds[t][i][_Z] * ratio);
                     tags[t][i].col.r += (float)(speeds[t][i][_R] * ratio);
                     tags[t][i].col.g += (float)(speeds[t][i][_G] * ratio);
                     tags[t][i].col.b += (float)(speeds[t][i][_B] * ratio);
-                  
+
                     tags[t][i].col.opa += (float)(speeds[t][i][_OPA] * ratio);
                 }
             }
@@ -1727,20 +1785,20 @@ namespace Charamaker3.CharaModel
             if (texture != "_")
             {
                 var lis = new List<List<Drawable>>();
-                if (GO ==goOption.goAll)
+                if (GO == goOption.goAll)
                 {
                     lis = tags;
                 }
-                else 
+                else
                 {
                     if (tags.Count > 0)
                     {
                         lis.Add(tags[0]);
                     }
                 }
-                for (int i=0;i<lis.Count;i++)
+                for (int i = 0; i < lis.Count; i++)
                 {
-                    for(int t=0;t<lis[i].Count;t++)
+                    for (int t = 0; t < lis[i].Count; t++)
                     {
                         var a = lis[i][t];
                         if (a.GetType() == typeof(Texture) || a.GetType().IsSubclassOf(typeof(Texture)))
@@ -1751,7 +1809,7 @@ namespace Charamaker3.CharaModel
                             {
                                 b.texname = bb.texname;
                             }
-                            else 
+                            else
                             {
                                 b.texname = texture;
                             }
@@ -1805,13 +1863,13 @@ namespace Charamaker3.CharaModel
                     {
                         var drawsC = geC.getcompos<Drawable>();
                         var draws = ge.getcompos<Drawable>();
-                        if (drawsC.Count > 0&&draws.Count>0)
+                        if (drawsC.Count > 0 && draws.Count > 0)
                         {
                             zparts = drawsC[0];
                             zpartsdz = ((maxz - minz) * basespeeds[_Z]) + zparts.z - draws[0].z;
                         }
                     }
-                
+
                 }
             }
             for (int t = 0; t < tags.Count; t++)
@@ -1904,7 +1962,7 @@ namespace Charamaker3.CharaModel
                             {
                                 switch (j)
                                 {
-                               
+
                                     case _R:
                                         if (!float.IsNaN(basespeeds[j]))
                                         {
@@ -1977,7 +2035,7 @@ namespace Charamaker3.CharaModel
                                 }
                             }
                         }
-                        else 
+                        else
                         {
                             speeds[t][i][j] = 0;
                         }
@@ -1988,18 +2046,18 @@ namespace Charamaker3.CharaModel
             {
                 addDefference(1);
             }
-           /* else
-            {
-                float speed = 1 / time;
-                addDefference(Math.Min(speed * cl,1));
-            }*/
+            /* else
+             {
+                 float speed = 1 / time;
+                 addDefference(Math.Min(speed * cl,1));
+             }*/
             base.onadd(cl);
         }
         protected override void onupdate(float cl)
         {
             if (cl > 0)
             {
-               if (!instant)
+                if (!instant)
                 {
                     float speed = 1 / time;
                     addDefference(speed * cl);
@@ -2046,10 +2104,10 @@ namespace Charamaker3.CharaModel
 
 
 
-        
+
 
         public ZRotateMove() { }
-        public ZRotateMove(float time,float stx,float enx,float sty,float eny,float scx,float scy,string name="") : base(time, name)
+        public ZRotateMove(float time, float stx, float enx, float sty, float eny, float scx, float scy, string name = "") : base(time, name)
         {
 
             basespeeds[_STX] = stx;
@@ -2073,7 +2131,7 @@ namespace Charamaker3.CharaModel
 
             }
         }
-      
+
         public override void copy(Component c)
         {
             var cc = (ZRotateMove)c;
@@ -2082,7 +2140,7 @@ namespace Charamaker3.CharaModel
             {
                 cc.basespeeds[i] = this.basespeeds[i];
             }
-      
+
             cc.GO = this.GO;
         }
         public override DataSaver ToSave()
@@ -2094,16 +2152,16 @@ namespace Charamaker3.CharaModel
             res.packAdd("_ENX", basespeeds[_ENX]);
             res.packAdd("_STY", basespeeds[_STY]);
             res.packAdd("_ENY", basespeeds[_ENY]);
-            res.packAdd("_SCX", basespeeds[_SCX]); 
+            res.packAdd("_SCX", basespeeds[_SCX]);
             res.packAdd("_SCY", basespeeds[_SCY]);
-            
+
             return res;
         }
         protected override void ToLoad(DataSaver d)
         {
             base.ToLoad(d);
 
-            GO = d.unpackDataE<goOption>("GO",goOption.def);
+            GO = d.unpackDataE<goOption>("GO", goOption.def);
             basespeeds[_STX] = d.unpackDataF("_STX", 0);
             basespeeds[_ENX] = d.unpackDataF("_ENX", 0);
             basespeeds[_STY] = d.unpackDataF("_STY", 0);
@@ -2135,8 +2193,8 @@ namespace Charamaker3.CharaModel
 
 
 
-                tags[t].h = (speeds[t][_SCY] + (speeds[t][_SCYE]-speeds[t][_SCY]) * time) * Mathf.cos(nowY);
-                tags[t].ty = (speeds[t][_TYS] + (speeds[t][_TYE]-speeds[t][_TYS]) * time) * Mathf.cos(nowY);
+                tags[t].h = (speeds[t][_SCY] + (speeds[t][_SCYE] - speeds[t][_SCY]) * time) * Mathf.cos(nowY);
+                tags[t].ty = (speeds[t][_TYS] + (speeds[t][_TYE] - speeds[t][_TYS]) * time) * Mathf.cos(nowY);
 
                 tags[t].settxy(txy);
 
@@ -2246,7 +2304,7 @@ namespace Charamaker3.CharaModel
         {
             if (cl > 0)
             {
-               if (!instant)
+                if (!instant)
                 {
                     this.ToValue(timer / time);
                 }
@@ -2260,6 +2318,268 @@ namespace Charamaker3.CharaModel
         }
 
 
+    }
+    /// <summary>
+    /// テキストを編集するムーブ
+    /// </summary>
+    public partial class TextMove : Component
+    {
+        public string Tag;
+        public string Text;//即時変更 ""で変更なし。 ""にするにはTextLengthを0にする。
+
+        public FontC Font;
+        public float TextLength = 0;
+
+
+        List<List<float[]>> speeds = new List<List<float[]>>();
+        List<List<float[]>> bspeeds = new List<List<float[]>>();
+        List<List<Text>> tags = new List<List<Text>>();
+        List<List<string>> TagTexts=new List<List<string>>();
+        bool instant { get { return time <= 0; } }
+
+        const int _FSIZE = 0;
+        const int _FW = 1;
+        const int _FH = 2;
+        const int _FHutizure = 3;
+        const int _FHR = 4;
+        const int _FHG = 5;
+        const int _FHB = 6;
+        const int _FHOPA = 7;
+        const int _TEXTLENGTH = 8;
+        const int _speedLength = 9;
+        /// <summary>
+        /// 普通のコンストラクタ
+        /// </summary>
+        /// <param name="Tag">変化させるターゲット</param>
+        /// <param name="time"></param>
+        /// <param name="Text">即時反映=""で変化なし</param>
+        /// <param name="TextLength">変化するテキストの長さ=0で""になる</param>
+        /// <param name="font">変化するフォント。isItaricなどは即時反映</param>
+        /// <param name="name"></param>
+        public TextMove(string Tag, float time, string Text, float TextLength, FontC font, string name = "") : base(time, name) 
+        {
+            this.Tag = Tag;
+            this.Text = Text;
+            this.TextLength = TextLength;
+
+            this.Font = new FontC();
+            font.copy(this.Font);
+        }
+
+        protected override void onadd(float cl)
+        {
+            tags.Clear();
+            speeds.Clear();
+            bspeeds.Clear();
+            TagTexts.Clear();
+            //characterから得るtag
+            var cs = e.getcompos<Character>();
+            if (cs.Count == 0)
+            {
+
+                tags.Add(e.getcompos<Text>());
+            }
+            else
+            {
+                foreach (var a in cs)
+                {
+                    foreach (var b in a.getTree(name))
+                    {
+
+                        var lis = b.getcompos<Text>();
+                        tags.Add(lis);
+                    }
+                }
+            }
+            for (int t = 0; t < tags.Count; t++)
+            {
+                speeds.Add(new List<float[]>());
+                bspeeds.Add(new List<float[]>());
+                TagTexts.Add(new List<string>());
+                for (int i = 0; i < tags[t].Count; i++)
+                {
+                    if (Text == "")
+                    {
+
+                        TagTexts[t].Add(tags[t][i].text);
+                    }
+                    else 
+                    {
+                        TagTexts[t].Add(Text);
+                    }
+                    speeds[t].Add(new float[_speedLength]);
+                    bspeeds[t].Add(new float[_speedLength]);
+                    for (int j = 0; j < speeds[t][i].Length; j++) 
+                    {
+                        switch (j)
+                        {
+                            case _FSIZE:
+                                speeds[t][i][j] = Font.size;
+                                bspeeds[t][i][j] = tags[t][i].font.size;
+                                break;
+                            case _FW:
+                                speeds[t][i][j] = Font.w;
+                                bspeeds[t][i][j] = tags[t][i].font.w;
+
+                                break;
+                            case _FH:
+                                speeds[t][i][j] = Font.h;
+                                bspeeds[t][i][j] = tags[t][i].font.h;
+
+                                break;
+                            case _FHutizure:
+                                speeds[t][i][j] = Font.hutiZure;
+                                bspeeds[t][i][j] = tags[t][i].font.hutiZure;
+                                break;
+                            case _FHR:
+                                speeds[t][i][j] = Font.hutiColor.r;
+                                bspeeds[t][i][j] = tags[t][i].font.hutiColor.r;
+                                break;
+                            case _FHG:
+                                speeds[t][i][j] = Font.hutiColor.g;
+                                bspeeds[t][i][j] = tags[t][i].font.hutiColor.g;
+                                break;
+                            case _FHB:
+                                speeds[t][i][j] = Font.hutiColor.b;
+                                bspeeds[t][i][j] = tags[t][i].font.hutiColor.b;
+                                break;
+                            case _FHOPA:
+                                speeds[t][i][j] = Font.hutiColor.opa;
+                                bspeeds[t][i][j] = tags[t][i].font.hutiColor.opa;
+                                break;
+
+                            case _TEXTLENGTH:
+                                speeds[t][i][j] = TextLength;
+                                bspeeds[t][i][j] = tags[t][i].text.Length;
+                                break;
+                        }
+                    }
+                }
+            }
+            if (Text == "") 
+            {
+                
+            }
+            if (instant)
+            {
+                setTexts(1);
+            }
+            /* else
+             {
+                 float speed = 1 / time;
+                 addDefference(Math.Min(speed * cl,1));
+             }*/
+            base.onadd(cl);
+        }
+        protected override void onupdate(float cl)
+        {
+
+            if (cl > 0)
+            {
+                if (!instant)
+                {
+                    this.setTexts(timer / time);
+                }
+            }
+            base.onupdate(cl);
+
+        }
+        void setTexts(float ratio) 
+        {
+            for (int t = 0; t < tags.Count; t++)
+            {
+                for (int i = 0; i < tags[t].Count; i++)
+                {
+                    if (Font.ali != FontC.alignment.None)
+                    {
+                        tags[t][i].font.ali = Font.ali;
+                    }
+                    if (Font.aliV != FontC.alignment.None)
+                    {
+                        tags[t][i].font.aliV = Font.aliV;
+                    }
+
+                    if (Font.isBold >= 0)
+                    {
+                        tags[t][i].font.isBold = Font.isBold;
+                    }
+                    if (Font.isItaric >= 0)
+                    {
+                        tags[t][i].font.isItaric = Font.isItaric;
+                    }
+                    if (Font.fontName != "")
+                    {
+                        tags[t][i].font.fontName = Font.fontName;
+                    }
+                    if (float.IsNaN(speeds[t][i][_FSIZE]) == false)
+                    {
+                        tags[t][i].font.size = (speeds[t][i][_FSIZE] * ratio + bspeeds[t][i][_FSIZE] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FW]) == false)
+                    {
+                        tags[t][i].font.w = (speeds[t][i][_FW] * ratio + bspeeds[t][i][_FW] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FH]) == false)
+                    {
+                        tags[t][i].font.h = (speeds[t][i][_FH] * ratio + bspeeds[t][i][_FH] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FHutizure]) == false)
+                    {
+                        tags[t][i].font.hutiZure = (speeds[t][i][_FHutizure] * ratio + bspeeds[t][i][_FHutizure] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FHR]) == false)
+                    {
+                        tags[t][i].font.hutiColor.r = (speeds[t][i][_FHR] * ratio + bspeeds[t][i][_FHR] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FHG]) == false)
+                    {
+                        tags[t][i].font.hutiColor.g = (speeds[t][i][_FHG] * ratio + bspeeds[t][i][_FHG] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FHB]) == false)
+                    {
+                        tags[t][i].font.hutiColor.b = (speeds[t][i][_FHB] * ratio + bspeeds[t][i][_FHB] * (1 - ratio));
+                    }
+                    if (float.IsNaN(speeds[t][i][_FHOPA]) == false)
+                    {
+                        tags[t][i].font.hutiColor.opa = (speeds[t][i][_FHOPA] * ratio + bspeeds[t][i][_FHOPA] * (1 - ratio));
+                    }
+
+                    float length;
+                    if (float.IsNaN(speeds[t][i][_TEXTLENGTH]) == false)
+                    {
+                        length = (speeds[t][i][_TEXTLENGTH] * ratio + bspeeds[t][i][_TEXTLENGTH] * (1 - ratio));
+                    }
+                    else
+                    {
+                        length = tags[t][i].text.Length;
+                    }
+                    tags[t][i].text = TagTexts[t][i].Substring(0, (int)length);
+
+
+                }
+            }
+        }
+        public override DataSaver ToSave()
+        {
+            var d = base.ToSave();
+            d.packAdd("Font",Font.ToSave().indent());
+            d.linechange();
+            d.packAdd("Text", this.Text);
+            d.packAdd("TextLength", this.TextLength);
+
+            return d;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            {
+                this.Font = new FontC();
+                var dd = d.unpackDataD("Font");
+                this.Font.ToLoad(dd);
+            }
+            this.Text=d.unpackDataS("Text", this.Text);
+            this.TextLength=d.unpackDataF("TextLength", this.TextLength);
+        }
     }
 }
 

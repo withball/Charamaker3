@@ -21,7 +21,7 @@ namespace Charamaker3
         /// <summary>
         /// ファイルマネージャーのルートパス。サウンドエンジンにも影響。
         /// </summary>
-        static public string rootpath = @".\";
+        static public string s_rootpath = @".\";
 
         /// <summary>
         /// スラッシュをバックスラッシュに変換する。
@@ -57,13 +57,13 @@ namespace Charamaker3
         /// <summary>
         /// 何もないことを示す魔法の言葉
         /// </summary>
-        public const string nothing = "nothing";
+        public const string c_nothing = "nothing";
         #region texture
 
         static public void setupTextureLoader(Display d)
         {
             texs.Clear();
-            baseRender = d.render;
+            baseRender = d.render.Render;
             Dictionary<string, System.Drawing.Color> basebitnames = new Dictionary<string, System.Drawing.Color>
                 {
                     {"red",System.Drawing.Color.Red },{"blue",System.Drawing.Color.Blue },{"green",System.Drawing.Color.Green },
@@ -98,7 +98,7 @@ namespace Charamaker3
                     }
                     var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
                     
-                    registBmp(nothing, baseRender.CreateBitmap(new System.Drawing.Size(3, 3), tempStream.BasePointer, sizeof(int), bitmapProperties));
+                    registBmp(c_nothing, baseRender.CreateBitmap(new System.Drawing.Size(3, 3), tempStream.BasePointer, sizeof(int), bitmapProperties));
                   
                 }
                 CreateBitmapSS.Release();
@@ -114,6 +114,7 @@ namespace Charamaker3
         /// </summary>
         static Dictionary<string, ID2D1Bitmap> texs = new Dictionary<string, ID2D1Bitmap>();
 
+        
 
         /// <summary>
         /// texsに色のついたビットを追加する。
@@ -192,12 +193,12 @@ namespace Charamaker3
 
             if (!texs.ContainsKey(file) || reset)
             {
-                string path = rootpath+@"tex\" + file;
+                string path = s_rootpath+@"tex\" + file;
                 if (!File.Exists(path))
                 {
                     Debug.WriteLine("texture " + path + " not exists");
                     registBmp(file, null);
-                    return texs[bmpExtention(nothing)];
+                    return texs[bmpExtention(c_nothing)];
                 }
 
                 // System.Drawing.Imageを使ってファイルから画像を読み込む
@@ -327,6 +328,38 @@ namespace Charamaker3
             return default(T);
         }
         /// <summary>
+        /// Listからランダムに一つピックする
+        /// </summary>
+        /// <param name="list"></param>
+        /// <param name="weight">確率のウェイト。足りないなら0とみなされ無視される。</param>
+        /// <returns></returns>
+        static public T pickone<T>(List<T> list, List<float> weight)
+        {
+            while (list.Count > weight.Count)
+            {
+                weight.Add(0);
+            }
+
+            float max = 0;
+            for (int i = 0; i < list.Count; i++) 
+            {
+                max += weight[i];
+            }
+
+            float value = FileMan.whrandhani(max);
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                value -= weight[i];
+                if (value <= 0) 
+                {
+                    return list[i];
+                }
+            }
+
+            return default(T);
+        }
+        /// <summary>
         /// 配列からランダムに一つピックする
         /// </summary>
         /// <param name="list"></param>
@@ -450,7 +483,7 @@ namespace Charamaker3
         /// </summary>
         static public Dictionary<string,DataSaver> LoadedDS = new Dictionary<string, DataSaver>();
 
-        
+
 
         /// <summary>
         /// データセーバーをロードし、アセット的に保存しておく。
@@ -458,27 +491,35 @@ namespace Charamaker3
         /// <param name="path">自由なパス</param>
         /// <param name="reset">強制的にロードするか</param>
         /// <param name="ext">拡張子</param>
+        /// <param name="escape">falseでほぞんはしないよ</param>
         /// <returns></returns>
         static public DataSaver loadDS(string path,bool reset=false,string ext=".txt",bool escape=true) 
         {
             DataSaver res;
             path = slashFormat(path);
-            if (LoadedDS.ContainsKey(path)==false)
+            if (escape)
             {
-                Debug.WriteLine(path + " LoadAndRegist!");
-                res = DataSaver.loadFromPath(path, escape, ext);
-                LoadedDS.Add(path, res);
+                if (LoadedDS.ContainsKey(path) == false)
+                {
+                    Debug.WriteLine(path + " LoadAndRegist!");
+                    res = DataSaver.loadFromPath(path, escape, ext);
+                    LoadedDS.Add(path, res);
 
+                }
+                else if (reset)
+                {
+                    Debug.WriteLine(path + " RE LoadAndRegist!");
+                    res = DataSaver.loadFromPath(path, escape, ext);
+                    LoadedDS[path] = res;
+                }
+                else
+                {
+                    res = LoadedDS[path];
+                }
             }
-            else if (reset)
-            {
-                Debug.WriteLine(path + " RE LoadAndRegist!");
-                res = DataSaver.loadFromPath(path, escape, ext);
-                LoadedDS[path] = res;
-            } 
             else 
             {
-                res = LoadedDS[path];
+                res = DataSaver.loadFromPath(path, escape, ext);
             }
 
             return res;
@@ -492,7 +533,7 @@ namespace Charamaker3
         /// <returns></returns>
         static public Entity loadCharacter(string path, bool reset = false) 
         {
-            var d=loadDS(rootpath+@"character\"+path,reset,".ctc");
+            var d=loadDS(@"character\"+path,reset,".ctc");
             return Entity.ToLoadEntity(d);
         }
 
@@ -515,7 +556,7 @@ namespace Charamaker3
         /// <returns>もう一回ファイルをロードしなおす</returns>
         static public MotionSaver loadMotion(string path, bool reset = false)
         {
-            var d = loadDS(rootpath+@"motion\" + path, reset, ".ctm",false);
+            var d = loadDS(@"motion\" + path, reset, ".ctm",false);
             var res = MotionSaver.ToLoad(d);
             return res;
         }
@@ -702,11 +743,12 @@ namespace Charamaker3
         /// 
         /// </summary>
         /// <param name="path"></param>
-        /// <param name="escape">読み込んだ奴をエスケープするか</param>
+        /// <param name="escape">読み込んだ奴をエスケープするか。</param>
         /// <param name="ext">拡張子</param>
         /// <returns></returns>
         static public DataSaver loadFromPath(string path, bool escape = true, string ext = ".txt")
         {
+            path= FileMan.s_rootpath+path;
             path = FileMan.slashFormat(path);
             if (Path.GetExtension(path) != ext)
             {
@@ -739,6 +781,8 @@ namespace Charamaker3
           /// <returns></returns>
         public void saveToPath(string path, string ext = ".txt")
         {
+            path = FileMan.s_rootpath + path;
+            path = FileMan.slashFormat(path);
             if (Path.GetExtension(path) != ext)
             {
                 path = path + ext;

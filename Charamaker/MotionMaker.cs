@@ -61,23 +61,23 @@ namespace Charamaker
                 }
                 else 
                 {
-                    if (Directory.Exists(FileMan.rootpath+@".\motion\" + pathB.Text))
+                    if (Directory.Exists(FileMan.s_rootpath+@".\motion\" + pathB.Text))
                     {
                         messageB.Text = "";
-                        string[] filesM = System.IO.Directory.GetFiles(FileMan.rootpath + @".\motion\" + pathB.Text, "*.ctm", System.IO.SearchOption.AllDirectories);
+                        string[] filesM = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\motion\" + pathB.Text, "*.ctm", System.IO.SearchOption.AllDirectories);
                         for (int i = 0; i < filesM.Count(); i++)
                         {
-                            messageB.Text += filesM[i].Replace(FileMan.rootpath + @".\motion\", @"") + Environment.NewLine;
+                            messageB.Text += filesM[i].Replace(FileMan.s_rootpath + @".\motion\", @"") + Environment.NewLine;
                             
                         }
                     }
                     else 
                     {
                         messageB.Text = "";
-                        string[] filesC = System.IO.Directory.GetFiles(FileMan.rootpath + @".\character\" , "*.ctc", System.IO.SearchOption.AllDirectories);
+                        string[] filesC = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\character\" , "*.ctc", System.IO.SearchOption.AllDirectories);
                         for (int i = 0; i < filesC.Count(); i++)
                         {
-                            messageB.Text += filesC[i].Replace(FileMan.rootpath + @".\character\", @"character\") + Environment.NewLine;
+                            messageB.Text += filesC[i].Replace(FileMan.s_rootpath + @".\character\", @"character\") + Environment.NewLine;
 
                         }
                     }
@@ -125,7 +125,10 @@ namespace Charamaker
         {
             var m = build();
             var path=FileMan.dialog("motion", ".ctm");
+            var temp = FileMan.s_rootpath;//ダイアログなのでルートパスを外す
+            FileMan.s_rootpath = "";
             FileMan.saveMotion(path, ScriptB.Text, m);
+            FileMan.s_rootpath = temp;
         }
         private void ScriptB_KeyDown(object sender, KeyEventArgs e)
         {

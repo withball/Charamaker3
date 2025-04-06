@@ -7,7 +7,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Charamaker3", "Charamaker3\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Charamaker", "Charamaker\Charamaker.csproj", "{6F680BBB-896F-42D3-A544-A3B68DAB2382}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{5E163362-5DD2-4BD6-80E3-EB6690D22958}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sample", "Sample\Sample.csproj", "{5E163362-5DD2-4BD6-80E3-EB6690D22958}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataChecker", "DataChecker\DataChecker.csproj", "{978E634B-CB75-42D0-AD9C-87CF07D8B007}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{5E163362-5DD2-4BD6-80E3-EB6690D22958}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E163362-5DD2-4BD6-80E3-EB6690D22958}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E163362-5DD2-4BD6-80E3-EB6690D22958}.Release|Any CPU.Build.0 = Release|Any CPU
+		{978E634B-CB75-42D0-AD9C-87CF07D8B007}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{978E634B-CB75-42D0-AD9C-87CF07D8B007}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{978E634B-CB75-42D0-AD9C-87CF07D8B007}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{978E634B-CB75-42D0-AD9C-87CF07D8B007}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

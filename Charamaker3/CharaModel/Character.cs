@@ -102,6 +102,34 @@ namespace Charamaker3.CharaModel
     public class Character : Component
     {
         /// <summary>
+        /// キャラクターの最も小さなZ座標を取得する
+        /// </summary>
+        /// <param name="e"></param>
+        static public float GetMinZ(Entity e) 
+        {
+            float z = float.NaN;
+            foreach (var a in e.getCharacter().getTree("")) 
+            {
+                foreach (var b in a.getcompos<Drawable>())
+                {
+                    if (float.IsNaN(z) == true)
+                    {
+                        z = b.z;
+                    }
+                    else
+                    {
+                        z = Mathf.min(z, b.z);
+                    }
+                }
+            }
+            if (float.IsNaN(z)) 
+            {
+                z = 0;
+            }
+            return z;
+        }
+
+        /// <summary>
         /// キャラクターを基準も含めてセットする
         /// </summary>
         /// <param name="scale"></param>

@@ -306,38 +306,28 @@ namespace Charamaker3
             this.col.b = d.unpackDataF("b");
             this.col.opa = d.unpackDataF("opa");
         }
+        
         /// <summary>
-        /// 描画をする
+        /// 描画可能な条件
         /// </summary>
-        /// <param name="cam"></param>
-        /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
-        virtual public bool goDraw(Camera cam)
+        /// <returns></returns>
+        virtual public bool CanDraw(Camera cam) 
         {
-            if (col.opa > 0 && onCamera(cam))
-            {
-                draw(cam);
-                return true;
-            }
-            return false;
-        }
-        /// <summary>
-        /// 事前描画をする
-        /// </summary>
-        /// <param name="cam"></param>
-        /// <param name="semaphores">並列実行するのでセマフォアが必要かも</param>
-        /// <returns>描画したか(カメラ範囲外とかだと描画しない)</returns>
-        virtual public bool goPreDraw(Camera cam,DisplaySemaphores semaphores)
-        {
-            if (onCamera(cam))
-            {
-                PreDraw(cam,semaphores);
-                return true;
-            }
-            return false;
+            return col.opa > 0 && onCamera(cam);
         }
 
-        protected abstract void draw(Camera cam);
-        protected virtual void PreDraw(Camera cam, DisplaySemaphores semaphores) { }
+
+        /// <summary>
+        /// これをする前にCandrawで確かめておくこと！
+        /// </summary>
+        /// <param name="cam"></param>
+        public abstract void draw(Camera cam);
+
+        /// <summary>
+        /// これをする前にCandrawで確かめておくこと！
+        /// </summary>
+        /// <param name="cam"></param>
+        public virtual void PreDraw(Camera cam, DisplaySemaphores semaphores) { }
 
         protected bool onCamera(Camera cam)
         {
@@ -389,6 +379,8 @@ namespace Charamaker3
 
             //0.5の中心
             var center = camsoutai(cam, e.gettxy(e.w / 2, e.h / 2));
+
+
             //回転の合計
             var rad = Mathf.toRadian(-watch.degree + e.degree);
             var a = Matrix3x2.CreateScale(1, 1);
@@ -438,6 +430,95 @@ namespace Charamaker3
 
             return a;
         }
+        /// <summary>
+        /// 四角形の移動とスケールも含めたトランスフォーム
+        /// </summary>
+        /// <param name="cam"></param>
+        /// <returns></returns>
+        protected Matrix3x2 rectTransMax(Camera cam,float bitmapW,float bitmapH)
+        {
+
+            if (bitmapW <= 0 || bitmapH <= 0)
+            {
+                return Matrix3x2.CreateScale(0, 0);
+            }
+            var watch = cam.watchRect;
+
+            //  左上
+            var upleft = camsoutai(cam, e.gettxy2(0, 0));
+            var upright = camsoutai(cam, e.gettxy2(1, 0));
+            //右下
+            var leftdown = camsoutai(cam, e.gettxy2(0, 1));
+            var rightdown = camsoutai(cam, e.gettxy2(1, 1));
+
+            float w = (upright - upleft).length;
+            float h = (upright - rightdown).length;
+            //0.5の中心
+            var center = camsoutai(cam, e.gettxy(e.w / 2, e.h / 2));
+
+
+            //回転の合計
+            var rad = Mathf.toRadian(-watch.degree + e.degree);
+            var a = Matrix3x2.CreateScale(1,1);
+            if (watch.mirror)
+            {
+                a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-1*watch.w,0), a);
+                //Debug.WriteLine($"{a.M11} {a.M12} \n {a.M21} {a.M22} \n {a.M31} {a.M32} \n");
+            }
+            // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
+            if (watch.w < 0)
+            {
+                a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+            }
+            if (watch.h < 0)
+            {
+                a = Matrix3x2.Multiply(Matrix3x2.CreateScale(1, -1), a);
+
+            }
+
+            a = Matrix3x2.Multiply( Matrix3x2.CreateTranslation(upleft.x, upleft.y),a);
+          
+
+
+
+
+
+
+            a = Matrix3x2.Multiply(Matrix3x2.CreateRotation((float)rad, new Vector2(0, 0)), a);
+
+
+            a = Matrix3x2.Multiply(Matrix3x2.CreateScale(w, h), a);
+            a = Matrix3x2.Multiply(Matrix3x2.CreateScale(1 / (bitmapW), 1 / (bitmapH)), a);
+
+
+
+            if (e.mirror)
+            {
+                a = Matrix3x2.Multiply(new Matrix3x2(-1, 0, 0, 1, 0, 0), a);
+                // a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(upleft.x) * 2, 0), a);
+            }
+            if (e.w < 0)
+            {
+                a = Matrix3x2.Multiply(new Matrix3x2(-1, 0, 0, 1, 0, 0), a);
+
+                // a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(w) * 2, 0), a);
+            }
+
+
+            if (e.h < 0)
+            {
+                a = Matrix3x2.Multiply(new Matrix3x2(1, 0, 0, -1, 0, 0), a);
+
+                //a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(0, -(h) * 2), a);
+            }
+
+            return a;
+         
+
+         
+        }
 
         /// <summary>
         /// 四角形の標準描画範囲
@@ -470,9 +551,9 @@ namespace Charamaker3
         public DRectangle() : base()
         {
         }
-        protected override void draw(Camera cam)
+        public override void draw(Camera cam)
         {
-            var render = cam.render;
+            var render = cam.render.Render;
 
             render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
@@ -503,8 +584,16 @@ namespace Charamaker3
         /// 現在のテクスチャー
         /// </summary>
         public string nowtex { get { if (textures.ContainsKey(texname)) return textures[texname];
-                return FileMan.nothing;
+                return FileMan.c_nothing;
             } }
+
+        /// <summary>
+        /// 書き込み元のレクタングル(割合ですよ)
+        /// </summary>
+        public float CropL = 0;
+        public float CropR = 1;
+        public float CropU = 0;
+        public float CropD = 1;
 
         public Texture(float z, ColorC c, Dictionary<string, string> texs, float time = -1, string name = "") : base(z, c, time, name)
         {
@@ -523,6 +612,10 @@ namespace Charamaker3
             base.copy(c);
             cc.texname = this.texname;
             cc.textures = new Dictionary<string, string>(textures);
+            cc.CropL = this.CropL;
+            cc.CropR = this.CropR;
+            cc.CropU = this.CropU;
+            cc.CropD = this.CropD;
         }
         public override DataSaver ToSave()
         {
@@ -538,6 +631,11 @@ namespace Charamaker3
             }
             d.indent();
             res.packAdd("textures", d);
+            res.linechange();
+            res.packAdd("CropL", CropL);
+            res.packAdd("CropR", CropR);
+            res.packAdd("CropU", CropU);
+            res.packAdd("CropD", CropD);
             return res;
         }
         protected override void ToLoad(DataSaver d)
@@ -552,6 +650,11 @@ namespace Charamaker3
                 textures.Add(a, dd.unpackDataS(a));
             }
             this.textures = textures;
+
+            CropL = d.unpackDataF("CropL", CropL);
+            CropR = d.unpackDataF("CropR", CropR);
+            CropU = d.unpackDataF("CropU", CropU);
+            CropD = d.unpackDataF("CropD", CropD);
         }
         static public Texture make(float z, float opa, params KeyValuePair<string, string>[] textures)
         {
@@ -568,25 +671,144 @@ namespace Charamaker3
         }
 
 
-        protected override void draw(Camera cam)
+        public override void draw(Camera cam)
         {
-            var render = cam.render;
+            var render = cam.render.Render;
+            var d2dContext = cam.render.DeviceContext;
 
             ID2D1Bitmap bitmap;
             bitmap = FileMan.ldtex(nowtex);
             if (bitmap == null)
             {
-                bitmap = FileMan.ldtex(FileMan.nothing);
+                bitmap = FileMan.ldtex(FileMan.c_nothing);
             }
-            render.Transform = rectTrans(cam);
-            var rect = rectRectF(cam);
-            //色のエフェクトを作る
-            var blended =cam.d.Blend(bitmap, this.col);
-            render.DrawBitmap(blended
-                   , rect
-                   , this.col.opa, BitmapInterpolationMode.Linear
-                   , new RawRectF(0, 0, bitmap.Size.Width-0.5f, bitmap.Size.Height - 0.5f));//-0.5しないと1マスが2マスになって絶望したりする。
 
+
+            //色ついてない場合高速描画
+            if (this.col.r == 1&&this.col.g == 1 && this.col.b == 1)
+            {
+                var rect = rectRectF(cam);
+                render.Transform = rectTrans(cam);
+                //var blended = cam.d.Blend(bitmap, this.col);
+                render.DrawBitmap(bitmap
+                       , rect
+                       , this.col.opa, BitmapInterpolationMode.Linear
+                       , new RawRectF(bitmap.Size.Width * CropL, bitmap.Size.Height * CropU
+                       , bitmap.Size.Width * CropR - 0.5f, bitmap.Size.Height * CropD - 0.5f));//-0.5しないと1マスが2マスになって絶望したりする。
+            }
+            else if(1==1)
+            {
+
+                render.Transform =Matrix3x2.CreateScale(1,1);
+                //_BlendRender.PushAxisAlignedClip(new Rectangle(0,0,bitmap.PixelSize.Width, bitmap.PixelSize.Height)
+                //    , AntialiasMode.PerPrimitive);
+
+
+                /////////////////////////////クロップ
+              
+
+                var crop0 = cam.render.ECrop0;
+                crop0.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(true));
+                crop0.BorderMode = BorderMode.Hard;
+
+
+                Rectangle sourceRect;
+
+                //ビットマップが小さすぎると計算誤差で死んでしまうので最低の幅を保証する。
+
+                float hosyo = 10;
+                if (bitmap.PixelSize.Width < hosyo && bitmap.PixelSize.Height < hosyo)
+                {
+                    crop0.TransformMatrix = Matrix3x2.CreateScale(hosyo / bitmap.PixelSize.Width
+                        , hosyo / bitmap.PixelSize.Height);
+                    sourceRect = new Rectangle(hosyo * CropL - 0.0f, hosyo * CropU - 0.0f
+                  , hosyo * CropR - hosyo * CropL, hosyo * CropD - hosyo * CropU);
+
+                }
+                else if (bitmap.PixelSize.Width < hosyo)
+                {
+                    crop0.TransformMatrix = Matrix3x2.CreateScale(hosyo / bitmap.PixelSize.Width
+                       , 1);
+                    sourceRect = new Rectangle(hosyo * CropL - 0.0f, bitmap.Size.Height * CropU - 0.0f
+                  , hosyo * CropR - hosyo * CropL, bitmap.PixelSize.Height * CropD - bitmap.Size.Height * CropU);
+                }
+                else if (bitmap.PixelSize.Height < hosyo)
+                {
+                    crop0.TransformMatrix = Matrix3x2.CreateScale(1
+                           , hosyo / bitmap.PixelSize.Height);
+                    sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, hosyo * CropU - 0.0f
+                  , bitmap.PixelSize.Width * CropR - bitmap.Size.Width * CropL, hosyo * CropD - hosyo * CropU);
+                }
+                else
+                {
+                    crop0.TransformMatrix = Matrix3x2.CreateScale(1,1);
+                    sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, bitmap.Size.Height * CropU - 0.0f
+                  , bitmap.PixelSize.Width * CropR - bitmap.Size.Width * CropL, bitmap.PixelSize.Height * CropD - bitmap.Size.Height * CropU);
+                }
+
+                var crop1 = cam.render.ECrop1;
+                crop1.SetInputEffect(0, crop0, new SharpGen.Runtime.RawBool(false));
+                crop1.BorderMode = BorderMode.Hard;
+
+
+
+
+                crop1.Rectangle = new Vector4(sourceRect.x,sourceRect.y,sourceRect.x+sourceRect.w, sourceRect.y + sourceRect.h);
+                
+                var crop2 = cam.render.ECrop2;
+                crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
+
+                crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x,-sourceRect.y);
+                //crop.Rectangle = new Vector4(0, 0, 5, 5);
+
+                /////////////////////////色
+
+                var blend = cam.render.EBlend;
+                blend.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(false));
+
+                var colormatrix = new Matrix5x4();
+                {
+                    colormatrix.M11 = col.r;
+                    colormatrix.M12 = 0;
+                    colormatrix.M13 = 0;
+                    colormatrix.M14 = 0;
+                    colormatrix.M21 = 0;
+                    colormatrix.M22 = col.g;
+                    colormatrix.M23 = 0;
+                    colormatrix.M24 = 0;
+                    colormatrix.M31 = 0;
+                    colormatrix.M32 = 0;
+                    colormatrix.M33 = col.b;
+                    colormatrix.M34 = 0;
+                    colormatrix.M41 = 0;
+                    colormatrix.M42 = 0;
+                    colormatrix.M43 = 0;
+                    colormatrix.M44 = col.opa;
+                    colormatrix.M51 = 0;
+                    colormatrix.M52 = 0;
+                    colormatrix.M53 = 0;
+                    colormatrix.M54 = 0;
+                }
+                blend.Matrix = colormatrix;
+
+                var trans = cam.render.ETrans;
+                trans.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
+
+                var transmatrix = rectTransMax(cam, sourceRect.w,sourceRect.h);
+                //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
+                trans.TransformMatrix = transmatrix;
+                //_BlendRender.BeginDraw();
+
+
+                //d2dContext.Clear(new ColorC(0, 0, 0, 0));
+                //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
+
+                var rect = rectRectF(cam);
+                //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
+                d2dContext.DrawImage(trans,InterpolationMode.NearestNeighbor,CompositeMode.SourceOver);
+
+
+            }
 
         }
 
@@ -616,7 +838,11 @@ namespace Charamaker3
             /// <summary>
             /// 謎。わからない。
             /// </summary>
-            justify
+            justify,
+            /// <summary>
+            /// 無効な値
+            /// </summary>
+            None
         }
 
         /// <summary>
@@ -627,12 +853,12 @@ namespace Charamaker3
         /// <summary>
         /// 斜体
         /// </summary>
-        public bool isItaric = false;
+        public int isItaric = 0;
 
         /// <summary>
         /// 太字
         /// </summary>
-        public bool isBold = false;
+        public int isBold = 0;
         /// <summary>
         /// フォントサイズ
         /// </summary>
@@ -676,7 +902,7 @@ namespace Charamaker3
         /// <param name="alignment">テキストの位置</param>
         /// <param name="alignmentV">テキストの縦の位置</param>
         public FontC(float size, float w, float h, string fontName = "MS UI Gothic"
-            , bool isItaric = false, bool isBold = false, alignment alignment = alignment.left
+            , int isItaric = 0, int isBold = 0, alignment alignment = alignment.left
             , alignment alignmentV = alignment.left)
         {
             this.size = size;
@@ -735,8 +961,8 @@ namespace Charamaker3
             this.w = d.unpackDataF("w", this.w);
             this.h = d.unpackDataF("h", this.h);
             this.fontName = d.unpackDataS("fontName", this.fontName);
-            this.isItaric = d.unpackDataB("isItaric", this.isItaric);
-            this.isBold = d.unpackDataB("isBold", this.isBold);
+            this.isItaric = (int)d.unpackDataF("isItaric", this.isItaric);
+            this.isBold = (int)d.unpackDataF("isBold", this.isBold);
             this.ali = d.unpackDataE("alignment", this.ali);
             this.aliV = d.unpackDataE("alignmentV", this.aliV);
             this.hutiZure = d.unpackDataF("hutiZure");
@@ -751,12 +977,12 @@ namespace Charamaker3
             var fa = Vortice.DirectWrite.DWrite.DWriteCreateFactory<IDWriteFactory>();
 
             Vortice.DirectWrite.FontStyle style = Vortice.DirectWrite.FontStyle.Normal;
-            if (isItaric)
+            if (isItaric==1)
             {
                 style = Vortice.DirectWrite.FontStyle.Italic;
             }
             var Weight = FontWeight.Light;
-            if (isBold)
+            if (isBold==1)
             {
                 Weight = FontWeight.UltraBold;
             }
@@ -1105,29 +1331,25 @@ namespace Charamaker3
             this.font.ToLoad(dd);
 
         }
-        public override bool goPreDraw(Camera cam, DisplaySemaphores semaphores)
+        public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
             if (Trender == null)
             {
                 //ここでテンポラリなやつをもらう。
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
-            else if (Trender.MustReset||(Trender.rendZone.w != font.w && Trender.rendZone.h != font.h))
+            else if (Trender.MustReset || (Trender.rendZone.w != font.w && Trender.rendZone.h != font.h))
             {
                 Trender.Release();
                 Trender = cam.d.makeTextRenderer(font.w, font.h);
             }
-            return base.goPreDraw(cam, semaphores);
-        }
-        protected override void PreDraw(Camera cam, DisplaySemaphores semaphores)
-        {
             base.PreDraw(cam, semaphores);
             Trender.Draw(text, font, col,semaphores);
         }
-        protected override void draw(Camera cam)
+        public override void draw(Camera cam)
         {
             Trender.OnDraw(text, font, col);
-            var render = cam.render;
+            var render = cam.render.Render;
 
 
             float yZure = 0;

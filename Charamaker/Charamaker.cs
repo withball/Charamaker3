@@ -25,7 +25,7 @@ namespace Charamaker
             InitializeComponent();
 
             {
-                save = DataSaver.loadFromPath(@".\save",false);
+                save = DataSaver.loadFromPath(@"CharamakerSave", false);
                 LastLoad = save.unpackDataS("LastLoad", @"yoshino");
 
                 MotionString = save.unpackDataS("MotionString", "");
@@ -96,7 +96,7 @@ namespace Charamaker
 
 
             var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
-               , new FontC(16, 16 * 40, 16 * 30, isBold: false, alignment: FontC.alignment.left
+               , new FontC(16, 16 * 40, 16 * 30, isBold: 0, alignment: FontC.alignment.left
                , alignmentV: FontC.alignment.right));
             text.add(cam.watchRect);
             text.font.hutiZure = 0.05f;
@@ -127,7 +127,7 @@ namespace Charamaker
             km.setpointer(this);
 
             {
-                sel.setPoints(SLP, TXYP, (float)PointB.Value / 100f);
+                sel?.setPoints(SLP, TXYP, (float)PointB.Value / 100f);
             }
 
 
@@ -298,7 +298,7 @@ namespace Charamaker
             FXY p = km.GetCursourPoint(cam, true);
             if (inp.ok("SelSlide", itype.ing))
             {
-                sel.c.e.settxy(p.x, p.y);
+                sel?.c.e.settxy(p.x, p.y);
                 Select();
             }
 
@@ -406,7 +406,10 @@ namespace Charamaker
         private void saveB_Click(object sender, EventArgs e)
         {
             var path = FileMan.dialog("character", ".ctc");
+            var temp = FileMan.s_rootpath;//ダイアログなのでルートパスを外す
+            FileMan.s_rootpath = "";
             sel.c.e.ToSave().saveToPath(path, ".ctc");
+            FileMan.s_rootpath = temp;
         }
 
         private void loadB_Click(object sender, EventArgs e)
@@ -510,6 +513,8 @@ namespace Charamaker
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
             km.down(new IButton(e.Button));
+            //cam.watchRect.mirror = !cam.watchRect.mirror;
+            //cam.watchRect.degree += 30;
         }
         private void Resized(object sender, EventArgs e)
         {
@@ -571,7 +576,7 @@ namespace Charamaker
         void ChangeRootpath(string newPath)
         {
 
-            FileMan.rootpath = rootpathbox.Text;
+            FileMan.s_rootpath = rootpathbox.Text;
             this.rootpathbox.Text = newPath;
             Save();
         }
@@ -583,11 +588,14 @@ namespace Charamaker
         {
 
             save = new DataSaver();
-            save.packAdd("rootpath", FileMan.rootpath.Replace("\\", "/"));
+            save.packAdd("rootpath", FileMan.s_rootpath.Replace("\\", "/"));
             save.packAdd("LastLoad", LastLoad);
             save.packAdd("MotionString", MotionString);
 
-            save.saveToPath(@".\save");
+            var temp = FileMan.s_rootpath;
+            FileMan.s_rootpath = "./";
+            save.saveToPath(@"CharamakerSave");
+            FileMan.s_rootpath = temp;
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
         {

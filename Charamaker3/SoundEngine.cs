@@ -83,13 +83,13 @@ namespace Charamaker3
                 if (a != ".wav") file += ".wav";
             }
 
-            if (File.Exists(rootpath+@"sounds\" + file) == false)
+            if (File.Exists(s_rootpath+@"sounds\" + file) == false)
             {
 
                 Debug.WriteLine(file + "  no such oto file");
                 return;
             }
-            var reader = new BinaryReader(File.OpenRead(rootpath + @"sounds\" + file));
+            var reader = new BinaryReader(File.OpenRead(s_rootpath + @"sounds\" + file));
             int mp3channel = 0;
             int mp3samplerate = 0;
             if (mp3)
@@ -224,7 +224,7 @@ namespace Charamaker3
         /// <param name="vol">この音のボリューム</param>
         virtual public otoman playoto(string file, float vol = 1)
         {
-            if (file == nothing) return null;
+            if (file == c_nothing) return null;
             file = slashFormat(file);
             /*
             var a = Path.GetExtension(file);
