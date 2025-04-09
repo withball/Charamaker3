@@ -47,7 +47,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-        static string bmpExtention(string name)
+        public static string bmpExtention(string name)
         {
             var aa = Path.GetExtension(name);
 
@@ -58,226 +58,7 @@ namespace Charamaker3
         /// 何もないことを示す魔法の言葉
         /// </summary>
         public const string c_nothing = "nothing";
-        #region texture
-
-        static public void setupTextureLoader(Display d)
-        {
-            texs.Clear();
-            baseRender = d.render.Render;
-            Dictionary<string, System.Drawing.Color> basebitnames = new Dictionary<string, System.Drawing.Color>
-                {
-                    {"red",System.Drawing.Color.Red },{"blue",System.Drawing.Color.Blue },{"green",System.Drawing.Color.Green },
-                    {"white",System.Drawing.Color.White },{"gray",System.Drawing.Color.Gray },{"black",System.Drawing.Color.Black },
-                    {"yellow",System.Drawing.Color.Yellow },{"cyan",System.Drawing.Color.Cyan },{"purple",System.Drawing.Color.Purple },
-                    {"aqua",System.Drawing.Color.Aqua },{"brown",System.Drawing.Color.Brown },{"crimson",System.Drawing.Color.Crimson },
-                    {"pink",System.Drawing.Color.Pink },{"orange",System.Drawing.Color.Orange },{"indigo",System.Drawing.Color.Indigo }
-                ,{"trans",System.Drawing.Color.FromArgb(0,0,0,0) }
-
-                };
-            foreach (var a in basebitnames)
-            {
-                registBit(a.Key, a.Value);
-            }
-            //nothingを作る
-            {
-                CreateBitmapSS.Wait();
-                int stride = 3 * sizeof(int);
-                using (var tempStream = new DataStream(stride*3, true, true))
-                {
-                    List<Color> cols = new List<Color>
-                    {
-                    Color.FromArgb(255,255,255),Color.FromArgb(128,128,128),Color.FromArgb(255,0,0),
-                    Color.FromArgb(255, 0 ,255),Color.FromArgb(0,255,0)    ,Color.FromArgb(255,255,0),
-                    Color.FromArgb(0,0,255)    ,Color.FromArgb(0  ,255,255),Color.FromArgb(0,0,0)
-                    };
-                    for (int i = 0; i < 9; i++)
-                    {
-                        var color = cols[i];
-                        int rgba = color.R | (color.G << 8) | (color.B << 16) | (color.A << 24);
-                        tempStream.Write(rgba);
-                    }
-                    var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
-                    
-                    registBmp(c_nothing, baseRender.CreateBitmap(new System.Drawing.Size(3, 3), tempStream.BasePointer, sizeof(int), bitmapProperties));
-                  
-                }
-                CreateBitmapSS.Release();
-            }
-        }
-        //新しいbmpを作るために必要なrender
-        static ID2D1RenderTarget baseRender;
-        //画像を読み込むとき、透明とみなす色。
-        static public Color transColor = Color.FromArgb(0, 254, 254);
-
-        /// <summary>
-        /// 読み込んだテクスチャーを保存しとく
-        /// </summary>
-        static Dictionary<string, ID2D1Bitmap> texs = new Dictionary<string, ID2D1Bitmap>();
-
-        
-
-        /// <summary>
-        /// texsに色のついたビットを追加する。
-        /// </summary>
-        /// <param name="bitname">bitname+"bit"</param>
-        /// <param name="color">色</param>
-        static private void registBit(string bitname, System.Drawing.Color color)
-        {
-            using (var tempStream = new DataStream(1, true, true))
-            {
-                CreateBitmapSS.Wait();
-                int rgba = color.R | (color.G << 8) | (color.B << 16) | (color.A << 24);
-                tempStream.Write(rgba);
-                var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
-                registBmp(bitname + "bit", baseRender.CreateBitmap(new System.Drawing.Size(1, 1), tempStream.BasePointer, sizeof(int), bitmapProperties));
-                CreateBitmapSS.Release();
-            }
-
-        }
-
-        /// <summary>
-        /// bmpをtexsに登録する
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="bmp"></param>
-        /// <param name="dispouwagaki">同じ名前のbmpを登録するときdisposeするか。Renderからのbmpを登録してる場所にはfalseじゃないとだめ</param>
-        static public void registBmp(string name, ID2D1Bitmap bmp, bool dispouwagaki = true)
-        {
-            {
-                name = slashFormat(name);
-                name = bmpExtention(name);
-            }
-
-            if (texs.ContainsKey(name))
-            {
-
-                if (dispouwagaki) texs[name]?.Dispose();
-                texs[name] = bmp;
-            }
-            else
-            {
-                //if (bmp != null) Console.WriteLine(bmp.PixelSize.ToString());
-                Debug.WriteLine(name + " load sitao!");
-                texs.Add(name, bmp);
-            }
-        }
-
-
-        /// <summary>
-        /// bmpがnullか調べる
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
-        static public bool bmpisnull(ID2D1Bitmap bmp)
-        {
-
-            return bmp == null;
-        }
-
-
-        private static SemaphoreSlim CreateBitmapSS = new SemaphoreSlim(1, 1);
-
-        /// <summary>
-        /// bitmapテクスチャーを読み込む。既に読み込んでいた場合は読み込まずに返す。
-        /// .bmpはつけてもつけなくてもいい
-        /// </summary>
-        /// <param name="file">.\tex\に続くファイルパス</param>
-        /// <param name="reset">強制的に再読み込みする</param>
-        /// <returns>clmcolを透明にしたビットマップ</returns>
-        static public ID2D1Bitmap ldtex(string file, bool reset = false)
-        {
-            {
-                file = slashFormat(file);
-                file = bmpExtention(file);
-            }
-
-            if (!texs.ContainsKey(file) || reset)
-            {
-                string path = s_rootpath+@"tex\" + file;
-                if (!File.Exists(path))
-                {
-                    Debug.WriteLine("texture " + path + " not exists");
-                    registBmp(file, null);
-                    return texs[bmpExtention(c_nothing)];
-                }
-
-                // System.Drawing.Imageを使ってファイルから画像を読み込む
-                {
-                    using (var bitmap = (System.Drawing.Bitmap)System.Drawing.Image.FromFile(path))
-                    {
-                        // BGRA から RGBA 形式へ変換する
-                        // 1行のデータサイズを算出
-                        int stride = bitmap.Width * sizeof(int);
-                        using (var tempStream = new DataStream(bitmap.Height * stride, true, true))
-                        {
-                            // 読み込み元のBitmapをロックする
-                            var sourceArea = new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height);
-                            var bitmapData = bitmap.LockBits(sourceArea, System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
-
-                            // 変換処理
-                            for (int y = 0; y < bitmap.Height; y++)
-                            {
-                                int offset = bitmapData.Stride * y;
-                                for (int x = 0; x < bitmap.Width; x++)
-                                {
-
-                                    // 1byteずつデータを読み込む
-                                    byte B = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                                    byte G = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                                    byte R = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                                    byte A = Marshal.ReadByte(bitmapData.Scan0, offset++);
-                                    //Console.WriteLine(B + " " + G + " " + R + " " + A);
-                                    byte a = 0;
-                                    //透明
-                                    int gaba = a | (a << 8) | (a << 16) | (a << 24);
-                                    //tempStream.Write(gaba);
-
-
-                                    int rgba = R | (G << 8) | (B << 16) | (A << 24);
-                                    if (R == transColor.R && G == transColor.G && B == transColor.B) tempStream.Write(gaba);
-                                    else
-                                        tempStream.Write(rgba);
-
-
-                                }
-                            }
-                            // 読み込み元のBitmapのロックを解除する
-                            bitmap.UnlockBits(bitmapData);
-                            tempStream.Position = 0;
-
-                            // 変換したデータからBitmapを生成して返す
-                            CreateBitmapSS.Wait();
-                            var size = new System.Drawing.Size(bitmap.Width, bitmap.Height);
-                            var bitmapProperties = new BitmapProperties(new PixelFormat(Vortice.DXGI.Format.R8G8B8A8_UNorm, AlphaMode.Premultiplied));
-
-                            var result = baseRender.CreateBitmap(size, tempStream.BasePointer, stride, bitmapProperties);
-                            registBmp(file, result);
-                            CreateBitmapSS.Release();
-                        }
-                    }
-                }
-
-            }
-            // Console.WriteLine(texs.Count() + "texcount");
-            return texs[file];
-        }
-        /// <summary>
-        /// テクスチャーの大きさだけ取得する
-        /// </summary>
-        /// <param name="file">.\tex\に続くファイルパス</param>
-        /// <param name="reset">強制的に再読み込みする</param>
-        /// <returns>大きさ</returns>
-        static public FXY texSize(string file, bool reset = false)
-        {
-            var tex = ldtex(file,reset);
-            if (tex == null) 
-            {
-                return new FXY(0, 0);
-            }
-            return new FXY(tex.Size.Width, tex.Size.Height);
-        }
-        #endregion
-
+   
         static public string dialog(string filename,string ext)
         {
 
@@ -292,7 +73,31 @@ namespace Charamaker3
             return @".\temp.temp";
         }
 
+        #region Texture
 
+        static Display _DefaultDisplay;
+        /// <summary>
+        /// 標準のディスプレイを設定する。テクスチャの幅の読み込みとかに使う
+        /// </summary>
+        /// <param name="d"></param>
+        static public void SetDefaultDisplay(Display d) 
+        {
+            _DefaultDisplay = d;
+        }
+        static public FXY GetTextureSize(string tex) 
+        {
+            var bmp = _DefaultDisplay.ldtex(tex);
+            if (bmp != null)
+            {
+                FXY wh = new FXY(bmp.Size.Width, bmp.Size.Height);
+                return wh;
+            }
+            else 
+            {
+                return new FXY(1, 1);
+            }
+        }
+        #endregion
 
         #region Random
 

@@ -677,10 +677,10 @@ namespace Charamaker3
             var d2dContext = cam.render.DeviceContext;
 
             ID2D1Bitmap bitmap;
-            bitmap = FileMan.ldtex(nowtex);
+            bitmap = cam.d.ldtex(nowtex);
             if (bitmap == null)
             {
-                bitmap = FileMan.ldtex(FileMan.c_nothing);
+                bitmap = cam.d.ldtex(FileMan.c_nothing);
             }
 
 

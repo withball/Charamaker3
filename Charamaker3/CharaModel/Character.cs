@@ -260,37 +260,32 @@ namespace Charamaker3.CharaModel
         /// <param name="z"></param>
         /// <param name="corename"></param>
         /// <returns></returns>
-        static public Entity MakeCharacter(string tex,float x,float y,float size,
-            float tpx=0.5f,float tpy=0.5f,float z=10000,string corename="core") 
+        static public Entity MakeCharacter(string tex, float x, float y, float size,
+            float tpx = 0.5f, float tpy = 0.5f, float z = 10000, string corename = "core")
         {
-            var bmp=FileMan.ldtex(tex);
-            
-            float w, h;
-            if (bmp != null)
-            {
-                if (size > 0)
-                {
-                    w = size;
-                    h = bmp.Size.Height * size / bmp.Size.Width;
-                }
-                else
-                {
+            var bmpWh = FileMan.GetTextureSize(tex);
 
-                    w = bmp.Size.Width * -size / bmp.Size.Height;
-                    h = -size;
-                }
-            }
-            else 
+            float w, h;
+
+            if (size > 0)
             {
                 w = size;
-                h = size;
+                h = bmpWh.y * size / bmpWh.x;
             }
-            var res=Entity.make(x,y,w,h,w*tpx,h*tpy,0,corename);
+            else
+            {
 
-            var c=new Character(new Joint(corename+"JOI",0.5f,0.5f,null,new List<Entity>()));
-            
+                w = bmpWh.x * -size / bmpWh.y;
+                h = -size;
+            }
 
-            var t=new Texture(z,new ColorC(1,1,1,1),new Dictionary<string, string> { {"def",tex } });
+
+            var res = Entity.make(x, y, w, h, w * tpx, h * tpy, 0, corename);
+
+            var c = new Character(new Joint(corename + "JOI", 0.5f, 0.5f, null, new List<Entity>()));
+
+
+            var t = new Texture(z, new ColorC(1, 1, 1, 1), new Dictionary<string, string> { { "def", tex } });
             t.add(res);
 
             c.add(res);

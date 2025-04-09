@@ -47,7 +47,6 @@ namespace Charamaker
 
 
 
-            FileMan.setupTextureLoader(display);
             FileMan.SoundSetUP();
 
 
@@ -99,6 +98,8 @@ namespace Charamaker
                , new FontC(16, 16 * 40, 16 * 30, isBold: 0, alignment: FontC.alignment.left
                , alignmentV: FontC.alignment.right));
             text.add(cam.watchRect);
+
+
             text.font.hutiZure = 0.05f;
             text.font.hutiColor = new ColorC(1, 1, 1, 1);
             text.updated += (aa, bb) =>
@@ -388,7 +389,7 @@ namespace Charamaker
                 if (texs.Count > 0)
                 {
 
-                    this.texturelabel.Text = FileMan.texSize(this.texturelabel.Text = texs[0].nowtex).ToString();
+                    this.texturelabel.Text = cam.d.texSize(this.texturelabel.Text = texs[0].nowtex).ToString();
                 }
             }
         }
@@ -510,6 +511,7 @@ namespace Charamaker
             display.ShotThisScreen(cam);
         }
 
+
         private void OnMouseDown(object sender, MouseEventArgs e)
         {
             km.down(new IButton(e.Button));
@@ -615,7 +617,7 @@ namespace Charamaker
 
         private void ResetTextureB_Click(object sender, EventArgs e)
         {
-            FileMan.setupTextureLoader(display);
+           cam.d.setupTextureLoader();
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Sample
 
             FP.l.seting(textsn: new List<string> {  });
 
-            FileMan.setupTextureLoader(display);
+            FileMan.SetDefaultDisplay(display);
             FileMan.SoundSetUP();
 
             input = new NameInput(km);
