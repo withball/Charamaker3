@@ -29,10 +29,8 @@ namespace Charamaker3
     /// <summary>
     /// レンダーのセット！
     /// </summary>
-    public class C3RenderSet 
+    public class C3RenderSet
     {
-        
-
 
         public ID2D1RenderTarget Render;
 
@@ -41,11 +39,11 @@ namespace Charamaker3
         /// <summary>
         /// テクスチャ描画に使うエフェクトたち
         /// </summary>
-        public Vortice.Direct2D1.Effects.AffineTransform2D ECrop0;
-        public Vortice.Direct2D1.Effects.Crop ECrop1;
-        public Vortice.Direct2D1.Effects.AffineTransform2D ECrop2;
-        public Vortice.Direct2D1.Effects.ColorMatrix EBlend;
-        public Vortice.Direct2D1.Effects.AffineTransform2D ETrans;
+        public Vortice.Direct2D1.Effects.AffineTransform2D ECrop0=null;
+        public Vortice.Direct2D1.Effects.Crop ECrop1 = null;
+        public Vortice.Direct2D1.Effects.AffineTransform2D ECrop2 = null;
+        public Vortice.Direct2D1.Effects.ColorMatrix EBlend = null;
+        public Vortice.Direct2D1.Effects.AffineTransform2D ETrans = null;
 
         /// <summary>
         /// エフェクトとかも確保してくれる
@@ -66,12 +64,52 @@ namespace Charamaker3
         /// </summary>
          ~C3RenderSet() 
         {
-            ECrop0.Release();
-            ECrop1.Release();
-            ECrop2.Release();
-            EBlend.Release();
-            ETrans.Release();
-            DeviceContext.Release();
+            ECrop0?.Release();
+            ECrop1?.Release();
+            ECrop2?.Release();
+            EBlend?.Release();
+            ETrans?.Release();
+            DeviceContext?.Release();
+
+        }
+    }
+
+    /// <summary>
+    /// レンダーのセット！
+    /// </summary>
+    public class C3BitmapRenderSet: C3RenderSet
+    {
+
+        /// <summary>
+        /// エフェクトとかも確保してくれる
+        /// </summary>
+        /// <param name="render"></param>
+        public C3BitmapRenderSet(ID2D1BitmapRenderTarget render) : base(render)
+        {
+            var bitmapProperties = new BitmapProperties1();
+            bitmapProperties.BitmapOptions = BitmapOptions.CannotDraw | BitmapOptions.CpuRead;
+            bitmapProperties.PixelFormat = render.PixelFormat;
+            
+
+            //DeviceContext.Fac
+            Bitmap1 = this.DeviceContext.CreateBitmap(DeviceContext.PixelSize, IntPtr.Zero
+                    , 0, ref bitmapProperties);
+
+           
+        }
+        /// <summary>
+        /// 事前に用意しておく
+        /// </summary>
+        public ID2D1Bitmap1 Bitmap1;
+        //BitmapProperties1 _bitmapProperties;
+        public ID2D1BitmapRenderTarget BitmapRender { get { return (ID2D1BitmapRenderTarget)Render; } }
+
+        /// <summary>
+        /// レンダーまでは開放しない
+        /// </summary>
+        ~C3BitmapRenderSet()
+        {
+            Bitmap1?.Release();
 
         }
     }
@@ -470,18 +508,18 @@ namespace Charamaker3
         /// <summary>
         /// スクリーンショットに使うレンダー      
         /// </summary>
-        C3RenderSet _SCSRender;
+        C3BitmapRenderSet _SCSRender;
 
 
         /// <summary>
         /// Textの一次的な描画に使うレンダーに使うレンダー      
         /// </summary>
-        ID2D1BitmapRenderTarget _TextRender;
+        C3BitmapRenderSet _TextRender;
 
         /// <summary>
         /// 画像のブレンドに一次的に使うレンダーに使うレンダー      
         /// </summary>
-        ID2D1BitmapRenderTarget _BlendRender;
+        C3BitmapRenderSet _BlendRender;
 
 
         ID2D1Factory fac;
@@ -504,23 +542,23 @@ namespace Charamaker3
 
 
             var fom = new Vortice.DCommon.PixelFormat();
-            _SCSRender = new C3RenderSet(render.Render.CreateCompatibleRenderTarget(si, si
+            _SCSRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(si, si
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible));
 
             var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution)*3, (int)((wi + hei) * resolution)*3);
-            _TextRender = render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+            _TextRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
-                , CompatibleRenderTargetOptions.GdiCompatible);
+                , CompatibleRenderTargetOptions.GdiCompatible));
 
-            _TextRender.BeginDraw();
+            _TextRender.BitmapRender.BeginDraw();
 
-            _TextRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
-            _TextRender.EndDraw();
+            _TextRender.BitmapRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
+            _TextRender.BitmapRender.EndDraw();
 
-            _BlendRender = render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+            _BlendRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
-                , CompatibleRenderTargetOptions.GdiCompatible);
+                , CompatibleRenderTargetOptions.GdiCompatible));
             
             setupTextureLoader(); 
         }
@@ -598,12 +636,12 @@ namespace Charamaker3
         /// <param name="cl"></param>
         protected void PreDraw(float cl)
         {
-            _TextRender.BeginDraw();
+            _TextRender.BitmapRender.BeginDraw();
             foreach (var a in cameras)
             {
                 a.c.PreDraw(cl,Semaphores);
             }
-            _TextRender.EndDraw();
+            _TextRender.BitmapRender.EndDraw();
         }
         /// <summary>
         /// このカメラのスクショをとる
@@ -630,7 +668,7 @@ namespace Charamaker3
                     a.c.render = render;
                 }
             }
-            screenShot((ID2D1BitmapRenderTarget)_SCSRender.Render);
+            screenShot(_SCSRender,render);
             //screenShot(_TextRender);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);
@@ -642,47 +680,42 @@ namespace Charamaker3
         /// <param name="renderTarget"></param>
         /// <param name="zone">変換する領域。nullで全部</param>
         /// <returns></returns>
-        static public List<List<ColorC>> GetPixels(ID2D1Bitmap image, ID2D1RenderTarget renderTarget, Rectangle zone = null)
+        static public List<List<ColorC>> GetPixels(C3BitmapRenderSet image, Rectangle zone = null)
         {
-            var deviceContext2d = renderTarget.QueryInterface<ID2D1DeviceContext>();
-            var bitmapProperties = new BitmapProperties1();
-            bitmapProperties.BitmapOptions = BitmapOptions.CannotDraw | BitmapOptions.CpuRead;
-            bitmapProperties.PixelFormat = image.PixelFormat;
+
+            //image.Bitmap1.CopyFromBitmap(image.BitmapRender.Bitmap);
+
+            image.Bitmap1.CopyFromBitmap(image.Render.CreateSharedBitmap(image.BitmapRender.Bitmap
+                , new BitmapProperties(image.BitmapRender.PixelFormat)));
 
 
-            var bitmap1 = deviceContext2d.CreateBitmap(image.PixelSize, renderTarget.NativePointer
-                , sizeof(int), ref bitmapProperties);
+            var BitmapMap = image.Bitmap1.Map(MapOptions.Read);
 
-
-
-            bitmap1.CopyFromBitmap(renderTarget.CreateSharedBitmap(image
-                , new BitmapProperties(image.PixelFormat)));
-            var map = bitmap1.Map(MapOptions.Read);
-            var size = (map.Pitch * image.PixelSize.Height);
+            var size = (BitmapMap.Pitch * image.BitmapRender.PixelSize.Height);
             byte[] bytes = new byte[size];
-            Marshal.Copy(map.Bits, bytes, 0, size);
+            Marshal.Copy(BitmapMap.Bits, bytes, 0, size);
+
+
             //bitmap1.Unmap();
             //bitmap1.Dispose();
-            bitmap1.Release();
+            //bitmap1.Release();
 
             //bitmap1.Dispose();
-            //deviceContext2d.Release();
-            deviceContext2d.Dispose();
             var res = new List<List<ColorC>>();
 
             if (zone == null)
             {
-                zone = new Rectangle(0, 0, image.PixelSize.Width, image.PixelSize.Height);
+                zone = new Rectangle(0, 0, image.BitmapRender.PixelSize.Width, image.BitmapRender.PixelSize.Height);
             }
 
-            for (int y = (int)zone.y; y < image.PixelSize.Height && y < zone.y + zone.h; y++)
+            for (int y = (int)zone.y; y < image.BitmapRender.PixelSize.Height && y < zone.y + zone.h; y++)
             {
                 res.Add(new List<ColorC>());
                 var yy = y;
 
-                for (int x = (int)zone.x; x < image.PixelSize.Width && x < zone.x + zone.w; x++)
+                for (int x = (int)zone.x; x < image.BitmapRender.PixelSize.Width && x < zone.x + zone.w; x++)
                 {
-                    var position = map.Pitch * yy + x * (map.Pitch / image.PixelSize.Width);
+                    var position = BitmapMap.Pitch * yy + x * (BitmapMap.Pitch / image.BitmapRender.PixelSize.Width);
                     var c = new ColorC(bytes[position + 2] / 255f, bytes[position + 1] / 255f
                         , bytes[position + 0] / 255f, bytes[position + 3] / 255f);
                     res[yy - (int)zone.y].Add(c);
@@ -690,6 +723,7 @@ namespace Charamaker3
                 }
             }
 
+            image.Bitmap1.Unmap();
             return res;
         }
 
@@ -701,7 +735,7 @@ namespace Charamaker3
         /// <param name="h">保存する表示マン</param>
         /// <param name="format">保存フォーマット</param>
         /// <param name="addname">追加で付ける名前</param>
-        static public void screenShot(ID2D1BitmapRenderTarget bt, string format = "png", string addname = "")
+        static public void screenShot(C3BitmapRenderSet bt,C3RenderSet renderset, string format = "png", string addname = "")
         {
             /*
             var bt = h.render.CreateCompatibleRenderTarget(size, CompatibleRenderTargetOptions.None);
@@ -722,7 +756,7 @@ namespace Charamaker3
             }
 
 
-            var pxs = GetPixels(bt.Bitmap, bt);
+            var pxs = GetPixels(bt);
 
             var size = new Size(pxs[0].Count, pxs.Count);
 
@@ -836,7 +870,7 @@ namespace Charamaker3
                 foreach (var b in textRenderers)
                 {
                     if (onHani(b.rendZone, np.x, np.y
-                        , np.x - _TextRender.Size.Width, np.y))
+                        , np.x - _TextRender.BitmapRender.Size.Width, np.y))
                     {
                         maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w, 0).x, maxx);
                     }
@@ -844,7 +878,7 @@ namespace Charamaker3
                 foreach (var b in textRenderers)
                 {
                     if (onHani(b.rendZone, np.x, np.y
-                        , np.x, np.y - _TextRender.Size.Height))
+                        , np.x, np.y - _TextRender.BitmapRender.Size.Height))
                     {
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
                     }
@@ -858,7 +892,7 @@ namespace Charamaker3
                 }
             }
 
-            hanteis.Add(Task.Run(() => { addrect(new FXY(_TextRender.Bitmap.Size.Width - 1, _TextRender.Bitmap.Size.Height - 1)); }));
+            hanteis.Add(Task.Run(() => { addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1)); }));
 
             for ( int t=0;t< textRenderers.Count;t++)
             {
@@ -988,7 +1022,7 @@ namespace Charamaker3
         public ID2D1Bitmap Blend(ID2D1Bitmap bitmap, ColorC color)
         {
             if (color.r == 1 && color.g == 1 && color.b == 1) { return bitmap; }
-            var d2dContext = _BlendRender.QueryInterface<ID2D1DeviceContext>();
+            var d2dContext = _BlendRender.DeviceContext;
 
 
             //_BlendRender.PushAxisAlignedClip(new Rectangle(0,0,bitmap.PixelSize.Width, bitmap.PixelSize.Height)
@@ -1045,7 +1079,7 @@ namespace Charamaker3
             //blend.Dispose();
             //_BlendRender.PopAxisAlignedClip();
 
-            return _BlendRender.Bitmap;
+            return _BlendRender.BitmapRender.Bitmap;
 
         }
     }

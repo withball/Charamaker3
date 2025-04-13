@@ -674,7 +674,7 @@ namespace Charamaker3
         public override void draw(Camera cam)
         {
             var render = cam.render.Render;
-            var d2dContext = cam.render.DeviceContext;
+           
 
             ID2D1Bitmap bitmap;
             bitmap = cam.d.ldtex(nowtex);
@@ -805,7 +805,7 @@ namespace Charamaker3
 
                 var rect = rectRectF(cam);
                 //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
-                d2dContext.DrawImage(trans,InterpolationMode.NearestNeighbor,CompositeMode.SourceOver);
+                cam.render.DeviceContext.DrawImage(trans,InterpolationMode.NearestNeighbor,CompositeMode.SourceOver);
 
 
             }
@@ -1045,7 +1045,7 @@ namespace Charamaker3
     /// </summary>
     class TextRenderer
     {
-        internal ID2D1BitmapRenderTarget render;
+        internal C3BitmapRenderSet render;
 
         /// <summary>
         /// Rectangleだが、回転は無視される。
@@ -1065,7 +1065,7 @@ namespace Charamaker3
         /// <param name="parent"></param>
         /// <param name="render"></param>
         /// <param name="drawto">回転は無しね</param>
-        public TextRenderer(Display parent, ID2D1BitmapRenderTarget render, Shapes.Rectangle drawto)
+        public TextRenderer(Display parent, C3BitmapRenderSet render, Shapes.Rectangle drawto)
         {
             this.parent = parent;
             this.render = render;
@@ -1186,22 +1186,22 @@ namespace Charamaker3
 
                 semaphores.TextRender.Wait();
                 
-                render.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
-                render.Transform = Matrix3x2.CreateTranslation(0, 0);
+                render.BitmapRender.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
+                render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
 
                 float R = 1, G = 0.98f, B = 0.97f;
                 {
 
                     //render.Clear(new ColorC(FileMan.whrandhani(R), FileMan.whrandhani(G), FileMan.whrandhani(B)
                     //    , 0.5f));
-                    render.Clear(new ColorC(R,G,B,0));
+                    render.BitmapRender.Clear(new ColorC(R,G,B,0));
                 }
                 if (F.hutiZure > 0)
                 {
 
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
-                    var slb = render.CreateSolidColorBrush(c);
+                    var slb = render.BitmapRender.CreateSolidColorBrush(c);
                     var lis = new List<Shapes.Rectangle>();
                     lis.Add((Shapes.Rectangle)rendZone.clone());
                     lis.Add((Shapes.Rectangle)rendZone.clone());
@@ -1214,14 +1214,14 @@ namespace Charamaker3
                     lis[3].y -= zure;
                     for (int i = 0; i < lis.Count; i++)
                     {
-                        render.DrawText(Text, F.ToFont(), lis[i], slb);
+                        render.BitmapRender.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
                 }
                 {
-                    var slb = render.CreateSolidColorBrush(color);
-                    render.DrawText(Text, F.ToFont(), rendZone, slb);
+                    var slb = render.BitmapRender.CreateSolidColorBrush(color);
+                    render.BitmapRender.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
-                render.PopAxisAlignedClip();
+                render.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
 
                 /*
@@ -1250,7 +1250,7 @@ namespace Charamaker3
                 {
 
                     
-                    var list = Display.GetPixels(render.Bitmap, render, rendZone);
+                    var list = Display.GetPixels(render, rendZone);
 
                     bool breaked = false;
                     for (int y = list.Count - 1; y >= 0; y--)
@@ -1387,7 +1387,7 @@ namespace Charamaker3
                 source.w -= 2;
                 source.y += 1;
                 source.h -= 2;
-                render.DrawBitmap(Trender.render.Bitmap
+                render.DrawBitmap(Trender.render.BitmapRender.Bitmap
                   , rect
                   , this.col.opa, BitmapInterpolationMode.Linear
                     , source);

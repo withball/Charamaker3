@@ -93,20 +93,22 @@ namespace Charamaker
             }*/
 
 
-
-            var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
-               , new FontC(16, 16 * 40, 16 * 30, isBold: 0, alignment: FontC.alignment.left
-               , alignmentV: FontC.alignment.right));
-            text.add(cam.watchRect);
-
-
-            text.font.hutiZure = 0.05f;
-            text.font.hutiColor = new ColorC(1, 1, 1, 1);
-            text.updated += (aa, bb) =>
             {
-                text.text = inp.Replace(FP.l.GT("CamSlide")) + "\n" + inp.Replace(FP.l.GT("SelSlide"));
-                //  cam.watchRect.degree += 0.1f * bb;
-            };
+                var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
+                   , new FontC(16, 16 * 40, 16 * 30, isBold: 0, alignment: FontC.alignment.left
+                   , alignmentV: FontC.alignment.right));
+                text.add(cam.watchRect);
+
+
+                text.font.hutiZure = 0.05f;
+                text.font.hutiColor = new ColorC(1, 1, 1, 1);
+                text.updated += (aa, bb) =>
+                {
+                    text.text = inp.Replace(FP.l.GT("CamSlide")) + "\n" + inp.Replace(FP.l.GT("SelSlide"));
+                    //  cam.watchRect.degree += 0.1f * bb;
+                };
+
+            }
 
             w.classifyed += (aa, bb) =>
             {
