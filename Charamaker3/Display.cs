@@ -262,9 +262,19 @@ namespace Charamaker3
         {
             if (isBitmap)
             {
+                BitmapInterpolationMode mode;
+                if (linear == true)
+                {
+                    mode = BitmapInterpolationMode.Linear;
+                }
+                else
+                {
+                    mode = BitmapInterpolationMode.NearestNeighbor;
+                }
+
                 var render = cam.render;
                 render.Render.Transform = rectTrans(cam);
-                render.Render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, BitmapInterpolationMode.Linear, source);
+                render.Render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, mode, source);
             }
         }
         /// <summary>

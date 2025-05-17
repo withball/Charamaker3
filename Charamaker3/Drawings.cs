@@ -266,6 +266,11 @@ namespace Charamaker3
         public ColorC col = new ColorC(0, 0, 0, 0);
         //描画の順番
         public float z;
+
+        /// <summary>
+        /// 線形補完をするか。一個一個じゃなくてプログラム側で一気に変えた方が良き。回転するとよくなくなる。
+        /// </summary>
+        public bool linear = true;
         public Drawable(float z, ColorC col, float time = -1, string name = "") : base(time, name)
         {
             this.z = z;
@@ -289,6 +294,7 @@ namespace Charamaker3
             var res = base.ToSave();
             res.linechange();
             res.packAdd("z", this.z);
+            res.packAdd("linear", this.linear);
             res.linechange();
 
             res.packAdd("r", this.col.r);
@@ -301,6 +307,7 @@ namespace Charamaker3
         {
             base.ToLoad(d);
             this.z = d.unpackDataF("z");
+            this.linear = d.unpackDataB("liner",linear);
             this.col.r = d.unpackDataF("r");
             this.col.g = d.unpackDataF("g");
             this.col.b = d.unpackDataF("b");
@@ -570,6 +577,72 @@ namespace Charamaker3
         }
     }
 
+    /// <summary>
+    /// 描画可能な三角形
+    /// </summary>
+    public class DTriangle : Drawable
+    {
+        //頂点の位置
+        float wariai = 0.5f;
+        public DTriangle(float wariai,float z, ColorC c, float time = -1, string name = "") : base(z, c, time, name)
+        {
+            this.wariai = wariai;
+        }
+        public DTriangle() : base()
+        {
+        }
+        public override DataSaver ToSave()
+        {
+            var ret = base.ToSave();
+            ret.packAdd("wariai", wariai);
+            return ret;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            this.wariai = d.unpackDataF("wariai", wariai);
+            base.ToLoad(d);
+        }
+        public override void copy(Component c)
+        {
+            var cc = (DTriangle)c;
+            base.copy(c);
+            cc.wariai = this.wariai;
+        }
+
+        public override void draw(Camera cam)
+        {
+            //TODO:メモリリークメモリリークとかしてたらごめん
+            var render = cam.render.Render;
+
+            render.Transform = rectTrans(cam);
+            var rect = rectRectF(cam);
+
+            using (var brh = render.CreateSolidColorBrush(col))
+            {
+                ID2D1PathGeometry geometry = render.Factory.CreatePathGeometry();
+
+                ID2D1GeometrySink sink = geometry.Open();
+
+                var leftup= camsoutai(cam,e.gettxy2(0, 0));
+                var leftdown = camsoutai(cam, e.gettxy2(0, 1));
+                var rightup = camsoutai(cam, e.gettxy2(1, wariai));
+                sink.BeginFigure(new PointF(leftup.x,leftup.y),FigureBegin.Filled);
+
+                sink.AddLine(new PointF(leftdown.x, leftdown.y));
+                sink.AddLine(new PointF(rightup.x, rightup.y));
+                sink.AddLine(new PointF(leftup.x, leftup.y));
+
+                sink.EndFigure(FigureEnd.Closed);
+
+                sink.Close();
+
+                render.FillGeometry(geometry,brh);
+                render.DrawGeometry(geometry, brh);
+            }
+
+        }
+    }
+
     public class Texture : Drawable
     {
         /// <summary>
@@ -690,11 +763,20 @@ namespace Charamaker3
                 var rect = rectRectF(cam);
                 render.Transform = rectTrans(cam);
                 //var blended = cam.d.Blend(bitmap, this.col);
+                BitmapInterpolationMode mode ;
+                if (linear == true)
+                {
+                    mode = BitmapInterpolationMode.Linear;
+                }
+                else
+                {
+                    mode = BitmapInterpolationMode.NearestNeighbor;
+                }
                 render.DrawBitmap(bitmap
                        , rect
-                       , this.col.opa, BitmapInterpolationMode.Linear
+                       , this.col.opa, mode
                        , new RawRectF(bitmap.Size.Width * CropL, bitmap.Size.Height * CropU
-                       , bitmap.Size.Width * CropR - 0.5f, bitmap.Size.Height * CropD - 0.5f));//-0.5しないと1マスが2マスになって絶望したりする。
+                       , bitmap.Size.Width * CropR - 0.0f, bitmap.Size.Height * CropD - 0.0f));//嘘->-0.5しないと1マスが2マスになって絶望したりする。
             }
             else if(1==1)
             {
@@ -1381,6 +1463,16 @@ namespace Charamaker3
             rect.Top += zure.y;
             rect.Bottom += zure.y;
             {
+                BitmapInterpolationMode mode;
+                if (linear == true)
+                {
+                    mode = BitmapInterpolationMode.Linear;
+                }
+                else
+                {
+                    mode = BitmapInterpolationMode.NearestNeighbor;
+                }
+
                 var source = new Rectangle();
                 Trender.rendZone.copy(source);
                 source.x += 1;
@@ -1389,7 +1481,7 @@ namespace Charamaker3
                 source.h -= 2;
                 render.DrawBitmap(Trender.render.BitmapRender.Bitmap
                   , rect
-                  , this.col.opa, BitmapInterpolationMode.Linear
+                  , this.col.opa, mode
                     , source);
             }
             if (onWorld==false)

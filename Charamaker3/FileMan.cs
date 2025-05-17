@@ -1117,6 +1117,25 @@ namespace Charamaker3
 
             return res;
         }
+        /// <summary>
+        /// データを特定の文字で区切ったのち、idx番目を変換する
+        /// </summary>
+        /// <param name="c"></param>
+        /// <param name="def">idx番目が存在しなかった時の戻り値</param>
+        /// <returns></returns>
+        public E splitOneDataE<E>(int idx, E def , char c = ':')
+        where E : struct, Enum
+        {
+            var sp = Data.Split(c);
+            E res = def;
+            if (idx >= sp.Length)
+            {
+                return res;
+            }
+            if (!Enum.TryParse(sp[idx], out res)) { res = def; }
+
+            return res;
+        }
 
         /// <summary>
         /// データのすべての構造を取得する。多分呼び出すのは一番上でなのでescape=trueがいいな。
