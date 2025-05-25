@@ -243,7 +243,7 @@ namespace Charamaker3
                 var lis = e.getcompos<Drawable>();
                 foreach (var a in lis)
                 {
-                    Ddic.add(a, a.z);
+                    Ddic.add(a, a.z * a.zRatio + a.zDelta);
                 }
             }
             {

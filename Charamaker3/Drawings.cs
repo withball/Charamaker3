@@ -264,8 +264,22 @@ namespace Charamaker3
         /// 色。大体透明度しか意味ない。
         /// </summary>
         public ColorC col = new ColorC(0, 0, 0, 0);
-        //描画の順番
+        /// <summary>
+        /// 描画の順番
+        /// </summary>
         public float z;
+
+
+        /// <summary>
+        /// 描画順番のプラスされる値。保存されない
+        /// </summary>
+        public float zDelta=0;
+
+        /// <summary>
+        /// 描画順番の倍率。保存されない
+        /// </summary>
+        public float zRatio=1;
+
 
         /// <summary>
         /// 線形補完をするか。一個一個じゃなくてプログラム側で一気に変えた方が良き。回転するとよくなくなる。
@@ -287,6 +301,11 @@ namespace Charamaker3
             var cc = (Drawable)c;
             base.copy(c);
             cc.z = this.z;
+
+            cc.zDelta = this.zDelta;
+            cc.zRatio = this.zRatio;
+            cc.linear = this.linear;
+
             cc.col = new ColorC(this.col);
         }
         public override DataSaver ToSave()
@@ -294,6 +313,9 @@ namespace Charamaker3
             var res = base.ToSave();
             res.linechange();
             res.packAdd("z", this.z);
+            res.packAdd("zDelta", this.zDelta);
+            res.packAdd("zRatio", this.zRatio);
+            res.linechange();
             res.packAdd("linear", this.linear);
             res.linechange();
 
@@ -307,6 +329,9 @@ namespace Charamaker3
         {
             base.ToLoad(d);
             this.z = d.unpackDataF("z");
+            this.zDelta=d.unpackDataF("zDelta", this.zDelta);
+            this.zRatio=d.unpackDataF("zRatio", this.zRatio);
+
             this.linear = d.unpackDataB("liner",linear);
             this.col.r = d.unpackDataF("r");
             this.col.g = d.unpackDataF("g");
@@ -361,7 +386,6 @@ namespace Charamaker3
         {
             var watch = cam.watchRect;
             var camupleft = new FXY(watch.x, watch.y);
-
 
             var res = new FXY(xy.x, xy.y) - camupleft;
             res.degree -= watch.degree;

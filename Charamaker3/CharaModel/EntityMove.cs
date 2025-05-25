@@ -491,13 +491,33 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// Drawable要素をリセットする
         /// </summary>
+        /// <param name="z">zもリセットする=true</param>
+        /// <param name="color">colorもリセットする=ture</param>
+        /// <param name="texture">textureもリセットする=true</param>
         /// <param name="name">=""</param>
         /// <param name="time">=0</param>
         /// <param name="onlyroot">以下には適用しない=false</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ResetMove(string name = "", float time = 0, bool onlyroot = false)
+        static public DrawableMove ResetMove(bool z=true,bool color=true,bool texture=true,string name = "", float time = 0, bool onlyroot = false)
         {
+
             var res = new DrawableMove(time, 0, 1, 1, 1, 1, "\\", name);
+            if (z==false) 
+            {
+                res.basespeeds[_Z] = float.NaN;
+                
+            }
+            if (color == false) 
+            {
+                res.basespeeds[_R] = float.NaN;
+                res.basespeeds[_G] = float.NaN;
+                res.basespeeds[_B] = float.NaN;
+                res.basespeeds[_OPA] = float.NaN;
+            }
+            if (texture == false) 
+            {
+                res.texture = "_";
+            }
             if (onlyroot)
             {
                 res.GO = goOption.onlyRoot;

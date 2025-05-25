@@ -1132,7 +1132,7 @@ namespace Charamaker3
             {
                 return res;
             }
-            if (!Enum.TryParse(sp[idx], out res)) { res = def; }
+            if (!Enum.TryParse<E>(sp[idx], out res)) { res = def; }
 
             return res;
         }

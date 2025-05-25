@@ -500,6 +500,36 @@ namespace Charamaker3
             }
             return new CharaModel.Character(new CharaModel.Joint("coreJ",0,0,this,new List<Entity>()));
         }
+
+        /// <summary>
+        /// キャラツリーを含めてコンポーネントを全て取得する
+        /// </summary>
+        /// <returns></returns>
+        virtual public List<C> getComponentsIncludeCharacter<C>()
+            where C : Component
+        {
+            var res = new List<C>();
+            var cs = this.getcompos<CharaModel.Character>();
+            var elis = new List<Entity>();
+            elis.Add(this);
+
+            foreach (var c in cs)
+            {
+                foreach (var de in c.getTree("", false))
+                {
+                    elis.Add(de);
+                }
+            }
+            foreach (var a in elis)
+            {
+                foreach (var b in a.getcompos<C>())
+                {
+                    res.Add(b);
+                }
+            }
+            return res;
+        }
+
         /// <summary>
         /// 先頭のDrawableをもらう。持っていない場合は架空のDrawableを返す
         /// </summary>
