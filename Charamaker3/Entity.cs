@@ -381,13 +381,14 @@ namespace Charamaker3
         {
             if (added == false || w != this.world)
             {
-                if (added) //世界を切り替えるだけだから onAddは使わない。
+                if (added) //世界を切り替えるだけだから onAddは使わない。<-!!!NO!!!使わないとキャラクターリセットされない！
                 {
                     if (w.add(this))
                     {
 
                         _world = new WeakReference<World>(w);
                         _added = true;
+                        onadd();
                         return true;
                     }
                 }
