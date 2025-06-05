@@ -1066,6 +1066,28 @@ namespace Charamaker3
             }
             return res;
         }
+
+        /// <summary>
+        /// データを特定の文字で区切って変換する
+        /// </summary>
+        /// <param name="c"></param>
+        /// <returns></returns>
+        public List<E> splitDataE<E>(char c = ':')
+        where E : struct, Enum
+        {
+            var sp = Data.Split(c);
+            var res = new List<E>();
+            foreach (var a in sp)
+            {
+                E parsed;
+                 
+                if (Enum.TryParse<E>(a, out parsed)==true)
+                {
+                    res.Add(parsed);
+                }
+            }
+            return res;
+        }
         /// <summary>
         /// データを特定の文字で区切ったのち、idx番目を変換する
         /// </summary>

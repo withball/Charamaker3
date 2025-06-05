@@ -1219,8 +1219,9 @@ namespace Charamaker3
                 NoChange2 = false;
                 return true;
             }
-
-            if (PastColor == null || PastColor != color)
+            var tColor = new ColorC(color);
+            tColor.opa = 1;//オパシティは条件に含まない
+            if (PastColor == null || PastColor != tColor)
             {
                 NoChange = false;
                 NoChange2 = false;
@@ -1247,6 +1248,7 @@ namespace Charamaker3
             PastFont = new FontC();
             F.copy(PastFont);
             PastColor = new ColorC(color);
+            PastColor.opa = 1;//オパシティは条件に含まない
 
         }
 
@@ -1324,7 +1326,7 @@ namespace Charamaker3
                     }
                 }
                 {
-                    var slb = render.BitmapRender.CreateSolidColorBrush(color);
+                    var slb = render.BitmapRender.CreateSolidColorBrush(PastColor);
                     render.BitmapRender.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
                 render.BitmapRender.PopAxisAlignedClip();
@@ -1503,6 +1505,7 @@ namespace Charamaker3
                 source.w -= 2;
                 source.y += 1;
                 source.h -= 2;
+
                 render.DrawBitmap(Trender.render.BitmapRender.Bitmap
                   , rect
                   , this.col.opa, mode
