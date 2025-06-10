@@ -143,11 +143,7 @@ namespace Charamaker3.CharaModel
                 e.name = name;
             }
 
-            foreach (var d in e.getComponentsIncludeCharacter<Drawable>())
-            {
-                d.zDelta = dz;
-                d.zRatio = zbai;
-            }
+      
 
             var cs = e.getcompos<Character>();
             foreach (var c in cs) 
@@ -159,12 +155,34 @@ namespace Charamaker3.CharaModel
                     {
                         EntityMove.ScaleChange(0, "", scale, scale).add(cc.e, 10);
                         DrawableMove.BaseColorChange(0, "", opacity).add(cc.e, 10);
+
+                        foreach (var a in cc.getTree("")) 
+                        {
+                            foreach (var b in a.getcompos<Drawable>()) 
+                            {
+                                b.zDelta = dz;
+                                b.zRatio = zbai;
+                            }
+                        }
+
                     }
+
+
                 }
                 else
                 {
                     EntityMove.ScaleChange(0, "", scale, scale).add(c.e, 10);
                     DrawableMove.BaseColorChange(0, "", opacity).add(c.e, 10);
+
+                    foreach (var a in c.getTree(""))
+                    {
+                        foreach (var b in a.getcompos<Drawable>())
+                        {
+                            b.zDelta = dz;
+                            b.zRatio = zbai;
+                        }
+                    }
+
                 }
                 break;
             }

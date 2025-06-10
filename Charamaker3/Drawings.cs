@@ -820,9 +820,10 @@ namespace Charamaker3
 
                 Rectangle sourceRect;
 
-                //ビットマップが小さすぎると計算誤差で死んでしまうので最低の幅を保証する。
+                //ビットマップが小さすぎると計算誤差で死んでしまうので最低の幅を保証する。->ホント？
 
                 float hosyo = 10;
+                /*
                 if (bitmap.PixelSize.Width < hosyo && bitmap.PixelSize.Height < hosyo)
                 {
                     crop0.TransformMatrix = Matrix3x2.CreateScale(hosyo / bitmap.PixelSize.Width
@@ -845,7 +846,7 @@ namespace Charamaker3
                     sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, hosyo * CropU - 0.0f
                   , bitmap.PixelSize.Width * CropR - bitmap.Size.Width * CropL, hosyo * CropD - hosyo * CropU);
                 }
-                else
+                else*/
                 {
                     crop0.TransformMatrix = Matrix3x2.CreateScale(1,1);
                     sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, bitmap.Size.Height * CropU - 0.0f

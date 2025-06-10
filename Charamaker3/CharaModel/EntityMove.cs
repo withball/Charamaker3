@@ -420,6 +420,56 @@ namespace Charamaker3.CharaModel
             }
             return res;
         }
+
+        /// <summary>
+        /// 基準をもとにzの倍率などをベースから変える
+        /// </summary>
+        /// <param name="name">変える対象=""</param>
+        /// <param name="rZDelta">位相=Nan</param>
+        /// <param name="rZRatio">倍率=Nan</param>
+        /// <param name="time">=0</param>
+        /// <param name="onlyroot">根本のみ変更=false</param>
+        /// <returns>__MOVE__</returns>
+        static public ZDeltaMove BaseZDeltaChange(string name = "", float rZDelta = float.NaN, float rZRatio = float.NaN
+            , float time = 0, bool onlyroot = false)
+        {
+            var res = new ZDeltaMove(time, rZDelta, rZRatio,  name);
+            res.CO = changeOption.fromBase;
+            if (onlyroot)
+            {
+                res.GO = goOption.onlyRoot;
+            }
+            else
+            {
+                res.GO = goOption.def;//TODO:GoAllの方がいい？？？
+            }
+            return res;
+        }
+        /// <summary>
+        /// 基準をもとにzの倍率などをベースから変える
+        /// </summary>
+        /// <param name="name">変える対象=""</param>
+        /// <param name="rZDelta">位相=Nan</param>
+        /// <param name="rZRatio">倍率=Nan</param>
+        /// <param name="time">=0</param>
+        /// <param name="onlyroot">根本のみ変更=false</param>
+        /// <returns>__MOVE__</returns>
+        static public ZDeltaMove ZDeltaChange(string name = "", float rZDelta = 0, float rZRatio = 0
+            , float time = 0, bool onlyroot = false)
+        {
+            var res = new ZDeltaMove(time, rZDelta, rZRatio, name);
+            res.CO = changeOption.difference;
+            if (onlyroot)
+            {
+                res.GO = goOption.onlyRoot;
+            }
+            else
+            {
+                res.GO = goOption.def;//TODO:GoAllの方がいい？？？
+            }
+            return res;
+        }
+
         /// <summary>
         /// 色を絶対的に増減させる
         /// </summary>
@@ -2094,6 +2144,261 @@ namespace Charamaker3.CharaModel
 
 
     }
+
+    /// <summary>
+    /// 値を直接的に変更するクラス。もう一つはmirrorのクラス。
+    /// TODO:mirror After 基準
+    /// </summary>
+    public partial class ZDeltaMove : Component
+    {
+        List<List<float[]>> speeds = new List<List<float[]>>();
+        List<List<Drawable>> tags = new List<List<Drawable>>();
+        List<List<Drawable>> tagBases = new List<List<Drawable>>();
+        float[] basespeeds = new float[2];
+
+
+        public goOption GO = goOption.def;
+
+        Drawable zparts;
+
+        const int _ZDelta = 0;
+        const int _ZRatio = 1;
+        bool instant { get { return time <= 0; } }
+
+
+
+
+        public changeOption CO = changeOption.difference;
+
+        public ZDeltaMove() { }
+        public ZDeltaMove(float time, float zDelta = 0, float zRatio = 0, string name = "") : base(time, name)
+        {
+
+            basespeeds[_ZDelta] = zDelta;
+            basespeeds[_ZRatio] = zRatio;
+
+            if (time == 0)
+            {
+            }
+            else if (time < 0)
+            {
+                Debug.WriteLine("このコンポーネントはtime<0じゃダメなので勝手に0にしました♡");
+                this.time = 0;
+            }
+            else
+            {
+
+            }
+        }
+
+        public override void copy(Component c)
+        {
+            var cc = (ZDeltaMove)c;
+            base.copy(c);
+            for (int i = 0; i < basespeeds.Length; i++)
+            {
+                cc.basespeeds[i] = this.basespeeds[i];
+            }
+
+            cc.CO = this.CO;
+            cc.GO = this.GO;
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.linechange();
+            res.packAdd("GO", (goOption)GO);
+            res.packAdd("_ZDelta", basespeeds[_ZDelta]);
+            res.packAdd("_ZRatio", basespeeds[_ZRatio]);
+            res.linechange();
+            res.packAdd("CO", (changeOption)CO);
+
+            return res;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+
+            GO = d.unpackDataE<goOption>("GO", goOption.def);
+            basespeeds[_ZDelta] = d.unpackDataF("_ZDelta");
+            basespeeds[_ZRatio] = d.unpackDataF("_ZRatio");
+            
+            CO = d.unpackDataE<changeOption>("CO", changeOption.difference);
+        }
+
+
+        public override string ToString()
+        {
+            var res = base.ToString();
+            res += $"\n{CO}";
+            res += $" -> ZDelta:{basespeeds[_ZDelta]}:ZRatio:{basespeeds[_ZRatio]}";
+            return res;
+        }
+        protected virtual void addDefference(float ratio)
+        {
+            for (int t = 0; t < tags.Count; t++)
+            {
+                for (int i = 0; i < tags[t].Count; i++)
+                {
+                    tags[t][i].zDelta += (float)(speeds[t][i][_ZDelta] * ratio);
+                    tags[t][i].zRatio += (float)(speeds[t][i][_ZRatio] * ratio);
+                }
+            }
+        }
+        protected override void onadd(float cl)
+        {
+            tags.Clear();
+            tagBases.Clear();
+            speeds.Clear();
+            zparts = null;
+            float zpartsdz = 0;
+            //characterから得るtag
+            var cs = e.getcompos<Character>();
+            if (cs.Count == 0)
+            {
+
+                tags.Add(e.getcompos<Drawable>());
+                tagBases.Add(e.getcompos<Drawable>());
+            }
+            else
+            {
+                //こっちはキャラクターのベースね。後で実装
+                foreach (var a in cs)
+                {
+                    foreach (var b in a.getTree(name))
+                    {
+
+                        var lis = b.getcompos<Drawable>();
+                        tags.Add(lis);
+                    }
+                    foreach (var b in a.BaseCharacter.getTree(name))
+                    {
+                        var lis = b.getcompos<Drawable>();
+                        tagBases.Add(lis);
+                    }
+                }
+              
+            }
+            for (int t = 0; t < tags.Count; t++)
+            {
+                speeds.Add(new List<float[]>());
+                for (int i = 0; i < tags[t].Count; i++)
+                {
+                    speeds[t].Add(new float[basespeeds.Length]);
+                    for (int j = 0; j < basespeeds.Length; j++)
+                    {
+                        if (t == 0 || GO == goOption.goAll)
+                        {
+                            if (CO != changeOption.difference)
+                            {
+                                switch (j)
+                                {
+                                    case _ZDelta:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+
+                                            speeds[t][i][j] = (basespeeds[j]* tagBases[t][i].zDelta) - tags[t][i].zDelta;
+
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+
+                                        }
+                                        break;
+                                    case _ZRatio:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+
+                                            speeds[t][i][j] = (basespeeds[j] * tagBases[t][i].zRatio) - tags[t][i].zRatio;
+
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                 
+                                }
+                                ;
+
+                            }
+                            else
+                            {
+                                speeds[t][i][j] = basespeeds[j];
+                            }
+                        }
+                        else if (GO != goOption.onlyRoot)
+                        {
+                            if (CO != changeOption.difference)
+                            {
+                                switch (j)
+                                {
+
+                                    case _ZDelta:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = (basespeeds[j] * tagBases[t][i].zDelta) - tags[t][i].zDelta;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _ZRatio:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = (basespeeds[j] * tagBases[t][i].zRatio) - tags[t][i].zRatio;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+
+                                }
+                            }
+                            else
+                            {
+
+                                speeds[t][i][j] = basespeeds[j];
+
+                            }
+                        }
+                        else
+                        {
+                            speeds[t][i][j] = 0;
+                        }
+                    }
+                }
+            }
+            if (instant)
+            {
+                addDefference(1);
+            }
+            /* else
+             {
+                 float speed = 1 / time;
+                 addDefference(Math.Min(speed * cl,1));
+             }*/
+            base.onadd(cl);
+        }
+        protected override void onupdate(float cl)
+        {
+            if (cl > 0)
+            {
+                if (!instant)
+                {
+                    float speed = 1 / time;
+                    addDefference(speed * cl);
+                }
+            }
+            base.onupdate(cl);
+
+        }
+
+
+    }
     /// <summary>
     /// Z以外の軸で回転させる動き
     /// </summary>
@@ -2601,6 +2906,8 @@ namespace Charamaker3.CharaModel
             this.TextLength=d.unpackDataF("TextLength", this.TextLength);
         }
     }
+
+
 }
 
    
