@@ -238,7 +238,7 @@ namespace Charamaker
             km.topre();
             if (BaseC != null)
             {
-                BaseC.e.settxy(sel.c.e.gettxy(), BaseC.e.w * 2, -BaseC.e.h * -2);
+                BaseC.e.settxy(sel.c.e.gettxy(), BaseC.e.w * 3, -BaseC.e.h * -3);
             }
 
         }

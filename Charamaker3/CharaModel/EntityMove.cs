@@ -1563,10 +1563,10 @@ namespace Charamaker3.CharaModel
                         switch (MO)
                         {
                             case MirrorOption.No:
-                                a.mirror = false;
+                                a.mirror = tagBases[i]==tags[i]? false: tagBases[i].mirror;
                                 break;
                             case MirrorOption.Mirror:
-                                a.mirror = true;
+                                a.mirror = tagBases[i] == tags[i] ? true:!tagBases[i].mirror;
                                 break;
                             case MirrorOption.Reverse:
                                 a.mirror = !a.mirror;
@@ -2146,8 +2146,7 @@ namespace Charamaker3.CharaModel
     }
 
     /// <summary>
-    /// 値を直接的に変更するクラス。もう一つはmirrorのクラス。
-    /// TODO:mirror After 基準
+    /// ZDeltaRatioを操作するクラス
     /// </summary>
     public partial class ZDeltaMove : Component
     {
