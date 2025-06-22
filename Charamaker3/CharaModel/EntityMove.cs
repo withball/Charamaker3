@@ -371,6 +371,38 @@ namespace Charamaker3.CharaModel
             c.afters.Add(sc);
             return c;
         }
+        /// <summary>
+        /// セリフを作るムーブ
+        /// </summary>
+        /// <param name="Tag">セリフの表示場所</param>
+        /// <param name="Time">表示時間</param>
+        /// <param name="Jizoku">表示の持続</param>
+        /// <param name="dxp">場所</param>
+        /// <param name="dyp">場所</param>
+        /// <param name="size">吹き出しの大きさ割合</param>
+        /// <param name="Text">テキスト</param>
+        /// <returns>__MOVE__</returns>
+        static public Component MakeSerif(string Tag,float Time,float Jizoku,float dxp,float dyp,float size,string Text) 
+        {
+            float textSize = 16;
+
+            var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
+            var f = new FontC(textSize, textSize * 15, textSize * 3);
+            var fd=f.ToSave();
+            var t=new Text(0,new ColorC(0,0,0,1),"",f);
+            var serif=Charamaker3.Utils.Serif.MakeSerif(e, t);//
+            serif.WakuHaba = textSize / 8;
+            serif.SiroSiro = textSize / 8;
+            DrawableMove.SetText(Time , "Text",Text).add(serif);
+            
+            var c = new SummonSerif(Tag,serif,0);
+            c.dxp = dxp;
+            c.dyp = dyp;
+            c.sizep = size;
+            c.dz = -0.1f;
+            new LifeTimer(Time+Jizoku).add(serif);
+            return c;
+        }
     }
     public partial class DrawableMove : Component
     {
@@ -446,7 +478,7 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
-        /// 基準をもとにzの倍率などをベースから変える
+        /// zの倍率などを変える
         /// </summary>
         /// <param name="name">変える対象=""</param>
         /// <param name="rZDelta">位相=Nan</param>
@@ -2672,6 +2704,12 @@ namespace Charamaker3.CharaModel
         const int _TEXTLENGTH = 8;
         const int _speedLength = 9;
         /// <summary>
+        /// からのコンストラクタ
+        /// </summary>
+        public TextMove() 
+        {
+        }
+        /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
         /// <param name="Tag">変化させるターゲット</param>
@@ -2903,6 +2941,16 @@ namespace Charamaker3.CharaModel
             }
             this.Text=d.unpackDataS("Text", this.Text);
             this.TextLength=d.unpackDataF("TextLength", this.TextLength);
+        }
+        public override void copy(Component c)
+        {
+            var cc = (TextMove)c;
+            base.copy(c);
+            cc.Font = new FontC();
+
+            this.Font.copy(cc.Font);
+            cc.Text = this.Text;
+            cc.TextLength = this.TextLength;
         }
     }
 

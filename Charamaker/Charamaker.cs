@@ -5,8 +5,8 @@ using Charamaker3.ParameterFile;
 using Charamaker3.Utils;
 namespace Charamaker
 {
-    
-          
+
+
     public partial class Charamaker : Form
     {
         public Display display;
@@ -29,7 +29,7 @@ namespace Charamaker
                 LastLoad = save.unpackDataS("LastLoad", @"yoshino");
 
                 MotionString = save.unpackDataS("MotionString", "");
-                Debug.WriteLine("SaveData "+save.getData());
+                Debug.WriteLine("SaveData " + save.getData());
                 ChangeRootpath(save.unpackDataS("rootpath", @".\"));
                 LoadCharacter(save.unpackDataS("LastLoad", @"yoshino"));
             }
@@ -120,12 +120,12 @@ namespace Charamaker
             {
                 zoomUD_ValueChanged(null, null);
             }
-            
+
         }
 
         private void ticked(object sender, EventArgs e)
         {
-           // w = new World();
+            // w = new World();
             this.Text = cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
             km.setpointer(this);
 
@@ -436,7 +436,7 @@ namespace Charamaker
             {
                 LoadCharacter(textB.Text);
                 //var d = DataSaver.loadFromPath(@".\character\" + textB.Text, ext: ".ctc");
-                
+
             }
         }
 
@@ -472,7 +472,7 @@ namespace Charamaker
 
 
 
-        public string MotionString="";
+        public string MotionString = "";
         private void motionB_Click(object sender, EventArgs e)
         {
             /*
@@ -558,14 +558,15 @@ namespace Charamaker
         {
 
         }
-        string LastLoad="";
-        void LoadCharacter(string load) 
+        string LastLoad = "";
+        void LoadCharacter(string load)
         {
-            Debug.WriteLine(load+" LOADED");
+            Debug.WriteLine(load + " LOADED");
             FileMan.loadCharacter(load);
             this.textB.Text = load;
             LastLoad = load;
             var newe = FileMan.loadCharacter(textB.Text, true);
+
             if (newe.getcompos<Character>().Count > 0)
             {
                 newe.add(w);
@@ -575,6 +576,7 @@ namespace Charamaker
             {
                 messageB.Text = textB.Text + Environment.NewLine + "は存在しないか、キャラクターのファイルではない！！！";
             }
+
             Save();
         }
         void ChangeRootpath(string newPath)
@@ -619,7 +621,23 @@ namespace Charamaker
 
         private void ResetTextureB_Click(object sender, EventArgs e)
         {
-           cam.d.setupTextureLoader();
+            cam.d.setupTextureLoader();
+        }
+
+        private void ForceMirrorButton_Click(object sender, EventArgs e)
+        {
+            if (sel.c != null)
+            {
+                
+                foreach (var a in sel.c.getTree(""))
+                {
+                    a.tx = - (a.tx - a.w * 0.5f)+a.w*0.5f;
+                    foreach (var b in sel.c.getJoint(a.name)) 
+                    {
+                        b.px = - (b.px - 0.5f)+0.5f;
+                    }
+                }
+            }
         }
     }
 }

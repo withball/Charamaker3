@@ -638,8 +638,8 @@ namespace Charamaker3
             //TODO:メモリリークメモリリークとかしてたらごめん
             var render = cam.render.Render;
 
-            render.Transform = rectTrans(cam);
-            var rect = rectRectF(cam);
+            render.Transform = Matrix3x2.CreateTranslation(0,0);//rectTrans(cam);
+            //var rect = rectRectF(cam);
 
             using (var brh = render.CreateSolidColorBrush(col))
             {
@@ -1258,6 +1258,8 @@ namespace Charamaker3
 
 
         float _bottom = 0;//!<文字が書かれた領域の最下端
+
+        float _right = 0;//!<文字が書かれた領域の最右端
         /// <summary>
         /// 領域内でも字が書かれた最下端
         /// </summary>
@@ -1267,6 +1269,18 @@ namespace Charamaker3
             {
                 if (rendZone.h == 0) return 0.5f;
                 return Mathf.min(_bottom / rendZone.h, 1);
+            }
+        }
+
+        /// <summary>
+        /// 領域内でも字が書かれた最右端
+        /// </summary>
+        public float right
+        {
+            get
+            {
+                if (rendZone.w == 0) return 0.5f;
+                return Mathf.min(_right / rendZone.w, 1);
             }
         }
 
@@ -1307,7 +1321,7 @@ namespace Charamaker3
                 }
                 if (F.hutiZure > 0)
                 {
-
+                    
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
                     var slb = render.BitmapRender.CreateSolidColorBrush(c);
@@ -1323,10 +1337,45 @@ namespace Charamaker3
                     lis[3].y -= zure;
                     for (int i = 0; i < lis.Count; i++)
                     {
+                   
                         render.BitmapRender.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
                 }
                 {
+                    IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(Text, F.ToFont(), rendZone.w, rendZone.h);
+
+                    int maxline = 2;
+                    if (F.size > 0)
+                    {
+                        maxline = (int)(rendZone.h / F.size) * 2;
+                    }
+                    LineMetrics[] Lmets = new LineMetrics[maxline];
+                    ClusterMetrics[] Cmets = new ClusterMetrics[maxline*100];
+                    int LCount;
+                    int CCount;
+                    var Lres = Layout.GetLineMetrics(Lmets, out LCount);
+                    var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
+
+                    if (Lres.Success)
+                    {
+                        //文字列の高さをさぐる
+                        _bottom = 0;
+                        for (int t = 0; t < LCount; ++t)
+                        {
+                            _bottom += Lmets[t].Height;
+                        }
+                    }
+                    if (Cres.Success)
+                    {
+                        //文字列の幅をさぐる
+                        _right = 0;
+                        for (int t = 0; t < CCount; ++t)
+                        {
+                            _right += Cmets[t].Width;
+                        }
+                    }
+                    Layout.Dispose();
+
                     var slb = render.BitmapRender.CreateSolidColorBrush(PastColor);
                     render.BitmapRender.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
@@ -1358,7 +1407,7 @@ namespace Charamaker3
                 if (F.aliV != FontC.alignment.left)
                 {
 
-                    
+                    /*
                     var list = Display.GetPixels(render, rendZone);
 
                     bool breaked = false;
@@ -1377,7 +1426,7 @@ namespace Charamaker3
 
                         if (breaked) break;
                     }
-                    _bottom += 1;
+                    _bottom += 1;*/
                 }
                 else
                 {
@@ -1405,7 +1454,8 @@ namespace Charamaker3
         public Text(float z, ColorC c, string text, FontC font, float time = -1, string name = "") : base(z, c, time, name)
         {
             this.text = text;
-            this.font = font;
+            this.font = new FontC();
+            font.copy(this.font);
         }
         public Text() { }
         public override void copy(Component c)
@@ -1439,6 +1489,35 @@ namespace Charamaker3
             var dd = d.unpackDataD("font");
             this.font.ToLoad(dd);
 
+        }
+        /// <summary>
+        /// 文字列の一番下の位置
+        /// </summary>
+        public float Bottom
+        {
+            get
+            {
+                if (Trender == null)
+                {
+                    return 0;
+                }
+                return Trender.bottom;
+            }
+        }
+
+        /// <summary>
+        /// 文字列の一番右の位置
+        /// </summary>
+        public float Right
+        {
+            get
+            {
+                if (Trender == null)
+                {
+                    return 0;
+                }
+                return Trender.right;
+            }
         }
         public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {

@@ -37,6 +37,10 @@ namespace Charamaker3
         public ID2D1DeviceContext DeviceContext;
 
         /// <summary>
+        /// ファクトリー
+        /// </summary>
+        public IDWriteFactory WriteFactory;
+        /// <summary>
         /// テクスチャ描画に使うエフェクトたち
         /// </summary>
         public Vortice.Direct2D1.Effects.AffineTransform2D ECrop0=null;
@@ -58,6 +62,7 @@ namespace Charamaker3
             this.ECrop2 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
             this.EBlend = new Vortice.Direct2D1.Effects.ColorMatrix(DeviceContext);
             this.ETrans = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
+            this.WriteFactory = DWrite.DWriteCreateFactory<IDWriteFactory>();
         }
         /// <summary>
         /// レンダーまでは開放しない

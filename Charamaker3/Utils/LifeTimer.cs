@@ -86,6 +86,27 @@ namespace Charamaker3.Utils
             summon = summonentity;
         }
         /// <summary>
+        /// 召喚した際の位置Nanで中心位置
+        /// </summary>
+        public float dxp = float.NaN;
+
+        /// <summary>
+        /// 召喚した際の位置Nanで中心位置
+        /// </summary>
+        public float dyp = float.NaN;
+
+
+        /// <summary>
+        /// 召喚した際の大きさ割合でNanでそのまんま。割と雰囲気
+        /// </summary>
+        public float sizep = float.NaN;
+
+        /// <summary>
+        /// 召喚した際のzの割合 -だったら下に行っちゃうからちうい。Nanでそのまんま
+        /// </summary>
+        public float dz = float.NaN;
+
+        /// <summary>
         /// 空のコンストラクタ
         /// </summary>
         public SummonEntity() { }
@@ -95,6 +116,10 @@ namespace Charamaker3.Utils
             base.copy(c);
             var cc = (SummonEntity)c;
             cc.summon = this.summon.clone();
+            cc.dxp=this.dxp;
+            cc.dyp =this.dyp;
+            cc.sizep = this.sizep;
+            cc.dz = this.dz;
         }
         public override DataSaver ToSave()
         {
@@ -103,6 +128,10 @@ namespace Charamaker3.Utils
             var dd=summon.ToSave();
             dd.indent();
             d.packAdd("summon",dd);
+            d.packAdd("dxp", dxp);
+            d.packAdd("dyp", dyp);
+            d.packAdd("sizep", sizep);
+            d.packAdd("dz", dz);
             return d;
         }
         protected override void ToLoad(DataSaver d)
@@ -110,14 +139,102 @@ namespace Charamaker3.Utils
             base.ToLoad(d);
             var dd=d.unpackDataD("summon");
             this.summon=Entity.ToLoadEntity(dd);
+
+            dxp=d.unpackDataF("dxp", dxp);
+            dyp = d.unpackDataF("dyp", dyp);
+            sizep = d.unpackDataF("sizep", sizep);
+            dz = d.unpackDataF("dz", dz);
         }
         protected override void onremove(float cl)
         {
             base.onremove(cl);
+            DoSummon(e,cl);
+
+        }
+        virtual protected void DoSummon(Entity e,float cl) 
+        {
             var summons = summon;
-            onSummon?.Invoke(this,summons);
+
+            onSummon?.Invoke(this, summons);
+            if (float.IsNaN(dxp) == false)
+            {
+                float motosize = (summon.w + summon.h) / 2;
+                if (motosize != 0)
+                {
+                    float size = (e.w + e.h) / 2*sizep;
+                    EntityMove.ScaleChange(10, "", size / motosize, size / motosize).addAndRemove(summons, 100);
+
+                    //summons.getCharacter().SetBaseCharacter();
+                }
+            }
+            FXY setxy = summon.gettxy();
+            if (float.IsNaN(dxp) == false)
+            {
+                setxy.x = e.gettxy().x + e.gettxy2(dxp, 0).x - e.gettxy2().x;
+            }
+            if (float.IsNaN(dyp) == false)
+            {
+                setxy.y = e.gettxy().y + e.gettxy2(0, dyp).y - e.gettxy2().y;
+            }
+            summon.settxy(setxy);
+            if(float.IsNaN(dz) == false)
+            {
+                DrawableMove.ZDeltaChange("", e.getDrawable<Drawable>().zDelta, e.getDrawable<Drawable>().zRatio).addAndRemove(summon, 100);
+                DrawableMove.ZChange("", e.getDrawable<Drawable>().z+dz).addAndRemove(summon, 100);
+                
+            }
+
             summons.add(world);
             summons.update(cl);
+        }
+    }
+
+    public class SummonSerif : SummonEntity 
+    {
+        string tag;
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tag">召喚に対応した部位</param>
+        /// <param name="summonentity"></param>
+        /// <param name="time"></param>
+        /// <param name="name"></param>
+        public SummonSerif(string tag,Serif summonentity, float time, string name = "") : base(summonentity, time,name)
+        {
+            this.tag = tag;
+
+        }
+        protected override void DoSummon(Entity e, float cl)
+        {
+            var tagE=e.getCharacter().getEntity(tag);
+            if (tagE != null)
+            {
+                ((Serif)summon).Target = tagE;
+                base.DoSummon(tagE, cl);
+            }
+            else
+            {
+                ((Serif)summon).Target = e;
+                base.DoSummon(e, cl);
+            }
+        }
+        public override DataSaver ToSave()
+        {
+            var d = base.ToSave();
+            d.packAdd("tag",tag);
+            d.linechange();
+            return d;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            tag= d.unpackDataS("tag", tag);
+        }
+        public override void copy(Component c)
+        {
+            base.copy(c);
+            var cc = (SummonSerif)c;
+            cc.tag = this.tag;
         }
     }
     /// <summary>
@@ -467,5 +584,162 @@ namespace Charamaker3.Utils
             }
         }
 
+    }
+    /// <summary>
+    /// セリフの表示のエンテティ。
+    /// </summary>
+    public class Serif:Entity 
+    {
+        public Character c { get { return getCharacter(); } }
+        public Entity TextE { get { return getCharacter().getEntity("Text"); } }
+        public Text Text { get { return TextE.getDrawable<Text>(); } }
+        public Entity BodyE { get { return getCharacter().getEntity("Body"); } }
+        public Entity WakuE { get { return getCharacter().getEntity("Waku"); } }
+
+
+        public Joint TagJ { get { return getCharacter().getParentJoint("WTag"); } }
+
+        public Entity WTagE { get { return getCharacter().getEntity("WTag"); } }
+
+        public Entity BTagE { get { return getCharacter().getEntity("BTag"); } }
+
+        /// <summary>
+        /// 枠の幅
+        /// </summary>
+        public float WakuHaba = 0;
+
+        /// <summary>
+        /// 白い部分の大きさ
+        /// </summary>
+        public float SiroSiro = 4;
+
+        public Entity Target=null;
+        static public Serif MakeSerif(Entity e,Text t) 
+        {
+            var res = new Serif();
+            e.copy(res);
+            Entity Body = new Entity();
+            Body.name = "Body";
+
+            new DRectangle(0.01f, new ColorC(1, 1, 1, 1)).add(Body);
+
+            Entity Text = new Entity();
+            e.copy(Text);
+            Text.name = "Text";
+            t.z = 0.2f;
+            t.add(Text);
+
+            Entity Waku = new Entity();
+            Waku.name = "Waku";
+            new DRectangle(0, new ColorC(0, 0, 0, 1)).add(Waku);
+
+
+            Entity WTag = new Entity();
+            WTag.name = "WTag";
+            new DTriangle(0.5f,0, new ColorC(0, 0, 0, 1)).add(WTag);
+
+            Entity BTag = new Entity();
+            BTag.name = "BTag";
+            new DTriangle(0.5f, 0.01f, new ColorC(1, 1, 1, 1)).add(BTag);
+
+            var c = new Character();
+            c.addJoint(new Joint("TextJoi", 0.5f, 0.5f, null, new List<Entity> { Text }));
+            c.addJoint(new Joint("BodyJoi", 0.0f, 0.0f, Text, new List<Entity> { Body }));
+            c.addJoint(new Joint("WakuJoi", 0.0f, 0.0f, Text, new List<Entity> { Waku }));
+            c.addJoint(new Joint("TagJoi", 0.0f, 0.0f, Text, new List<Entity> { WTag,BTag }));
+
+            c.add(res);
+            c.assembleCharacter();
+            c.SetBaseCharacter();
+
+            return res;
+        }
+        public override void update(float cl)
+        {
+            var t = Text;
+            var te = TextE;
+            var be = BodyE;
+            var we = WakuE;
+            var Wtge = WTagE;
+            var Btge = BTagE;
+            var tgj = TagJ;
+            if (t.Right != 0)
+            {
+                be.w = Math.Max(te.w * t.Right, te.h * t.Bottom) + SiroSiro * 2;
+                be.h = te.h * t.Bottom + SiroSiro * 2;
+                be.tx = SiroSiro;
+                be.ty = SiroSiro;
+
+                we.w = be.w + (WakuHaba + SiroSiro) * 2;
+                we.h = be.h + (WakuHaba + SiroSiro) * 2;
+                we.tx = WakuHaba + SiroSiro * 2;
+                we.ty = WakuHaba + SiroSiro * 2;
+
+            }
+            else 
+            {
+                be.w = 0;
+                we.w = 0;
+            }
+
+
+            if (Target != null && t.Right != 0)
+            {
+                var dxy = Target.gettxy() - Wtge.gettxy();
+                dxy.length -= Target.bigs / 2;
+
+                Wtge.w = dxy.length;
+                Wtge.h = Mathf.min(Mathf.sqrt(we.w* we.w/4 + we.h* we.h/4),we.w,we.h);
+
+                Wtge.tx = Wtge.h / 2 * 0;
+                Wtge.ty = Wtge.h / 2;
+                Wtge.degree = dxy.degree;
+
+                Btge.w = dxy.length - WakuHaba;
+                Btge.h = Math.Min(be.w, be.h);
+
+                Btge.tx = Btge.h / 2 * 0;
+                Btge.ty = Btge.h / 2;
+                Btge.degree = dxy.degree;
+
+
+                tgj.px = (Wtge.h / 2) / tgj.parent.w;
+                tgj.py = t.Bottom / 2;
+            }
+            else
+            {
+                Wtge.w = 0;
+                Wtge.h = 0;
+
+                Btge.w = 0;
+                Btge.h = 0;
+            }
+           
+
+            base.update(cl);
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.packAdd("WakuHaba", WakuHaba);
+            res.packAdd("SiroSiro", SiroSiro);
+            res.linechange();
+            return res;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            WakuHaba = d.unpackDataF("WakuHaba", WakuHaba);
+            SiroSiro = d.unpackDataF("SiroSiro", SiroSiro);
+        }
+        public override void copy(Entity e)
+        {
+            base.copy(e);
+            var ee = (Serif)e;
+
+            ee.Target = this.Target;
+            ee.WakuHaba = this.WakuHaba;
+            ee.SiroSiro = this.SiroSiro;
+        }
     }
 }

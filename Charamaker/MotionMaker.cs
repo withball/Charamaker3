@@ -245,7 +245,7 @@ namespace Charamaker
         private void TRB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
-            m.addmove(DrawableMove.ResetMove(false,false,true,"",0,false));
+            m.addmove(DrawableMove.ResetMove(true,false,true,"",0,false));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);

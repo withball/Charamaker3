@@ -49,6 +49,7 @@
             SpeedBar = new TrackBar();
             speedLabel = new Label();
             ResetTextureB = new Button();
+            ForceMirrorButton = new Button();
             ((System.ComponentModel.ISupportInitialize)zoomUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PointB).BeginInit();
             ((System.ComponentModel.ISupportInitialize)SpeedBar).BeginInit();
@@ -263,7 +264,7 @@
             // ResetTextureB
             // 
             ResetTextureB.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            ResetTextureB.Location = new Point(1351, 720);
+            ResetTextureB.Location = new Point(1316, 720);
             ResetTextureB.Name = "ResetTextureB";
             ResetTextureB.Size = new Size(75, 23);
             ResetTextureB.TabIndex = 18;
@@ -271,11 +272,23 @@
             ResetTextureB.UseVisualStyleBackColor = true;
             ResetTextureB.Click += ResetTextureB_Click;
             // 
+            // ForceMirrorButton
+            // 
+            ForceMirrorButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            ForceMirrorButton.Location = new Point(1408, 720);
+            ForceMirrorButton.Name = "ForceMirrorButton";
+            ForceMirrorButton.Size = new Size(75, 23);
+            ForceMirrorButton.TabIndex = 19;
+            ForceMirrorButton.Text = "ForceMirror";
+            ForceMirrorButton.UseVisualStyleBackColor = true;
+            ForceMirrorButton.Click += ForceMirrorButton_Click;
+            // 
             // Charamaker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 861);
+            Controls.Add(ForceMirrorButton);
             Controls.Add(ResetTextureB);
             Controls.Add(speedLabel);
             Controls.Add(SpeedBar);
@@ -333,5 +346,6 @@
         private TrackBar SpeedBar;
         private Label speedLabel;
         private Button ResetTextureB;
+        private Button ForceMirrorButton;
     }
 }

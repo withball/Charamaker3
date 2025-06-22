@@ -294,6 +294,8 @@ namespace Charamaker3.CharaModel
             t.add(res);
 
             c.add(res);
+
+            c.SetBaseCharacter();
             return res;
         }
         /// <summary>
