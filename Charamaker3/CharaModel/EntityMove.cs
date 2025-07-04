@@ -388,6 +388,8 @@ namespace Charamaker3.CharaModel
 
             var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
             var f = new FontC(textSize, textSize * 15, textSize * 3);
+            f.ali = FontC.alignment.left;
+            f.aliV = FontC.alignment.left;
             var fd=f.ToSave();
             var t=new Text(0,new ColorC(0,0,0,1),"",f);
             var serif=Charamaker3.Utils.Serif.MakeSerif(e, t);//

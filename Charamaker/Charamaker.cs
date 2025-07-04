@@ -110,6 +110,14 @@ namespace Charamaker
 
             }
 
+            {
+                var se=Serif.MakeSerif(Entity.make2(0, 0, 64, 64), new Charamaker3.Text(1, new ColorC(0, 0, 0, 1), "", new FontC(16, 64, 64, alignment: FontC.alignment.center, alignmentV:FontC.alignment.right)));
+                DrawableMove.SetText(600,"Text", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").add(se);
+                se.WakuHaba = 5;
+                se.add(w);
+                se.Target = cam.watchRect;
+            }
+
             w.classifyed += (aa, bb) =>
             {
                 if (bb.getcompos<Character>().Count > 0)

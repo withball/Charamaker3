@@ -596,6 +596,8 @@ namespace Charamaker3.Utils
         public Entity BodyE { get { return getCharacter().getEntity("Body"); } }
         public Entity WakuE { get { return getCharacter().getEntity("Waku"); } }
 
+        public Joint BodyJ { get { return getCharacter().getParentJoint("Body"); } }
+        public Joint WakuJ { get { return getCharacter().getParentJoint("Waku"); } }
 
         public Joint TagJ { get { return getCharacter().getParentJoint("WTag"); } }
 
@@ -620,23 +622,22 @@ namespace Charamaker3.Utils
             e.copy(res);
             Entity Body = new Entity();
             Body.name = "Body";
-
             new DRectangle(0.01f, new ColorC(1, 1, 1, 1)).add(Body);
 
             Entity Text = new Entity();
             e.copy(Text);
             Text.name = "Text";
-            t.z = 0.2f;
+            t.z = 0.05f;
             t.add(Text);
 
             Entity Waku = new Entity();
             Waku.name = "Waku";
-            new DRectangle(0, new ColorC(0, 0, 0, 1)).add(Waku);
+            new DRectangle(0.00f, new ColorC(0, 0, 0, 1)).add(Waku);
 
 
             Entity WTag = new Entity();
             WTag.name = "WTag";
-            new DTriangle(0.5f,0, new ColorC(0, 0, 0, 1)).add(WTag);
+            new DTriangle(0.5f, 0.00f, new ColorC(0, 0, 0, 1)).add(WTag);
 
             Entity BTag = new Entity();
             BTag.name = "BTag";
@@ -660,23 +661,64 @@ namespace Charamaker3.Utils
             var te = TextE;
             var be = BodyE;
             var we = WakuE;
+            var bj = BodyJ;
+            var wj = WakuJ;
             var Wtge = WTagE;
             var Btge = BTagE;
             var tgj = TagJ;
             if (t.Right != 0)
             {
                 be.w = Math.Max(te.w * t.Right, te.h * t.Bottom) + SiroSiro * 2;
-                be.h = te.h * t.Bottom + SiroSiro * 2;
-                be.tx = SiroSiro;
-                be.ty = SiroSiro;
+                we.w = be.w + (WakuHaba) * 2;
+                switch (t.font.ali)
+                {
+                    case FontC.alignment.left:
 
-                we.w = be.w + (WakuHaba + SiroSiro) * 2;
-                we.h = be.h + (WakuHaba + SiroSiro) * 2;
-                we.tx = WakuHaba + SiroSiro * 2;
-                we.ty = WakuHaba + SiroSiro * 2;
+                        bj.px = 0; 
+                        wj.px = 0; 
 
+                        be.tx = SiroSiro;
+                        we.tx = WakuHaba+SiroSiro;
+                        break;
+                    case FontC.alignment.center:
+
+                        bj.px = 0.5f; 
+                        wj.px = 0.5f; 
+
+                        be.tx = be.w / 2;//+ SiroSiro;
+                        we.tx = we.w / 2;// + WakuHaba + SiroSiro * 2;
+                     
+
+                        break;
+                    case FontC.alignment.right:
+                        break;
+                    case FontC.alignment.justify:
+                        break;
+                    case FontC.alignment.None:
+                        break;
+                }
+
+                be.h = te.h * t.Bottom + (SiroSiro) * 2;
+                we.h = be.h + (WakuHaba) * 2;
+                switch (t.font.aliV)
+                {
+                    case FontC.alignment.left:
+                        bj.py = 0; wj.py = 0;
+                        be.ty = SiroSiro; we.ty = WakuHaba +SiroSiro;
+                        break;
+                    case FontC.alignment.center:
+                        bj.py = 0.5f; wj.py = 0.5f;
+                        be.ty = be.h / 2 ; we.ty = we.h / 2 ;
+                        break;
+                    case FontC.alignment.right:
+                        bj.py = 1.0f; wj.py = 1.0f;
+                        be.ty = be.h - SiroSiro; we.ty = we.h - (WakuHaba+SiroSiro);
+                        break;
+                    case FontC.alignment.None:
+                        break;
+                }
             }
-            else 
+            else
             {
                 be.w = 0;
                 we.w = 0;
@@ -689,22 +731,40 @@ namespace Charamaker3.Utils
                 dxy.length -= Target.bigs / 2;
 
                 Wtge.w = dxy.length;
-                Wtge.h = Mathf.min(Mathf.sqrt(we.w* we.w/4 + we.h* we.h/4),we.w,we.h);
+                Wtge.h = Mathf.min(Mathf.sqrt(we.w * we.w / 4 + we.h * we.h / 4), we.w, we.h)*0.75f;
 
                 Wtge.tx = Wtge.h / 2 * 0;
                 Wtge.ty = Wtge.h / 2;
                 Wtge.degree = dxy.degree;
 
                 Btge.w = dxy.length - WakuHaba;
-                Btge.h = Math.Min(be.w, be.h);
+                Btge.h = Wtge.h - WakuHaba*2;
 
                 Btge.tx = Btge.h / 2 * 0;
                 Btge.ty = Btge.h / 2;
                 Btge.degree = dxy.degree;
-
-
-                tgj.px = (Wtge.h / 2) / tgj.parent.w;
-                tgj.py = t.Bottom / 2;
+                Debug.WriteLine(Btge.h + " :aaa: " + Wtge.h);
+                switch (t.font.ali)
+                {
+                    case FontC.alignment.left:
+                        tgj.px = (Wtge.h / 2) / tgj.parent.w;
+                        break;
+                    case FontC.alignment.center:
+                        tgj.px = 0.5f;
+                        break;
+                }
+                switch (t.font.aliV)
+                {
+                    case FontC.alignment.left:
+                        tgj.py = t.Bottom / 2;
+                        break;
+                    case FontC.alignment.center:
+                        tgj.py = 0.5f;
+                        break;
+                    case FontC.alignment.right:
+                        tgj.py = 1-t.Bottom / 2;
+                        break;
+                }
             }
             else
             {
