@@ -616,7 +616,14 @@ namespace Charamaker3.Utils
         public float SiroSiro = 4;
 
         public Entity Target=null;
-        static public Serif MakeSerif(Entity e,Text t) 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e">セリフを表示する枠の大きさ(whだけコピー)</param>
+        /// <param name="t">セリフのテキスト</param>
+        /// <param name="dis">表示するディスプレー(初期化に使う。)</param>
+        /// <returns></returns>
+        static public Serif MakeSerif(Entity e,Text t,Display dis=null) 
         {
             var res = new Serif();
             e.copy(res);
@@ -653,8 +660,14 @@ namespace Charamaker3.Utils
             c.assembleCharacter();
             c.SetBaseCharacter();
 
+            if (dis != null) 
+            {
+                t.MakeTrender(dis);
+            }
+
             return res;
         }
+
         public override void update(float cl)
         {
             var t = Text;
@@ -722,6 +735,8 @@ namespace Charamaker3.Utils
             {
                 be.w = 0;
                 we.w = 0;
+                be.h = 0;
+                we.h = 0;
             }
 
 
@@ -743,7 +758,7 @@ namespace Charamaker3.Utils
                 Btge.tx = Btge.h / 2 * 0;
                 Btge.ty = Btge.h / 2;
                 Btge.degree = dxy.degree;
-                Debug.WriteLine(Btge.h + " :aaa: " + Wtge.h);
+
                 switch (t.font.ali)
                 {
                     case FontC.alignment.left:
@@ -775,7 +790,6 @@ namespace Charamaker3.Utils
                 Btge.h = 0;
             }
            
-
             base.update(cl);
         }
         public override DataSaver ToSave()

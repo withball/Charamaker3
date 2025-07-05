@@ -1287,6 +1287,44 @@ namespace Charamaker3
         private string PastText = null;
         private FontC PastFont = null;
         private ColorC PastColor = null;
+
+        internal void SetRayout(string Text, FontC F)
+        {
+            IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(Text, F.ToFont(), rendZone.w, rendZone.h);
+
+            int maxline = 2;
+            if (F.size > 0)
+            {
+                maxline = (int)(rendZone.h / F.size) * 2;
+            }
+            LineMetrics[] Lmets = new LineMetrics[maxline];
+            ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
+            int LCount;
+            int CCount;
+            var Lres = Layout.GetLineMetrics(Lmets, out LCount);
+            var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
+
+            if (Lres.Success)
+            {
+                //文字列の高さをさぐる
+                _bottom = 0;
+                for (int t = 0; t < LCount; ++t)
+                {
+                    _bottom += Lmets[t].Height;
+                }
+            }
+            if (Cres.Success)
+            {
+                //文字列の幅をさぐる
+                _right = 0;
+                for (int t = 0; t < CCount; ++t)
+                {
+                    _right += Cmets[t].Width;
+                }
+            }
+            Layout.Dispose();
+        }
+
         public void Draw(string Text, FontC F, ColorC color,DisplaySemaphores semaphores)
         {
             if (CheckChange(Text, F, color))
@@ -1341,41 +1379,8 @@ namespace Charamaker3
                         render.BitmapRender.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
                 }
+                SetRayout(Text,F);
                 {
-                    IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(Text, F.ToFont(), rendZone.w, rendZone.h);
-
-                    int maxline = 2;
-                    if (F.size > 0)
-                    {
-                        maxline = (int)(rendZone.h / F.size) * 2;
-                    }
-                    LineMetrics[] Lmets = new LineMetrics[maxline];
-                    ClusterMetrics[] Cmets = new ClusterMetrics[maxline*100];
-                    int LCount;
-                    int CCount;
-                    var Lres = Layout.GetLineMetrics(Lmets, out LCount);
-                    var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
-
-                    if (Lres.Success)
-                    {
-                        //文字列の高さをさぐる
-                        _bottom = 0;
-                        for (int t = 0; t < LCount; ++t)
-                        {
-                            _bottom += Lmets[t].Height;
-                        }
-                    }
-                    if (Cres.Success)
-                    {
-                        //文字列の幅をさぐる
-                        _right = 0;
-                        for (int t = 0; t < CCount; ++t)
-                        {
-                            _right += Cmets[t].Width;
-                        }
-                    }
-                    Layout.Dispose();
-
                     var slb = render.BitmapRender.CreateSolidColorBrush(PastColor);
                     render.BitmapRender.DrawText(Text, F.ToFont(), rendZone, slb);
                 }
@@ -1519,18 +1524,29 @@ namespace Charamaker3
                 return Trender.right;
             }
         }
-        public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
+
+        /// <summary>
+        /// テキスト描画のためのTrenderを作成する。
+        /// </summary>
+        /// <param name="dis">間違えないでね！</param>
+        internal void MakeTrender(Display dis) 
         {
             if (Trender == null)
             {
                 //ここでテンポラリなやつをもらう。
-                Trender = cam.d.makeTextRenderer(font.w, font.h);
+                Trender = dis.makeTextRenderer(font.w, font.h);
             }
             else if (Trender.MustReset || (Trender.rendZone.w != font.w && Trender.rendZone.h != font.h))
             {
                 Trender.Release();
-                Trender = cam.d.makeTextRenderer(font.w, font.h);
+                Trender = dis.makeTextRenderer(font.w, font.h);
             }
+            Trender.SetRayout(text, font);
+        }
+
+        public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
+        {
+            MakeTrender(cam.d);
             base.PreDraw(cam, semaphores);
             Trender.Draw(text, font, col,semaphores);
         }
