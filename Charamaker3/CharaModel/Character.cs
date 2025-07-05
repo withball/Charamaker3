@@ -105,10 +105,10 @@ namespace Charamaker3.CharaModel
         /// キャラクターの最も小さなZ座標を取得する
         /// </summary>
         /// <param name="e"></param>
-        static public float GetMinZ(Entity e) 
+        static public float GetMinZ(Character c) 
         {
             float z = float.NaN;
-            foreach (var a in e.getCharacter().getTree("")) 
+            foreach (var a in c.getTree("")) 
             {
                 foreach (var b in a.getcompos<Drawable>())
                 {
@@ -130,13 +130,41 @@ namespace Charamaker3.CharaModel
         }
 
         /// <summary>
-        /// キャラクターを基準も含めてセットする
+        /// キャラクターの最も大きなZ座標を取得する
+        /// </summary>
+        /// <param name="e"></param>
+        static public float GetMaxZ(Character c)
+        {
+            float z = float.NaN;
+            foreach (var a in c.getTree(""))
+            {
+                foreach (var b in a.getcompos<Drawable>())
+                {
+                    if (float.IsNaN(z) == true)
+                    {
+                        z = b.z;
+                    }
+                    else
+                    {
+                        z = Mathf.max(z, b.z);
+                    }
+                }
+            }
+            if (float.IsNaN(z))
+            {
+                z = 0;
+            }
+            return z;
+        }
+
+        /// <summary>
+        /// キャラクターを基準も含めてセットする。Zも0~1に制限する。
         /// </summary>
         /// <param name="scale"></param>
         /// <param name="dz"></param>
         /// <param name="zbai">zを全部倍にしたり</param>
         /// <param name="opacity"></param>
-        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai=1, float opacity = 1)
+        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai, float opacity = 1)
         {
             if (name != null)
             {
@@ -156,12 +184,24 @@ namespace Charamaker3.CharaModel
                         EntityMove.ScaleChange(0, "", scale, scale).add(cc.e, 10);
                         DrawableMove.BaseColorChange(0, "", opacity).add(cc.e, 10);
 
+                        var minz = Character.GetMinZ(cc);
+                        var maxz = Character.GetMaxZ(cc);
+                        var zpower = maxz - minz;
                         foreach (var a in cc.getTree("")) 
                         {
                             foreach (var b in a.getcompos<Drawable>()) 
                             {
                                 b.zDelta = dz;
                                 b.zRatio = zbai;
+                                if (zpower == 0)
+                                {
+                                    b.z = 0;
+                                }
+                                else 
+                                {
+                                    b.z = (b.z - minz)/zpower;
+                                }
+
                             }
                         }
 
