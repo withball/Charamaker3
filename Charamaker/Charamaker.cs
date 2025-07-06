@@ -36,7 +36,8 @@ namespace Charamaker
 
             ClientSize = BaseSize;
 
-            FP.l.seting(textsn: new List<string> { @"texts\text" });
+            FP.l.seting(textsn: new List<string> { @"texts\text.txt" });
+            FP.SetDefault(FP.l);//ŒÄ‚Ño‚µŒ³‚ÌFP‚ğ“Ç‚İ‚Ş
 
             inp = new NameInput(km);
             inp.Bind("CamSlide", new IButton(MouseButtons.XButton1));

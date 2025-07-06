@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Charamaker3.ParameterFile;
 using Charamaker3.Utils;
 
 namespace Charamaker3.CharaModel
@@ -405,6 +406,43 @@ namespace Charamaker3.CharaModel
             new LifeTimer(Time+Jizoku).add(serif);
             return c;
         }
+        /// <summary>
+        /// FPを参照してセリフを作るムーブ
+        /// </summary>
+        /// <param name="Tag">セリフの表示場所</param>
+        /// <param name="Time">表示時間</param>
+        /// <param name="Jizoku">表示の持続</param>
+        /// <param name="dxp">場所</param>
+        /// <param name="dyp">場所</param>
+        /// <param name="size">吹き出しの大きさ割合</param>
+        /// <param name="FPText">FPから読み込むテキスト</param>
+        /// <returns>__MOVE__</returns>
+        static public Component MakeSerifFP(string Tag, float Time, float Jizoku, float dxp, float dyp, float size, string FPText)
+        {
+            float textSize = 16;
+
+            var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
+            var f = new FontC(textSize, textSize * 15, textSize * 3);
+            f.ali = FontC.alignment.left;
+            f.aliV = FontC.alignment.left;
+            var fd = f.ToSave();
+            var t = new Text(0, new ColorC(0, 0, 0, 1), "", f);
+            var serif = Charamaker3.Utils.Serif.MakeSerif(e, t);//
+            serif.WakuHaba = textSize / 8;
+            serif.SiroSiro = textSize / 8;
+
+            string Text = FP.l.GT(FPText);
+
+            DrawableMove.SetText(Time, "Text", Text).add(serif);
+
+            var c = new SummonSerif(Tag, serif, 0);
+            c.dxp = dxp;
+            c.dyp = dyp;
+            c.sizep = size;
+            c.dz = -0.1f;
+            new LifeTimer(Time + Jizoku).add(serif);
+            return c;
+        }
     }
     public partial class DrawableMove : Component
     {
@@ -648,7 +686,7 @@ namespace Charamaker3.CharaModel
         /// </summary>>
         /// <param name="time">=0</param>
         /// <param name="name">=""</param>
-        /// <param name="Text">=""</param
+        /// <param name="Text">=""</param>
         /// <returns>__MOVE__</returns>
         static public TextMove SetText(float time = 0,string name = "",string Text="")
         {
@@ -667,6 +705,40 @@ namespace Charamaker3.CharaModel
             font.w = float.NaN;
             font.h = float.NaN;
 
+            var res = new TextMove(name, time, Text, Text.Length, font, name);
+
+            return res;
+        }
+
+        /// <summary>
+        /// テキストをFPからセットする。ちょっとずつやりたいなら消してからやってね
+        /// </summary>>
+        /// <param name="time">=0</param>
+        /// <param name="name">=""</param>
+        /// <param name="FPText">=""</param>
+        /// <returns>__MOVE__</returns>
+        static public TextMove SetTextFP(float time = 0, string name = "", string FPText = "")
+        {
+            var font = new FontC();
+            font.ali = FontC.alignment.None;
+            font.aliV = FontC.alignment.None;
+            font.hutiZure = float.NaN;
+            font.hutiColor.r = float.NaN;
+            font.hutiColor.g = float.NaN;
+            font.hutiColor.b = float.NaN;
+            font.hutiColor.opa = float.NaN;
+            font.isBold = -1;
+            font.isItaric = -1;
+            font.fontName = "";
+            font.size = float.NaN;
+            font.w = float.NaN;
+            font.h = float.NaN;
+            var Text = "";
+            if (FPText != "")
+            {
+                Text = FP.l.GT(FPText);
+            }
+             
             var res = new TextMove(name, time, Text, Text.Length, font, name);
 
             return res;

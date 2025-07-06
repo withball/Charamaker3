@@ -36,6 +36,25 @@ namespace Charamaker3.ParameterFile
             return res;
         }
 
+        /// <summary>
+        /// 標準のtexts,params以下のファイルを読み込む
+        /// </summary>
+        /// <param name="l"></param>
+        static public void SetDefault(FP l) 
+        {
+            var Texts=Directory.GetFiles(FileMan.s_rootpath + "texts/", "*.txt");
+            var Params = Directory.GetFiles(FileMan.s_rootpath + "params/", "*.txt");
+
+            foreach (var a in Texts) 
+            {
+                l.loadtexts(a);
+            }
+            foreach (var a in Params)
+            {
+                l.loadparam(a);
+            }
+        }
+
 
         /// <summary>
         /// 特殊なシーケンスを使うときとかだけ参照してね。(\nは標準で変換されるよ)
@@ -261,7 +280,7 @@ namespace Charamaker3.ParameterFile
         }
         private void loadparam(string file)
         {
-            using (var fs = new StreamReader(FileMan.s_rootpath + file + ".txt"))
+            using (var fs = new StreamReader(file))
             {
                 string load;
                 string region = "";
@@ -297,7 +316,7 @@ namespace Charamaker3.ParameterFile
         }
         private void loadtexts(string file)
         {
-            using (var fs = new StreamReader(FileMan.s_rootpath + file + ".txt"))
+            using (var fs = new StreamReader(file))
             {
                 string load;
                 string region = "";
@@ -369,7 +388,7 @@ namespace Charamaker3.ParameterFile
 
         private void loadcsv(string file)
         {
-            using (var fs = new StreamReader(FileMan.s_rootpath + file + ".csv"))
+            using (var fs = new StreamReader(file))
             {
                 string load;
                 List<string> names = new List<string>();
