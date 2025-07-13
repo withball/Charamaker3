@@ -295,11 +295,11 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// Entity要素(w,h,tx,ty,px,py)をリセットするムーブ
         /// </summary>
-        /// <param name="name"></param>
         /// <param name="time">=0</param>
+        /// <param name="name"></param>
         /// <param name="degree">角度もリセットするか=true</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMove ResetMove(string name = "", float time = 0, bool degree = true)
+        static public EntityMove ResetMove( float time = 0, string name = "", bool degree = true)
         {
             float deg;
             if (degree)
@@ -320,13 +320,13 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 反転をするムーブ
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="time">=0</param>
+        /// <param name="name">=""</param>
         /// <param name="mo">=Reverse,No,Mirror</param>
         /// <param name="goreef">リーフの方向も変えるか=true</param>
-        /// <param name="time">=0</param>
         /// <param name="isMoveDegree">=角度もいい感じに回転させるか=true</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMirror Mirror(string name, MirrorOption mo = MirrorOption.Reverse, bool goreef = true, float time = 0, bool isMoveDegree = true)
+        static public EntityMirror Mirror(float time = 0, string name="", MirrorOption mo = MirrorOption.Reverse, bool goreef = true, bool isMoveDegree = true)
         {
             return new EntityMirror(name, time, mo, goreef, isMoveDegree);
         }
@@ -335,8 +335,8 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// Zじゃない軸で回転するムーブ
         /// </summary>
-        /// <param name="name"></param>
         /// <param name="time"></param>
+        /// <param name="name"></param>
         /// <param name="startX">=0 現在の角度</param>
         /// <param name="endX">=0 終わりの角度</param>
         /// <param name="startY">=0</param>
@@ -345,7 +345,7 @@ namespace Charamaker3.CharaModel
         /// <param name="scaley">=1</param>
         /// <param name="onlyroot">=false</param>
         /// <returns>__MOVE__</returns>
-        static public ZRotateMove ZRotate(string name, float time, float startX = 0, float endX = 0, float startY = 0, float endy = 0
+        static public ZRotateMove ZRotate(float time, string name, float startX = 0, float endX = 0, float startY = 0, float endy = 0
             , float scalex = 1, float scaley = 1, bool onlyroot = false)
         {
             var res = new ZRotateMove(time, startX, endX, startY, endy, scalex, scaley, name);
@@ -375,15 +375,15 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// セリフを作るムーブ
         /// </summary>
-        /// <param name="Tag">セリフの表示場所</param>
         /// <param name="Time">表示時間</param>
+        /// <param name="Tag">セリフの表示場所</param>
         /// <param name="Jizoku">表示の持続</param>
         /// <param name="dxp">場所</param>
         /// <param name="dyp">場所</param>
         /// <param name="size">吹き出しの大きさ割合</param>
         /// <param name="Text">テキスト</param>
         /// <returns>__MOVE__</returns>
-        static public Component MakeSerif(string Tag,float Time,float Jizoku,float dxp,float dyp,float size,string Text) 
+        static public Component MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text) 
         {
             float textSize = 16;
 
@@ -409,15 +409,15 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// FPを参照してセリフを作るムーブ
         /// </summary>
-        /// <param name="Tag">セリフの表示場所</param>
         /// <param name="Time">表示時間</param>
+        /// <param name="Tag">セリフの表示場所</param>
         /// <param name="Jizoku">表示の持続</param>
         /// <param name="dxp">場所</param>
         /// <param name="dyp">場所</param>
         /// <param name="size">吹き出しの大きさ割合</param>
         /// <param name="FPText">FPから読み込むテキスト</param>
         /// <returns>__MOVE__</returns>
-        static public Component MakeSerifFP(string Tag, float Time, float Jizoku, float dxp, float dyp, float size, string FPText)
+        static public Component MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText)
         {
             float textSize = 16;
 
@@ -449,12 +449,12 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// z座標を変えるムーブ
         /// </summary>
+        /// <param name="time">=0</param>
         /// <param name="name">=""</param>
         /// <param name="dz">=0</param>
-        /// <param name="time">=0</param>
         /// <param name="onlyroot">nameのパーツだけを変える=false</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ZChange(string name = "", float dz = 0, float time = 0, bool onlyroot = false)
+        static public DrawableMove ZChange(float time = 0, string name = "", float dz = 0,  bool onlyroot = false)
         {
             var res = new DrawableMove(time, dz, 0, 0, 0, 0, "_", name);
             if (onlyroot)
@@ -470,14 +470,14 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 基準をもとにzを変える
         /// </summary>
+        /// <param name="time">=0</param>
         /// <param name="name">変える対象=""</param>
         /// <param name="Basename">元になるパーツ=""</param>
         /// <param name="pz">元パーツとのz差(割合)=0</param>
-        /// <param name="time">=0</param>
         /// <param name="onlyroot">根本のみ変更=false</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove BaseZChange(string name = "", string Basename = "", float pz = 0
-            , float time = 0, bool onlyroot = false)
+        static public DrawableMove BaseZChange(float time = 0, string name = "", string Basename = "", float pz = 0
+            ,  bool onlyroot = false)
         {
             var res = new DrawableMove(time, pz, float.NaN, float.NaN, float.NaN, float.NaN, "_", name);
             res.CO = changeOption.fromBase;
@@ -496,14 +496,14 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 基準をもとにzの倍率などをベースから変える
         /// </summary>
+        /// <param name="time">=0</param>
         /// <param name="name">変える対象=""</param>
         /// <param name="rZDelta">位相=Nan</param>
         /// <param name="rZRatio">倍率=Nan</param>
-        /// <param name="time">=0</param>
         /// <param name="onlyroot">根本のみ変更=false</param>
         /// <returns>__MOVE__</returns>
-        static public ZDeltaMove BaseZDeltaChange(string name = "", float rZDelta = float.NaN, float rZRatio = float.NaN
-            , float time = 0, bool onlyroot = false)
+        static public ZDeltaMove BaseZDeltaChange(float time = 0, string name = "", float rZDelta = float.NaN, float rZRatio = float.NaN
+            ,  bool onlyroot = false)
         {
             var res = new ZDeltaMove(time, rZDelta, rZRatio,  name);
             res.CO = changeOption.fromBase;
@@ -520,14 +520,14 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// zの倍率などを変える
         /// </summary>
+        /// <param name="time">=0</param>
         /// <param name="name">変える対象=""</param>
         /// <param name="rZDelta">位相=Nan</param>
         /// <param name="rZRatio">倍率=Nan</param>
-        /// <param name="time">=0</param>
         /// <param name="onlyroot">根本のみ変更=false</param>
         /// <returns>__MOVE__</returns>
-        static public ZDeltaMove ZDeltaChange(string name = "", float rZDelta = 0, float rZRatio = 0
-            , float time = 0, bool onlyroot = false)
+        static public ZDeltaMove ZDeltaChange(float time = 0, string name = "", float rZDelta = 0, float rZRatio = 0
+            ,  bool onlyroot = false)
         {
             var res = new ZDeltaMove(time, rZDelta, rZRatio, name);
             res.CO = changeOption.difference;
@@ -591,13 +591,13 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// テクスチャを変える
         /// </summary>
+        /// <param name="time">=0</param>
         /// <param name="name">=""</param>
         /// <param name="texture">=\\  _で変更なし、\\でベースになる</param>
-        /// <param name="time">=0</param>
         /// /// <param name="gotree">root以下もテクスチャを変えるか=false</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ChangeTexture(string name = "", string texture = "\\", float time = 0
-            , bool gotree = false)
+        static public DrawableMove ChangeTexture(float time = 0
+            , string name = "", string texture = "\\",  bool gotree = false)
         {
             var res = new DrawableMove(time, 0, 0, 0, 0, 0, texture, name);
             if (gotree)
@@ -613,14 +613,14 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// Drawable要素をリセットする
         /// </summary>
+        /// <param name="time">=0</param>
+        /// <param name="name">=""</param>
         /// <param name="z">zもリセットする=true</param>
         /// <param name="color">colorもリセットする=ture</param>
         /// <param name="texture">textureもリセットする=true</param>
-        /// <param name="name">=""</param>
-        /// <param name="time">=0</param>
         /// <param name="onlyroot">以下には適用しない=false</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ResetMove(bool z=true,bool color=true,bool texture=true,string name = "", float time = 0, bool onlyroot = false)
+        static public DrawableMove ResetMove(float time = 0, string name = "", bool z=true,bool color=true,bool texture=true,  bool onlyroot = false)
         {
 
             var res = new DrawableMove(time, 0, 1, 1, 1, 1, "\\", name);
@@ -1551,7 +1551,7 @@ namespace Charamaker3.CharaModel
                 {
 
                     res.addmove(
-                        DrawableMove.ChangeTexture(ddd.unpackDataS("name"), ddd.unpackDataS("tex"))
+                        DrawableMove.ChangeTexture(0,ddd.unpackDataS("name"), ddd.unpackDataS("tex"))
                         , false);
                 }
                 else if (tname == "setuidouman")
@@ -1567,7 +1567,7 @@ namespace Charamaker3.CharaModel
                 else if (tname == "Kzchangeman")
                 {
                     res.addmove(
-                        DrawableMove.BaseZChange(ddd.unpackDataS("name"), ddd.unpackDataS("toname"),
+                        DrawableMove.BaseZChange(0,ddd.unpackDataS("name"), ddd.unpackDataS("toname"),
                         ddd.unpackDataF("dz"))
                         , false);
                 }

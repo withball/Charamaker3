@@ -224,7 +224,7 @@ namespace Charamaker
         private void SRB_Click(object sender, EventArgs e)
         {
             var m=new Motion();
-            m.addmove(EntityMove.ResetMove("",0,false));
+            m.addmove(EntityMove.ResetMove(0,"",false));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);
@@ -245,7 +245,7 @@ namespace Charamaker
         private void TRB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
-            m.addmove(DrawableMove.ResetMove(true,false,true,"",0,false));
+            m.addmove(DrawableMove.ResetMove(0, "", true,false,true,false));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);
@@ -255,7 +255,7 @@ namespace Charamaker
         private void ReverseB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
-            m.addmove(EntityMove.Mirror("", 0,true));
+            m.addmove(EntityMove.Mirror(0, ""));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);

@@ -46,6 +46,7 @@ namespace Charamaker
 
             display = new Display(this, 1f);
 
+            FileMan.SetDefaultDisplay(display);
 
 
             FileMan.SoundSetUP();
@@ -133,7 +134,6 @@ namespace Charamaker
             }
 
         }
-
         private void ticked(object sender, EventArgs e)
         {
             // w = new World();

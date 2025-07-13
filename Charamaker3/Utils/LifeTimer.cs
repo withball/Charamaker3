@@ -76,14 +76,19 @@ namespace Charamaker3.Utils
         /// 召喚するエンテティ
         /// </summary>
         public Entity summon=new Entity();
+
+        public float LifeTimer = 0;
+
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
         /// <param name="time"></param>
         /// <param name="name"></param>
-        public SummonEntity(Entity summonentity,float time, string name = "") : base(time, name)
+        public SummonEntity(Entity summonentity, float time, string name = "", float lifetimer = 0) : base(time, name)
         {
             summon = summonentity;
+
+            this.LifeTimer = lifetimer;
         }
         /// <summary>
         /// 召喚した際の位置Nanで中心位置
@@ -179,13 +184,18 @@ namespace Charamaker3.Utils
             summon.settxy(setxy);
             if(float.IsNaN(dz) == false)
             {
-                DrawableMove.ZDeltaChange("", e.getDrawable<Drawable>().zDelta, e.getDrawable<Drawable>().zRatio).addAndRemove(summon, 100);
-                DrawableMove.ZChange("", e.getDrawable<Drawable>().z+dz).addAndRemove(summon, 100);
+                DrawableMove.ZDeltaChange(0,"", e.getDrawable<Drawable>().zDelta, e.getDrawable<Drawable>().zRatio).addAndRemove(summon, 100);
+                DrawableMove.ZChange(0,"", e.getDrawable<Drawable>().z+dz).addAndRemove(summon, 100);
                 
             }
 
+            new Utils.LifeTimer(LifeTimer);
+
+
             summons.add(world);
             summons.update(cl);
+
+
         }
     }
 
@@ -255,6 +265,7 @@ namespace Charamaker3.Utils
         float scale = 1;
         float x=0,y=0;
         string charaName="";
+        float LifeTime = 0;
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -263,16 +274,19 @@ namespace Charamaker3.Utils
         /// <param name="charaname">召喚したキャラクターに付ける名前</param>
         /// <param name="time"></param>
         /// <param name="name"></param>
-        public SummonCharacter(string path,float scale,string charaname, float time, string name = "") : base(time, name)
+        public SummonCharacter(string path, float scale, string charaname, float time, string name = "", float lifetime=0) : base(time, name)
         {
             charaPath = path;
             this.scale= scale;
-            this.charaName = charaname; 
+            this.charaName = charaname;
+            this.LifeTime = lifetime;
         }
         /// <summary>
         /// 空のコンストラクタ
         /// </summary>
         public SummonCharacter() { }
+
+
 
         public override void copy(Component c)
         {
@@ -304,10 +318,17 @@ namespace Charamaker3.Utils
             var c = FileMan.ldCharacter(charaPath);
             EntityMove.ScaleChange(10, "", scale, scale, scale, scale).add(c.e,100);
             EntityMove.ScaleChange(10, "", scale, scale, scale, scale).add(c.BaseCharacter.e, 100);
+
+            new Utils.LifeTimer(LifeTime,"").add(c.e);
+
             c.e.name = charaName;
-            c.BaseCharacter.e.name= charaName;
-            e.settxy(0, 0);
+            c.BaseCharacter.e.name = charaName;
+            c.e.settxy(0, 0);
             onSummon?.Invoke(this, c.e);
+
+
+
+
             c.e.add(world);
             c.e.update(cl);
         }

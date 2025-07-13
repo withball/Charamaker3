@@ -21,9 +21,10 @@ namespace Charamaker
         CP<Camera> cam;
         bool started = false;
 
-        float timer = 0;
+        float StartTimer = 0;
         float maxtime = 1;
-        AnimeLoader anm;
+        //AnimeLoader anm;
+        AnimeBlockManager BlockManager;
         public AnimeEditor(Charamaker c)
         {
             this.charamaker = c;
@@ -70,7 +71,7 @@ namespace Charamaker
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
             MessageBox.Text += d.Replace("\n", Environment.NewLine);
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
-            MessageBox.Text += "[F:Funcname:xxx]{[arg0]{}[arg0]{}[arg0]{}[arg0]{}} でMotionMaker系の関数を使える" + Environment.NewLine;
+            MessageBox.Text += "StartTime,TargetName,CommandName:引数,... でモーション系の関数を飛ばせる。" + Environment.NewLine;
             {
                 var res = "";
                 string xml_file_path_ = @".\Charamaker3.xml";
@@ -129,53 +130,67 @@ namespace Charamaker
 
         private void tiked(object sender, EventArgs e)
         {
+            if (started == false)//始まってない場合読み込み
             {
-                var path = @".\animation\" + this.loadBox.Text + ".anm";
+                var Truepath = FileMan.s_rootpath + @"animation/" + this.loadBox.Text + ".anm";
+                var path = @"animation/" + this.loadBox.Text;
 
-                if (!File.Exists(path))
+                if (!File.Exists(Truepath))
                 {
-                    anm = new AnimeLoader(new DataSaver());
+                    BlockManager = new AnimeBlockManager(new DataSaver());
+                    //anm = new AnimeLoader(new DataSaver());
                 }
                 else
                 {
 
-                    var info = new FileInfo(path);
+                    var info = new FileInfo(Truepath);
                     if (preinfo == null || DateTime.Compare(info.LastWriteTime, preinfo.LastWriteTime) > 0)
                     {
-                        var anmD = DataSaver.loadFromPath(path, true, "");
-                        anm = new AnimeLoader(anmD);
+                        //var anmD = DataSaver.loadFromPath(path, true, "");
+
+                        var blockD = DataSaver.loadFromPath(path, false, ".anm");
+                        //Debug.WriteLine("POI " + blockD.getData());
+                        //anm = new AnimeLoader(anmD);
+                        BlockManager = new AnimeBlockManager(blockD);
+                        //Debug.WriteLine(path+"Was "+BlockManager.ToString());
                         preinfo = info;
+                        StartTimer = TimeBar.Value / 10f;
+
                         anmDChanged();
-                        timer = TimeBar.Value / 10f;
-                        w.update(timer);
+
+                        w.update(StartTimer);
+                        BlockManager.update(w.staticEntity, StartTimer);
+
                     }
                 }
 
             }
-            if (timer < maxtime && started)
+            if (started)
             {
-                var ntimer = Mathf.min(timer + 1 * ((float)SpeedUd.Value), maxtime);
-                w.update(ntimer - timer);
-                timer = ntimer;
-                this.TimeBar.Value = (int)(timer * 10);
-                if (timer == maxtime)
-                {
-                    started = false;
-                }
-            }
-            timeLabel.Text = timer + " / " + maxtime;
-            if (started) 
-            {
+                float cl = ((float)SpeedUd.Value);
+                w.update(cl);
+
+                BlockManager.update(w.staticEntity, cl);
+                timeLabel.Text = BlockManager.Time + " / " + maxtime;
+
                 timeLabel.Text += " is playing";
             }
-            w.update(0);
+            else
+            {
+                timeLabel.Text = StartTimer + " / " + maxtime;
+                w.update(0);
+                BlockManager.update(w.staticEntity, 0);
+            }
         }
         void anmDChanged()
         {
-
             newWorld();
-            var d=anm.MakeAnime(w.staticEntity);
-            maxtime = Mathf.max(Mathf.abs(d.unpackDataF("maxtime")),1);
+            //var d=anm.MakeAnime(w.staticEntity);
+
+            //maxtime = Mathf.max(Mathf.abs(d.unpackDataF("maxtime")),1);
+            BlockManager.Start();
+            
+            maxtime = BlockManager.MaxTime*4;
             {
                 TimeBar.Maximum = (int)(maxtime * 10);
             }
@@ -194,11 +209,13 @@ namespace Charamaker
 
         private void TimeBar_Scroll(object sender, EventArgs e)
         {
-            if (!started)
+            //if (!started)
             {
+                StartTimer = TimeBar.Value / 10f; 
                 anmDChanged();
-                timer = TimeBar.Value / 10f;
-                w.update(timer);
+
+                w.update(StartTimer);
+                BlockManager.update(w.staticEntity, StartTimer);
             }
         }
 
@@ -206,19 +223,16 @@ namespace Charamaker
         {
             if (!started )
             {
-                if (timer < maxtime)
-                {
-                    started = true;
-                }
-                else
+                PlayB.Text = "Stop";
                 {
                     anmDChanged();
                     started = true;
-                    timer = 0;
+                    StartTimer = 0;
                 }
             }
-            else 
+            else
             {
+                PlayB.Text = "Start";
                 started = false;
             }
         }
@@ -232,8 +246,11 @@ namespace Charamaker
         {
             if (1 == 0)
             {
+                /*
                 string text = "";
                 var sp = anm.Check().Split('\n');
+                
+
                 for (int i = 0; i < sp.Length; i++)
                 {
                     int cou = 0;
@@ -245,14 +262,17 @@ namespace Charamaker
 
                 }
                 SetText(text);
+                */
             }
             else 
             {
                 var text = "";
-                foreach (var a in anm.Check2()) 
+                /*foreach (var a in anm.Check2()) 
                 {
                     text += "["+a+"]" + Environment.NewLine;
-                }
+                }*/
+
+                text = BlockManager.ToString();
                // text += anm.Check3();
                 SetText(text);
             }
