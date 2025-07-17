@@ -12,13 +12,14 @@ namespace Charamaker
         public Display display;
         public World w = new World();
         public Camera cam;
-        KeyMouse km = new KeyMouse();
+        public KeyMouse km = new KeyMouse();
         System.Drawing.Size BaseSize = new Size((int)(1600 * 0.85f), (int)(900 * 0.85f));
 
         NameInput inp;
 
         Texture SLP, TXYP;
         DataSaver save;
+
 
         public Charamaker()
         {

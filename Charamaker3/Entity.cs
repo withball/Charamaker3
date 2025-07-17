@@ -932,7 +932,7 @@ namespace Charamaker3
                 return true;
             }
             
-            Debug.WriteLine(name+this.GetType().ToString()+" is already added");
+            //Debug.WriteLine(name+this.GetType().ToString()+" is already added");
             return false;
         }
 

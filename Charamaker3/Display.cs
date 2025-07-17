@@ -629,7 +629,7 @@ namespace Charamaker3
         {
             PreDraw(cl);
             render.Render.BeginDraw();
-            foreach (var a in cameras)
+            foreach (CP<Camera> a in cameras)
             {
                 if (a.c.watchRect.added)
                 {

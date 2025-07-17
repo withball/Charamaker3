@@ -11,6 +11,9 @@ using System.Xml.Linq;
 using Charamaker3;
 using Charamaker3.CharaModel;
 using Component = Charamaker3.Component;
+using Charamaker3.Shapes;
+using Rectangle = Charamaker3.Shapes.Rectangle;
+using Charamaker3.Hitboxs;
 namespace Charamaker
 {
     public partial class AnimeEditor : Form
@@ -24,7 +27,8 @@ namespace Charamaker
         float StartTimer = 0;
         float maxtime = 1;
         //AnimeLoader anm;
-        AnimeBlockManager BlockManager;
+        AnimeBlockManager BlockManager=new AnimeBlockManager(new DataSaver());
+        AnimTumiki Tumiki=new AnimTumiki();
         public AnimeEditor(Charamaker c)
         {
             this.charamaker = c;
@@ -71,7 +75,7 @@ namespace Charamaker
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
             MessageBox.Text += d.Replace("\n", Environment.NewLine);
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
-            MessageBox.Text += "StartTime,TargetName,CommandName:引数,... でモーション系の関数を飛ばせる。" + Environment.NewLine;
+            MessageBox.Text += "StartTime,TargetName,CommandName,AddCl=0:引数,... でモーション系の関数を飛ばせる。" + Environment.NewLine;
             {
                 var res = "";
                 string xml_file_path_ = @".\Charamaker3.xml";
@@ -159,7 +163,9 @@ namespace Charamaker
                         anmDChanged();
 
                         w.update(StartTimer);
+
                         BlockManager.update(w.staticEntity, StartTimer);
+
 
                     }
                 }
@@ -171,9 +177,11 @@ namespace Charamaker
                 w.update(cl);
 
                 BlockManager.update(w.staticEntity, cl);
-                timeLabel.Text = BlockManager.Time + " / " + maxtime;
+                PlayTimeLabel.Text = BlockManager.Time + " / " + maxtime;
 
-                timeLabel.Text += " is playing";
+                PlayTimeLabel.Text += " is playing";
+
+                TimeBar.Value = (int)(BlockManager.Time) * 2;
             }
             else
             {
@@ -181,6 +189,8 @@ namespace Charamaker
                 w.update(0);
                 BlockManager.update(w.staticEntity, 0);
             }
+            Tumiki.UpdateTumiki(BlockManager.Time,charamaker.km.GetCursourPoint(charamaker.cam, true));
+            ScrollTimer.OnlyUpdate(1);
         }
         void anmDChanged()
         {
@@ -194,6 +204,12 @@ namespace Charamaker
             {
                 TimeBar.Maximum = (int)(maxtime * 10);
             }
+
+            var st = charamaker.cam.watchRect.gettxy2(0.1f, 0.75f);
+            var ed = charamaker.cam.watchRect.gettxy2(0.5f, 0.89f);
+            Tumiki.SetBlockManager(BlockManager, new Rectangle(st.x, st.y, (ed - st).x, (ed - st).y),charamaker.w);
+
+
             Debug.WriteLine("animchange!");
         }
 
@@ -207,15 +223,30 @@ namespace Charamaker
             charamaker.display.removeCamera(cam);
         }
 
+        /// <summary>
+        /// バーをスクロールしてめっちゃ変更かかるとうるさいから
+        /// </summary>
+        SuperTimer ScrollTimer = new SuperTimer(20,20);
         private void TimeBar_Scroll(object sender, EventArgs e)
         {
-            //if (!started)
+            StartTimer = TimeBar.Value / 10f;
+            timeLabel.Text = StartTimer + " / " + maxtime;
+            if (ScrollTimer.OnlyGet())
             {
-                StartTimer = TimeBar.Value / 10f; 
-                anmDChanged();
+                if (!started)
+                {
+                    var temp = FileMan.SE.volume;
+                    FileMan.SE.volume = 0;
+                    anmDChanged();
 
-                w.update(StartTimer);
-                BlockManager.update(w.staticEntity, StartTimer);
+                    w.update(StartTimer);
+                    BlockManager.update(w.staticEntity, StartTimer);
+                    FileMan.SE.volume = temp;
+                }
+                else
+                {
+
+                }
             }
         }
 
@@ -225,13 +256,15 @@ namespace Charamaker
             {
                 PlayB.Text = "Stop";
                 {
-                    anmDChanged();
+                    anmDChanged(); 
+                    w.update(StartTimer);
+                    BlockManager.update(w.staticEntity, StartTimer);
                     started = true;
-                    StartTimer = 0;
                 }
             }
             else
             {
+                TimeBar.Value = (int)(StartTimer) * 10;
                 PlayB.Text = "Start";
                 started = false;
             }
@@ -276,6 +309,177 @@ namespace Charamaker
                // text += anm.Check3();
                 SetText(text);
             }
+        }
+    }
+    /// <summary>
+    /// AnimBlockがどんな感じか示すためのクラス。
+    /// </summary>
+    class AnimTumiki 
+    {
+        List<AnimBlock> AddedBlocks=new List<AnimBlock>();
+        List<Character> BlockCharas = new List<Character>();
+        List<Character> UIs = new List<Character>();
+        Character TimeLine = null;
+
+        Rectangle zone = new Rectangle(0,0,1,1);
+        float MaxTime = 0;
+        float Height = 0.01f;
+
+        int Maxtumi = 0;
+        public void SetBlockManager(AnimeBlockManager man,Rectangle r,World w) 
+        {
+            //Clear
+            {
+                zone = r;
+                Maxtumi = 0;
+                Height = zone.h / zone.w * 0.1f;
+                AddedBlocks.Clear();
+                foreach (var a in BlockCharas)
+                {
+                    a.e.remove();
+                }
+                BlockCharas.Clear();
+                if (TimeLine != null)
+                {
+                    TimeLine.e.remove();
+                }
+            }
+            MaxTime=man.MaxTime;
+            supersort<AnimBlock> sort = new supersort<AnimBlock>();
+            foreach (var a in man.Blocks)
+            {
+                sort.add(a, a.StartTime);
+            }
+            sort.sort(false);
+            foreach (var a in sort.getresult()) 
+            {
+                AddAnimBlock(a);
+            }
+            int cou = 0;
+            foreach (var a in BlockCharas)
+            {
+                a.e.x *= zone.w;
+                a.e.y *= zone.w;
+                a.e.x += zone.x;
+                a.e.y += zone.y;
+                EntityMove.ScaleChange(10,"",r.w,r.w).addAndRemove(a.e,100);
+                DrawableMove.ZDeltaChange(10,"",cou*10,1).addAndRemove(a.e, 100);
+                cou++;
+                a.e.add(w);
+
+            }
+            {
+                TimeLine = Character.MakeCharacter("bluebit", 0, 0, 1, 1, 1, 1).getCharacter();
+                EntityMove.ScaleChange(10, "", 0.005f, Height*(Maxtumi+3)).addAndRemove(TimeLine.e, 100);
+                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(TimeLine.e, 100);
+
+
+                int moji = 5;
+                var Text = Entity.make(0, 0, Height * moji, Height, Height * moji * 0.5f, Height * 1f, 0, "text");
+                TimeLine.addJoint(new Joint("TextJoi", 0.5f, 0.0f, TimeLine.e, new List<Entity> { Text }));
+
+                new Text(1, new ColorC(0, 0, 0, 1), "0", new FontC(32, 32 * moji, 32, alignment:FontC.alignment.center)).add(Text);
+                new Texture(0.0f, new ColorC(1, 1, 1, 0.5f), new Dictionary<string, string> { { "def", "bluebit" } }).add(Text);
+
+                TimeLine.SetBaseCharacter();
+
+
+                TimeLine.e.settxy(0, 0,0,0);
+
+                TimeLine.e.x *= zone.w;
+                TimeLine.e.y *= zone.w;
+                TimeLine.e.x += zone.x;
+                TimeLine.e.y += zone.y;
+
+                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(TimeLine.e, 100);
+                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10, 1).addAndRemove(TimeLine.e, 100);
+
+
+                TimeLine.e.add(w);
+            }
+
+
+
+        }
+
+        public void UpdateTumiki(float time, FXY cursour) 
+        {
+            var r = new Rectangle(cursour.x - 0.5f, cursour.y - 0.5f, 1, 1);
+            int cou = 0;
+            
+            foreach (var a in BlockCharas) 
+            {
+                if (a.e.Hits(r, r)&&1==0)
+                {
+                    DrawableMove.BaseZDeltaChange(10, "", 0, 0).addAndRemove(a.e, 100);
+                    DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 100, 1).addAndRemove(a.e, 100);
+
+                }
+                else
+                {
+                    DrawableMove.BaseZDeltaChange(10, "", 0, 0).addAndRemove(a.e, 100);
+                    DrawableMove.ZDeltaChange(10, "", cou * 10, 1).addAndRemove(a.e, 100);
+
+                }
+                cou++;
+            }
+            if(TimeLine!=null)
+            {
+                TimeLine.e.x = time/MaxTime*zone.w;
+                TimeLine.e.x += zone.x;
+                TimeLine.getEntity("text").getDrawable<Text>().text = time.ToString();
+            }
+        }
+
+        protected bool AddAnimBlock(AnimBlock InBlock) 
+        {
+            if (AddedBlocks.Contains(InBlock) == false)
+            {
+                AddedBlocks.Add(InBlock);
+                float starttimer = InBlock.StartTime / MaxTime;
+                float blocktimer = (InBlock.BlockTime / MaxTime);
+
+                var c = Character.MakeCharacter("redbit", 0, 0, 1, 0.0f, 1f, 0.5f).getCharacter();
+                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(c.e, 100);
+                new Hitbox(new Rectangle(0,0,1,1),new List<int>(1),new List<int>()).add(c.e);
+
+                EntityMove.ScaleChange(10, "", blocktimer, Height).addAndRemove(c.e, 100);
+                //Debug.WriteLine(c.e.x + " e:r:t " + c.e.y + " == " + c.e.w + " :: " + c.e.h);
+
+                int moji = 20;
+                var Text = Entity.make(0, 0, Height * moji, Height, Height * moji * 0.0f, Height * 1f, 0, "text");
+                c.addJoint(new Joint("TextJoi", 0.0f, 1f, c.e, new List<Entity> { Text }));
+
+                new Text(1,new ColorC(0,0,0,1), (InBlock.StartTime)+"@ "+InBlock.Gyo+" @"+(InBlock.StartTime+InBlock.BlockTime), new FontC(32,32*moji,32)).add(Text);
+                new Texture(0.0f, new ColorC(1, 1, 1, 1), new Dictionary<string, string> { { "def", "whitebit" } }).add(Text);
+
+                c.SetBaseCharacter();
+
+                c.e.update(1);
+
+                int tumicou = 0;
+
+                //ブロックの左下の点
+                var BP = new Rectangle(starttimer, 0, blocktimer, Height);
+                for (int i = 0; i < 10; i++)
+                {
+                    foreach (var a in BlockCharas)
+                    {
+                        var BP2 = new Rectangle(a.e.x, a.e.y, a.e.w+0.05f, a.e.h);
+                        if (BP.atarun(BP2))
+                        {
+                            tumicou++;
+                            BP.y -= Height;
+                        }
+                    }
+                }
+                Maxtumi = (int)Mathf.max(tumicou, Maxtumi);
+
+                c.e.settxy(BP.x, BP.y+BP.h);
+                BlockCharas.Add(c);
+                return true;
+            }
+            return false;
         }
     }
 }

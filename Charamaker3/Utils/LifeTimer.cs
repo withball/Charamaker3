@@ -84,7 +84,8 @@ namespace Charamaker3.Utils
         /// </summary>
         /// <param name="time"></param>
         /// <param name="name"></param>
-        public SummonEntity(Entity summonentity, float time, string name = "", float lifetimer = 0) : base(time, name)
+        /// <param name="lifetimer">-1で無限</param>
+        public SummonEntity(Entity summonentity, float time, string name = "", float lifetimer = -1) : base(time, name)
         {
             summon = summonentity;
 
@@ -188,9 +189,10 @@ namespace Charamaker3.Utils
                 DrawableMove.ZChange(0,"", e.getDrawable<Drawable>().z+dz).addAndRemove(summon, 100);
                 
             }
-
-            new Utils.LifeTimer(LifeTimer);
-
+            if (LifeTimer >= 0)
+            {
+                new Utils.LifeTimer(LifeTimer).add(summon);
+            }
 
             summons.add(world);
             summons.update(cl);
@@ -212,7 +214,6 @@ namespace Charamaker3.Utils
         public SummonSerif(string tag,Serif summonentity, float time, string name = "") : base(summonentity, time,name)
         {
             this.tag = tag;
-
         }
         protected override void DoSummon(Entity e, float cl)
         {
@@ -265,7 +266,7 @@ namespace Charamaker3.Utils
         float scale = 1;
         float x=0,y=0;
         string charaName="";
-        float LifeTime = 0;
+        public float LifeTime = 0;
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -316,18 +317,19 @@ namespace Charamaker3.Utils
         {
             base.onremove(cl);
             var c = FileMan.ldCharacter(charaPath);
-            EntityMove.ScaleChange(10, "", scale, scale, scale, scale).add(c.e,100);
-            EntityMove.ScaleChange(10, "", scale, scale, scale, scale).add(c.BaseCharacter.e, 100);
+            EntityMove.ScaleChange(10, "", scale, scale).add(c.e,100);
+            EntityMove.ScaleChange(10, "", scale, scale).add(c.BaseCharacter.e, 100);
 
             new Utils.LifeTimer(LifeTime,"").add(c.e);
 
             c.e.name = charaName;
             c.BaseCharacter.e.name = charaName;
+
             c.e.settxy(0, 0);
+            
             onSummon?.Invoke(this, c.e);
 
-
-
+            c.SetBaseCharacter();
 
             c.e.add(world);
             c.e.update(cl);

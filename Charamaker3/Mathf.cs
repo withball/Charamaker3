@@ -623,7 +623,29 @@ namespace Charamaker3
         /// 今の時間
         /// </summary>
         public float Timer = 0;
-
+        /// <summary>
+        /// タイマーを進める0で止まる
+        /// </summary>
+        public void OnlyUpdate(float clock) 
+        {
+            if (MaxTime > 0 && MinTime > 0)
+            {
+                Timer -= clock;
+            }
+        }
+        /// <summary>
+        /// タイマーが０なら発動する。
+        /// </summary>
+        /// <returns></returns>
+        public bool OnlyGet() 
+        {
+            if (Timer <= 0)
+            {
+                Timer = FileMan.whrandhani(MaxTime - MinTime) + MinTime;
+                return true;
+            }
+            return false;
+        }
         /// <summary>
         /// タイマーを進める。Max,Minどちらかが0いかなら作動しない。
         /// </summary>

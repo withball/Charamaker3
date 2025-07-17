@@ -231,16 +231,21 @@ namespace Charamaker
         {
             toe.col.opa = opa;
             totxy.col.opa = opa;
+            
             if (e == null)
             {
+                var tmpName = toe.e.name;
                 c.e.copy(toe.e);
+                toe.e.name=tmpName;
                 totxy.e.settxy(c.e.gettxy());
                 totxy.e.degree=c.e.degree;
 
             }
-            else 
+            else
             {
+                var tmpName = toe.e.name;
                 e.copy(toe.e);
+                toe.e.name = tmpName;
                 totxy.e.settxy(e.gettxy());
                 totxy.e.degree = e.degree;
             }

@@ -28,7 +28,7 @@ namespace Charamaker
             this.ScriptB.Text = setstringtobox(cm.MotionString);
             setmanual();
         }
-        string setstringtobox(string s) 
+        string setstringtobox(string s)
         {
             return s.Replace("\n", Environment.NewLine);
         }
@@ -38,7 +38,7 @@ namespace Charamaker
             {
                 cm.anmE.SetText(m.ToSave());
             }
-            if (cm.sel.c!=null&&cm.sel.c.e != null)
+            if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.add(cm.sel.c.e);
             }
@@ -48,8 +48,8 @@ namespace Charamaker
         {
             if (e.KeyCode == Keys.Enter)
             {
-                var m = FileMan.loadMotion(pathB.Text,true);
-                if (m!=null&&m.Motion!=null&&m.Script!=null&& m.Script!="")
+                var m = FileMan.loadMotion(pathB.Text, true);
+                if (m != null && m.Motion != null && m.Script != null && m.Script != "")
                 {
                     //setmotionjouhou(m);
                     if (m.Script == "") m.Script = " ";
@@ -59,22 +59,22 @@ namespace Charamaker
                     messageB.Text = setstringtobox(m.Script);
                     setmanual();
                 }
-                else 
+                else
                 {
-                    if (Directory.Exists(FileMan.s_rootpath+@".\motion\" + pathB.Text))
+                    if (Directory.Exists(FileMan.s_rootpath + @".\motion\" + pathB.Text))
                     {
                         messageB.Text = "";
                         string[] filesM = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\motion\" + pathB.Text, "*.ctm", System.IO.SearchOption.AllDirectories);
                         for (int i = 0; i < filesM.Count(); i++)
                         {
                             messageB.Text += filesM[i].Replace(FileMan.s_rootpath + @".\motion\", @"") + Environment.NewLine;
-                            
+
                         }
                     }
-                    else 
+                    else
                     {
                         messageB.Text = "";
-                        string[] filesC = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\character\" , "*.ctc", System.IO.SearchOption.AllDirectories);
+                        string[] filesC = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\character\", "*.ctc", System.IO.SearchOption.AllDirectories);
                         for (int i = 0; i < filesC.Count(); i++)
                         {
                             messageB.Text += filesC[i].Replace(FileMan.s_rootpath + @".\character\", @"character\") + Environment.NewLine;
@@ -90,7 +90,7 @@ namespace Charamaker
 
 
 
-           
+
         }
         /// <summary>
         /// モーションをスクリプトから作る
@@ -103,7 +103,7 @@ namespace Charamaker
         {
             //var res = new Motion();
             //            work.sp = speed;
-            
+
             script = "using static Charamaker3.CharaModel.DrawableMove;" +
                 "using static Charamaker3.CharaModel.EntityMove;" +
                 "var res=new Motion();\n" + script + ";\nreturn res;";
@@ -124,7 +124,7 @@ namespace Charamaker
         private void saveB_Click(object sender, EventArgs e)
         {
             var m = build();
-            var path=FileMan.dialog("motion", ".ctm");
+            var path = FileMan.dialog("motion", ".ctm");
             var temp = FileMan.s_rootpath;//ダイアログなのでルートパスを外す
             FileMan.s_rootpath = "";
             FileMan.saveMotion(path, ScriptB.Text, m);
@@ -132,13 +132,13 @@ namespace Charamaker
         }
         private void ScriptB_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.F5) 
+            if (e.KeyCode == Keys.F5)
             {
                 var m = build();
-                cm.MotionString = ScriptB.Text.Replace(Environment.NewLine,"\n");
+                cm.MotionString = ScriptB.Text.Replace(Environment.NewLine, "\n");
                 cm.Save();
                 addmotion(m);
-                
+
             }
             if (e.KeyCode == Keys.F2)
             {
@@ -199,7 +199,7 @@ namespace Charamaker
                 messageB.Text = "OK! -> ";
                 var res = buildMotion(this.ScriptB.Text);
 
-                messageB.Text += res.sumtime.ToString()+" time ";
+                messageB.Text += res.sumtime.ToString() + " time ";
 
                 setmanual();
 
@@ -223,8 +223,8 @@ namespace Charamaker
 
         private void SRB_Click(object sender, EventArgs e)
         {
-            var m=new Motion();
-            m.addmove(EntityMove.ResetMove(0,"",false));
+            var m = new Motion();
+            m.addmove(EntityMove.EResetMove(0, "", false));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);
@@ -235,7 +235,7 @@ namespace Charamaker
         {
 
             var m = new Motion();
-            m.addmove(EntityMove.RotateToBace(0,"",0,rotatePath.shorts,true));
+            m.addmove(EntityMove.RotateToBace(0, "", 0, rotatePath.shorts, true));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);
@@ -245,7 +245,7 @@ namespace Charamaker
         private void TRB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
-            m.addmove(DrawableMove.ResetMove(0, "", true,false,true,false));
+            m.addmove(DrawableMove.DResetMove(0, "", true, false, true, false));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);
@@ -261,10 +261,10 @@ namespace Charamaker
                 m.addAndRemove(cm.sel.c.e, 100);
             }
         }
-        void setmanual() 
+        void setmanual()
         {
-            string res="res.addmove(XYD(...))ってカンジ"+Environment.NewLine + Environment.NewLine;
-            string xml_file_path_ =   @".\Charamaker3.xml";
+            string res = "res.addmove(XYD(...))ってカンジ" + Environment.NewLine + Environment.NewLine;
+            string xml_file_path_ = @".\Charamaker3.xml";
 
             //xmlを読み込め。
             XDocument xml_ = XDocument.Load(xml_file_path_);
@@ -275,7 +275,7 @@ namespace Charamaker
 
             //ルートタグを変数に。
             XElement members = root.Element("members");
-            
+
             foreach (XElement a in members.Elements())
             {
 
@@ -284,31 +284,31 @@ namespace Charamaker
                 if (name[0] == "M")
                 {
                     //returns ="__Move__"なら書き込む
-                    if (a.Element("returns")!=null&&a.Element("returns").Value == "__MOVE__")
+                    if (a.Element("returns") != null && a.Element("returns").Value == "__MOVE__")
                     {
                         var dots = name[1].Split('(')[0].Split('.');
                         var TNAME = "";
-                        
-                        for (int i = dots.Count()-1; i < dots.Count(); i++)
+
+                        for (int i = dots.Count() - 1; i < dots.Count(); i++)
                         {
                             if (i > dots.Count() - 1) TNAME += ".";
                             TNAME += dots[i];
                         }
                         TNAME += "(";
 
-                        foreach (var b in a.Elements("param")) 
+                        foreach (var b in a.Elements("param"))
                         {
-                            TNAME += " "+b.Attribute("name").Value;
+                            TNAME += " " + b.Attribute("name").Value;
                             TNAME += ":" + b.Value + " ,";
                         }
 
-                        TNAME += ")";TNAME += a.Element("summary").Value;
+                        TNAME += ")"; TNAME += a.Element("summary").Value;
                         TNAME += Environment.NewLine;
 
                         res += TNAME;
-                    }     
+                    }
                 }
-               
+
             }
 
             messageB.Text += Environment.NewLine + "**********************************" + Environment.NewLine;
@@ -316,6 +316,11 @@ namespace Charamaker
         }
 
         private void ScriptB_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void speedUD_ValueChanged(object sender, EventArgs e)
         {
 
         }

@@ -37,6 +37,7 @@
             MessageBox = new TextBox();
             timer1 = new System.Windows.Forms.Timer(components);
             CheckB = new Button();
+            PlayTimeLabel = new Label();
             ((System.ComponentModel.ISupportInitialize)SpeedUd).BeginInit();
             ((System.ComponentModel.ISupportInitialize)TimeBar).BeginInit();
             SuspendLayout();
@@ -112,7 +113,7 @@
             // CheckB
             // 
             CheckB.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            CheckB.Location = new Point(313, 66);
+            CheckB.Location = new Point(410, 66);
             CheckB.Name = "CheckB";
             CheckB.Size = new Size(75, 35);
             CheckB.TabIndex = 6;
@@ -120,11 +121,22 @@
             CheckB.UseVisualStyleBackColor = true;
             CheckB.Click += CheckB_Click;
             // 
+            // PlayTimeLabel
+            // 
+            PlayTimeLabel.AutoSize = true;
+            PlayTimeLabel.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            PlayTimeLabel.Location = new Point(191, 66);
+            PlayTimeLabel.Name = "PlayTimeLabel";
+            PlayTimeLabel.Size = new Size(42, 21);
+            PlayTimeLabel.TabIndex = 7;
+            PlayTimeLabel.Text = "0 / 0";
+            // 
             // AnimeEditor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(PlayTimeLabel);
             Controls.Add(CheckB);
             Controls.Add(MessageBox);
             Controls.Add(TimeBar);
@@ -153,5 +165,6 @@
         private TextBox MessageBox;
         private System.Windows.Forms.Timer timer1;
         private Button CheckB;
+        private Label PlayTimeLabel;
     }
 }

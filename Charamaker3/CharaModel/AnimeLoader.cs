@@ -513,7 +513,7 @@ namespace Charamaker3.CharaModel
 
     }
 
-    class AnimBlock
+    public class AnimBlock
     {
         /// <summary>
         /// Blockのコンポーネントを発射。する前にSetComponentしておくこと
@@ -533,7 +533,7 @@ namespace Charamaker3.CharaModel
                         
                         if (Target == "")
                         {
-                            AddComponent.add(e, time - StartTime);
+                            AddComponent.add(e, time - StartTime + AddCl);
                         }
                         else
                         {
@@ -553,7 +553,7 @@ namespace Charamaker3.CharaModel
                                 }
                                 foreach(var a in named) 
                                 {
-                                    AddComponent.add(a, time - StartTime);
+                                    AddComponent.add(a, time - StartTime + AddCl);
                                     //Debug.WriteLine(AddComponent.ToSave().getData()+" AddedTo "+a.name+" andFramed " +(time-StartTime));
                                     break;
                                 }
@@ -589,6 +589,12 @@ namespace Charamaker3.CharaModel
         /// </summary>
         public string Command = "NoCommand";
 
+
+        /// <summary>
+        /// モーションを追加するときに追加クロックする時間
+        /// </summary>
+        public float AddCl = 0;
+
         /// <summary>
         /// スクリプト
         /// </summary>
@@ -598,7 +604,29 @@ namespace Charamaker3.CharaModel
         //Scalechange,"FirePic",10:10,1,1;  
 
         public Component AddComponent = null;
-        public float BlockTime { get { return AddComponent.time; } }
+        public float BlockTime { get
+            {
+                var tcomp = AddComponent;
+                if (tcomp == null) 
+                {
+                    tcomp = GetComponentData();
+                }
+                var res = tcomp.time;
+                if (Mathf.isSubClassOf(tcomp.GetType(), typeof(SummonEntity)))
+                {
+                    res += ((SummonEntity)tcomp).LifeTimer;
+                }
+                else if (Mathf.isSubClassOf(tcomp.GetType(), typeof(SummonCharacter)))
+                {
+                    res += ((SummonCharacter)tcomp).LifeTime;
+                }
+                else if(Mathf.isSubClassOf(tcomp.GetType(), typeof(Motion)))
+                {
+                    res /= ((Motion)tcomp).speed;
+                }
+                    return res;
+            }
+        }
 
         public void SetAddComponent()
         {
@@ -708,6 +736,7 @@ namespace Charamaker3.CharaModel
             d.packAdd("Target", Target);
             d.packAdd("Command", Command);
             d.packAdd("Script", Script);
+            d.packAdd("AddCl", AddCl);
             return d;
         }
 
@@ -718,11 +747,12 @@ namespace Charamaker3.CharaModel
             Target = d.unpackDataS("Target", Target);
             Command = d.unpackDataS("Command", Command);
             Script = d.unpackDataS("Script", Script);
+            AddCl = d.unpackDataF("AddCl", AddCl);
         }
 
         public String ToString()
         {
-            return $"Line{Gyo} {StartTime},{Target},{Command}:{Script}";
+            return $"{Gyo}@{StartTime},{Target},{Command},{AddCl}:{Script}";
         }
 
     }
@@ -795,14 +825,19 @@ namespace Charamaker3.CharaModel
         /// モーションをパスから追加する。
         /// </summary>
         /// <param name="path">パス</param>
-        /// <param name="speed">=1</param>
+        /// <param name="speed">=1</param>>
+        /// <param name="Times">何回繰り返すか=1</param>
         /// <returns>__ANIM__</returns>
-        static public Motion Motion(string path, float speed = 1
-            , float addcl = 0)
+        static public Motion Motion(string path, float speed = 1, float Times = 1)
         {
-            var m = FileMan.ldMotion(path);
-            m.speed = speed;
-            return m; 
+            var matome = new Motion();
+            for (int i = 0; i < Times; ++i)
+            {
+                var m = FileMan.ldMotion(path);
+                matome.addmove(m, true);
+            }
+            matome.speed = speed;
+            return matome;
         }
 
 
@@ -821,8 +856,8 @@ namespace Charamaker3.CharaModel
             return new SummonEntity(e, 0, name, LifeTimer);
         }
 
-        List<AnimBlock> Blocks=new List<AnimBlock>();
-
+        List<AnimBlock> _Blocks=new List<AnimBlock>();
+        public List<AnimBlock> Blocks { get { return new List<AnimBlock>(_Blocks); } }
         /// <summary>
         /// StartTime,TargetName,CommandName:引数
         /// でモーション系の関数を飛ばせる。
@@ -853,7 +888,8 @@ namespace Charamaker3.CharaModel
                     newb.StartTime = Left.splitOneDataF(0, 0, ',');
                     newb.Target = Left.splitOneDataS(1, "", ',');
                     newb.Command = Left.splitOneDataS(2, "", ',');
-                    Blocks.Add(newb);
+                    newb.AddCl = Left.splitOneDataF(3, 0, ',');
+                    _Blocks.Add(newb);
                 }
             }
 
@@ -865,7 +901,7 @@ namespace Charamaker3.CharaModel
         {
             _Time = 0;
             MaxTime = 0;
-            foreach (var a in Blocks)
+            foreach (var a in _Blocks)
             {
                 a.SetAddComponent();
 
@@ -892,7 +928,7 @@ namespace Charamaker3.CharaModel
         public void update(Entity ManageEntity,float cl) 
         {
             _Time += cl;
-            foreach (var a in Blocks)
+            foreach (var a in _Blocks)
             {
                 if (a.Add(ManageEntity, _Time))
                 {
@@ -905,7 +941,7 @@ namespace Charamaker3.CharaModel
         public string ToString() 
         {
             var res = "";
-            foreach (var a in Blocks) 
+            foreach (var a in _Blocks) 
             {
             res+= a.ToString()+"\n";
             }

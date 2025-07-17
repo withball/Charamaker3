@@ -68,6 +68,35 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
+        /// cosでXYDに動かすムーブ
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">=""</param>
+        /// <param name="dx">=0</param>
+        /// <param name="dy">=0</param>
+        /// <param name="ddegree">=0</param>
+        /// <param name="withbigs">dx,dyを(w+h)/2に依存するか=false</param>
+        /// <returns>__MOVE__</returns>
+        static public EntityMove XYDcos(float time, string name = "", float dx = 0, float dy = 0, float ddegree = 0, bool withbigs = false)
+        {
+            EntityMove res;
+            if (withbigs)
+            {
+                res = new EntityMove(time, dx, dy, float.NaN, float.NaN, float.NaN, float.NaN, ddegree, float.NaN, float.NaN, name);
+                res.SO = scaleOption.scale;
+            }
+            else
+            {
+                res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
+                res.SO = scaleOption.F;
+            }
+            res.RatioOption = rationOption.cos;
+            return res;
+        }
+
+
+
+        /// <summary>
         /// JointXYに動かすムーブ
         /// </summary>
         /// <param name="time"></param>
@@ -92,8 +121,8 @@ namespace Charamaker3.CharaModel
         /// <param name="name">=""</param>
         /// <param name="dw">=0</param>
         /// <param name="dh">=0</param>
-        /// <param name="dtx">親のwに対する倍率=0</param>
-        /// <param name="dty">親のhに対する倍率=0</param>
+        /// <param name="dtx">=0</param>
+        /// <param name="dty">=0</param>
         /// <returns>__MOVE__</returns>
         static public EntityMove WHTXY(float time, string name = "", float dw = 0, float dh = 0, float dtx = 0, float dty = 0)
         {
@@ -299,7 +328,7 @@ namespace Charamaker3.CharaModel
         /// <param name="name"></param>
         /// <param name="degree">角度もリセットするか=true</param>
         /// <returns>__MOVE__</returns>
-        static public EntityMove ResetMove( float time = 0, string name = "", bool degree = true)
+        static public EntityMove EResetMove( float time = 0, string name = "", bool degree = true)
         {
             float deg;
             if (degree)
@@ -620,7 +649,7 @@ namespace Charamaker3.CharaModel
         /// <param name="texture">textureもリセットする=true</param>
         /// <param name="onlyroot">以下には適用しない=false</param>
         /// <returns>__MOVE__</returns>
-        static public DrawableMove ResetMove(float time = 0, string name = "", bool z=true,bool color=true,bool texture=true,  bool onlyroot = false)
+        static public DrawableMove DResetMove(float time = 0, string name = "", bool z=true,bool color=true,bool texture=true,  bool onlyroot = false)
         {
 
             var res = new DrawableMove(time, 0, 1, 1, 1, 1, "\\", name);
@@ -744,13 +773,22 @@ namespace Charamaker3.CharaModel
             return res;
         }
     }
-    public enum scaleOption {
+    /// <summary>
+    /// レシオの変化
+    /// </summary>
+    public enum rationOption 
+    {
+        Liner=0,cos=1
+    }
+    public enum scaleOption
+    {
         /// <summary>
         /// スケールしない
         /// </summary>
         F = -1
-                                  , scale = 1
-            , basescale = 2 };
+        , scale = 1
+        , basescale = 2
+    };
     public enum rotateOption { F = -1, world = 0, joint = 1, baseCharacter = 2 };
     public enum rotatePath { shorts = 0, plus = 1, minus = -1 };
     public enum goOption
@@ -825,6 +863,7 @@ namespace Charamaker3.CharaModel
         /// </summary>
         goOption GO = goOption.def;
 
+        rationOption RatioOption = rationOption.Liner;
 
         public EntityMove() { }
         public EntityMove(float time, float dx = 0, float dy = 0, float dw = 0, float dh = 0, float dtx = 0, float dty = 0
@@ -868,13 +907,14 @@ namespace Charamaker3.CharaModel
             cc.RP = this.RP;
             cc.degreeSpeedLimit = this.degreeSpeedLimit;
             cc.GO = this.GO;
-
+            cc.RatioOption = this.RatioOption;
         }
         public override DataSaver ToSave()
         {
             var res = base.ToSave();
             res.linechange();
             res.packAdd("GO", (int)GO);
+            res.packAdd("RatioOption", RatioOption);
             res.packAdd("_X", basespeeds[_X]);
             res.packAdd("_Y", basespeeds[_Y]);
             res.linechange();
@@ -902,6 +942,7 @@ namespace Charamaker3.CharaModel
             base.ToLoad(d);
 
             GO = (goOption)d.unpackDataF("GO");
+            RatioOption = d.unpackDataE<rationOption>("RatioOption", RatioOption);
             basespeeds[_X] = d.unpackDataF("_X");
             basespeeds[_Y] = d.unpackDataF("_Y");
 
@@ -1507,8 +1548,27 @@ namespace Charamaker3.CharaModel
                 }
                 else if (!instant)
                 {
-                    float speed = 1 / time;
-                    addDefference(speed * cl);
+                    switch (RatioOption)
+                    {
+                        case rationOption.Liner:
+                            {
+                                float speed = 1 / time;
+                                addDefference(speed * cl);
+                            }
+                            break;
+                        case rationOption.cos:
+                            {
+                                float pretimer = timer - cl;
+
+                                float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180) ) * -0.5f;
+                               
+                                addDefference(speed);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
                 }
             }
             base.onupdate(cl);
@@ -1703,7 +1763,9 @@ namespace Charamaker3.CharaModel
                     if (topmirrored && degree)
                     {
                         speeds[i][_MIRRORED] = 1;
+
                         a.degree = Mathf.st180(tagBases[i].degree - Mathf.st180(a.degree - tagBases[i].degree));
+
                     }
                 }
                 else if (goall)
@@ -1715,7 +1777,7 @@ namespace Charamaker3.CharaModel
                     if (topmirrored && degree)
                     {
                         speeds[i][_MIRRORED] = 1;
-                        a.degree = Mathf.st180(tagBases[i].degree - Mathf.st180(a.degree - tagBases[i].degree));
+
                     }
                 }
 
@@ -1772,6 +1834,7 @@ namespace Charamaker3.CharaModel
             {
                 mirrored = true;
                 enmirror(true);
+                
                 var ratio = 1;
                 for (int i = 0; i < tagBases.Count; i++)
                 {
@@ -1787,7 +1850,7 @@ namespace Charamaker3.CharaModel
         protected override void onupdate(float cl)
         {
             base.onupdate(cl);
-            if (!instant)
+            if (instant==false)
             {
                 if (!mirrored && timer > time / 2)
                 {
@@ -1800,7 +1863,7 @@ namespace Charamaker3.CharaModel
 
                 for (int i = 0; i < tagBases.Count; i++)
                 {
-                    if (speeds[i][_MIRRORED] == 1)
+                    //if (speeds[i][_MIRRORED] == 0)
                     {
                         var a = tags[i];
                         var xy = a.gettxy();
@@ -1814,6 +1877,7 @@ namespace Charamaker3.CharaModel
                             a.degree += speeds[i][_DEGREE] * ratio2;
                         }
                         a.settxy(xy);
+                       
                     }
                 }
                 degree += ddegree;
@@ -1826,8 +1890,7 @@ namespace Charamaker3.CharaModel
 
 
     /// <summary>
-    /// 値を直接的に変更するクラス。もう一つはmirrorのクラス。
-    /// TODO:mirror After 基準
+    /// 値を直接的に変更するクラス。
     /// </summary>
     public partial class DrawableMove : Component
     {
@@ -1857,6 +1920,7 @@ namespace Charamaker3.CharaModel
 
 
         protected changeOption CO = changeOption.difference;
+        rationOption RatioOption = rationOption.Liner;
 
         public DrawableMove() { }
         public DrawableMove(float time, float dz = 0, float dr = 0, float dg = 0, float db = 0, float dopa = 0, string texture = ""
@@ -1896,6 +1960,7 @@ namespace Charamaker3.CharaModel
             cc.zname = this.zname;
 
             cc.CO = this.CO;
+            cc.RatioOption = this.RatioOption;
             cc.GO = this.GO;
         }
         public override DataSaver ToSave()
@@ -1903,6 +1968,7 @@ namespace Charamaker3.CharaModel
             var res = base.ToSave();
             res.linechange();
             res.packAdd("GO", (goOption)GO);
+            res.packAdd("RatioOption", RatioOption);
             res.packAdd("_Z", basespeeds[_Z]);
             res.packAdd("_R", basespeeds[_R]);
             res.packAdd("_G", basespeeds[_G]);
@@ -1920,6 +1986,7 @@ namespace Charamaker3.CharaModel
             base.ToLoad(d);
 
             GO = d.unpackDataE<goOption>("GO", goOption.def);
+            RatioOption = d.unpackDataE<rationOption>("RatioOption", RatioOption);
             basespeeds[_Z] = d.unpackDataF("_Z");
             basespeeds[_R] = d.unpackDataF("_R");
             basespeeds[_G] = d.unpackDataF("_G");
@@ -2233,10 +2300,27 @@ namespace Charamaker3.CharaModel
         {
             if (cl > 0)
             {
-                if (!instant)
+                if (instant==false)
                 {
-                    float speed = 1 / time;
-                    addDefference(speed * cl);
+                    switch (RatioOption)
+                    {
+                        case rationOption.Liner:
+                            {
+                                float speed = 1 / time;
+                                addDefference(speed * cl);
+                            }
+                            break;
+                        case rationOption.cos:
+                            {
+                                float pretimer = timer - cl;
+
+                                float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180) ) * -0.5f;
+                                addDefference(speed);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             base.onupdate(cl);
@@ -2622,7 +2706,6 @@ namespace Charamaker3.CharaModel
                 tags[t].tx = (speeds[t][_TXS] + (speeds[t][_TXE] - speeds[t][_TXS]) * time) * Mathf.cos(nowX);
 
 
-
                 tags[t].h = (speeds[t][_SCY] + (speeds[t][_SCYE] - speeds[t][_SCY]) * time) * Mathf.cos(nowY);
                 tags[t].ty = (speeds[t][_TYS] + (speeds[t][_TYE] - speeds[t][_TYS]) * time) * Mathf.cos(nowY);
 
@@ -2699,8 +2782,8 @@ namespace Charamaker3.CharaModel
                     speeds[t][_SCX] = tags[t].w / Mathf.cos(speeds[t][_STX]);
                     speeds[t][_TXS] = tags[t].tx / Mathf.cos(speeds[t][_STX]);
 
-                    speeds[t][_SCXE] = speeds[t][_SCX] * Mathf.cos(speeds[t][_ENX]);
-                    speeds[t][_TXE] = speeds[t][_TXS] * Mathf.cos(speeds[t][_ENX]);
+                    speeds[t][_SCXE] = speeds[t][_SCX] * Math.Abs(Mathf.cos(speeds[t][_ENX]));
+                    speeds[t][_TXE] = speeds[t][_TXS] * Math.Abs(Mathf.cos(speeds[t][_ENX]));
                 }
                 speeds[t][_SCXE] = speeds[t][_SCXE] * (basespeeds[_SCX]);
                 speeds[t][_TXE] = speeds[t][_TXE] * (basespeeds[_SCX]);

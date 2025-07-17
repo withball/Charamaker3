@@ -327,7 +327,7 @@ namespace Charamaker3.CharaModel
 
             var res = Entity.make(x, y, w, h, w * tpx, h * tpy, 0, corename);
 
-            var c = new Character(new Joint(corename + "JOI", 0.5f, 0.5f, null, new List<Entity>()));
+            var c = new Character(new Joint(corename + "JOI", tpx, tpy, null, new List<Entity>()));
 
 
             var t = new Texture(z, new ColorC(1, 1, 1, 1), new Dictionary<string, string> { { "def", tex } });
