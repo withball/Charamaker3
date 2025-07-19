@@ -55,6 +55,18 @@ namespace Charamaker
             charamaker.display.removeCamera(cam);
             cam = Component.ToPointer(charamaker.display.makeCamera(new ColorC(0, 0, 0, 0)));
             cam.c.watchRect.add(w);
+
+            {
+                var e = Entity.make2(0, 0, 10000, 10, 0.5f, 0.5f);
+                new DRectangle(0, new ColorC(1, 0, 0, 0.5f)).add(e);
+                e.add(w);
+            }
+            {
+                var e = Entity.make2(0, 0, 10, 10000, 0.5f, 0.5f);
+                new DRectangle(0, new ColorC(1, 0, 0, 0.5f)).add(e);
+                e.add(w);
+            }
+            // new DRectangle(-99999999,new ColorC(1,0,0,0.5f)).add(cam.c.watchRect);
         }
 
         private void AnimeEditor_Load(object sender, EventArgs e)
@@ -75,7 +87,7 @@ namespace Charamaker
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
             MessageBox.Text += d.Replace("\n", Environment.NewLine);
             MessageBox.Text += Environment.NewLine + "******************************" + Environment.NewLine;
-            MessageBox.Text += "StartTime,TargetName,CommandName,AddCl=0:引数,... でモーション系の関数を飛ばせる。" + Environment.NewLine;
+            MessageBox.Text += "StartTime,TargetName,CommandName,AddCl=0:引数,... でモーション系の関数を飛ばせる。" + Environment.NewLine + Environment.NewLine;
             {
                 var res = "";
                 string xml_file_path_ = @".\Charamaker3.xml";
@@ -165,6 +177,8 @@ namespace Charamaker
                         w.update(StartTimer);
 
                         BlockManager.update(w.staticEntity, StartTimer);
+                        w.update(0);
+                        FileMan.SE.stopAll();
 
 
                     }
@@ -180,14 +194,15 @@ namespace Charamaker
                 PlayTimeLabel.Text = BlockManager.Time + " / " + maxtime;
 
                 PlayTimeLabel.Text += " is playing";
-
-                TimeBar.Value = (int)(BlockManager.Time) * 2;
+                TimeBar.Value = (int)Mathf.min((float)(BlockManager.Time) * 2, (float)TimeBar.Maximum);
             }
             else
             {
                 timeLabel.Text = StartTimer + " / " + maxtime;
                 w.update(0);
                 BlockManager.update(w.staticEntity, 0);
+                w.update(0);
+                FileMan.SE.stopAll();
             }
             Tumiki.UpdateTumiki(BlockManager.Time,charamaker.km.GetCursourPoint(charamaker.cam, true));
             ScrollTimer.OnlyUpdate(1);
@@ -220,7 +235,9 @@ namespace Charamaker
 
         private void close(object sender, FormClosedEventArgs e)
         {
+            newWorld();
             charamaker.display.removeCamera(cam);
+            charamaker.OnControls();
         }
 
         /// <summary>
@@ -235,13 +252,12 @@ namespace Charamaker
             {
                 if (!started)
                 {
-                    var temp = FileMan.SE.volume;
-                    FileMan.SE.volume = 0;
                     anmDChanged();
 
                     w.update(StartTimer);
                     BlockManager.update(w.staticEntity, StartTimer);
-                    FileMan.SE.volume = temp;
+                    w.update(0);
+                    FileMan.SE.stopAll();
                 }
                 else
                 {
@@ -259,14 +275,18 @@ namespace Charamaker
                     anmDChanged(); 
                     w.update(StartTimer);
                     BlockManager.update(w.staticEntity, StartTimer);
+                    w.update(0);
+                    FileMan.SE.stopAll();
                     started = true;
                 }
+                charamaker.OffControls();
             }
             else
             {
                 TimeBar.Value = (int)(StartTimer) * 10;
                 PlayB.Text = "Start";
                 started = false;
+                charamaker.OnControls();
             }
         }
 
@@ -316,6 +336,7 @@ namespace Charamaker
     /// </summary>
     class AnimTumiki 
     {
+        AnimeBlockManager man = null;
         List<AnimBlock> AddedBlocks=new List<AnimBlock>();
         List<Character> BlockCharas = new List<Character>();
         List<Character> UIs = new List<Character>();
@@ -326,8 +347,10 @@ namespace Charamaker
         float Height = 0.01f;
 
         int Maxtumi = 0;
+        
         public void SetBlockManager(AnimeBlockManager man,Rectangle r,World w) 
         {
+            this.man = man;
             //Clear
             {
                 zone = r;
@@ -437,7 +460,7 @@ namespace Charamaker
             {
                 AddedBlocks.Add(InBlock);
                 float starttimer = InBlock.StartTime / MaxTime;
-                float blocktimer = (InBlock.BlockTime / MaxTime);
+                float blocktimer = (InBlock.GetBlockTime(man) / MaxTime);
 
                 var c = Character.MakeCharacter("redbit", 0, 0, 1, 0.0f, 1f, 0.5f).getCharacter();
                 DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(c.e, 100);
@@ -450,7 +473,7 @@ namespace Charamaker
                 var Text = Entity.make(0, 0, Height * moji, Height, Height * moji * 0.0f, Height * 1f, 0, "text");
                 c.addJoint(new Joint("TextJoi", 0.0f, 1f, c.e, new List<Entity> { Text }));
 
-                new Text(1,new ColorC(0,0,0,1), (InBlock.StartTime)+"@ "+InBlock.Gyo+" @"+(InBlock.StartTime+InBlock.BlockTime), new FontC(32,32*moji,32)).add(Text);
+                new Text(1,new ColorC(0,0,0,1), (InBlock.StartTime)+"@ "+InBlock.Gyo+" @"+(InBlock.StartTime+InBlock.GetBlockTime(man)), new FontC(32,32*moji,32)).add(Text);
                 new Texture(0.0f, new ColorC(1, 1, 1, 1), new Dictionary<string, string> { { "def", "whitebit" } }).add(Text);
 
                 c.SetBaseCharacter();

@@ -31,7 +31,12 @@ namespace Charamaker3
         /// <summary>
         /// グローバルボリューム。0＜＝＜＝1
         /// </summary>
-        public float volume { get { return _glovol; } set { _glovol = value; if (_glovol < 0) _glovol = 0; if (_glovol > 1) _glovol = 1; MV.SetVolume(_glovol); } }
+        public float volume { get { return _glovol; } 
+            set 
+            {
+                _glovol = value; if (_glovol < 0) _glovol = 0; if (_glovol > 1) _glovol = 1; MV.SetVolume(_glovol);
+            } 
+        }
         float _glovol = 1f;
 
         /// 読み込んだ音を保存しとく

@@ -427,12 +427,11 @@ namespace Charamaker3.CharaModel
             serif.SiroSiro = textSize / 8;
             DrawableMove.SetText(Time , "Text",Text).add(serif);
             
-            var c = new SummonSerif(Tag,serif,0);
+            var c = new SummonSerif(Tag,serif,0, Time + Jizoku);
             c.dxp = dxp;
             c.dyp = dyp;
             c.sizep = size;
             c.dz = -0.1f;
-            new LifeTimer(Time+Jizoku).add(serif);
             return c;
         }
         /// <summary>
@@ -464,12 +463,12 @@ namespace Charamaker3.CharaModel
 
             DrawableMove.SetText(Time, "Text", Text).add(serif);
 
-            var c = new SummonSerif(Tag, serif, 0);
+            var c = new SummonSerif(Tag, serif, 0,Time+Jizoku);
             c.dxp = dxp;
             c.dyp = dyp;
             c.sizep = size;
             c.dz = -0.1f;
-            new LifeTimer(Time + Jizoku).add(serif);
+
             return c;
         }
     }

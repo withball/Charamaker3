@@ -512,25 +512,227 @@ namespace Charamaker3.CharaModel
 
 
     }
-
+    /////////////////////////////////////////////////////////////////////////////////////////////////////
     public class AnimBlock
     {
+        protected Entity GetTarget(Entity e, string Target, string parts) 
+        {
+            if (e.world != null)
+            {
+                {
+                    var lis = e.world.Entities;
+                    // '/'で分解して、ひとつづつ奥へ潜っていく。初めはworldそれ以降はキャラクター。該当者なしなら何もせん。<-無くてよくね？
+
+                    var named = World.getNamedEntity(Target, lis);
+                    if (named.Count == 0)
+                    {
+                        Debug.WriteLine(ToString() + " Cant Find Target");
+                    }
+                    else
+                    {
+                        if (named.Count > 1)
+                        {
+                            Debug.WriteLine(ToString() + " TargetCOunter Over 2 now=" + named.Count);
+                        }
+                        foreach (var a in named)
+                        {
+                            var tag = a.getCharacter().getEntity(parts);
+                            if (tag == null)
+                            {
+                                Debug.WriteLine(ToString() + " Target Parts is null!");
+                            }
+                            else
+                            {
+                                return tag;
+                            }
+                        }
+                    }
+                }
+
+            }
+            return null;
+        }
+        /// <summary>
+        /// X座標を取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <param name="wari">=Nan で中心点</param>
+        /// <returns>__ANIM__</returns>
+        protected string GetX(Entity e, string Target, string parts, float wari = float.NaN)
+        {
+            var tag = GetTarget(e,Target,parts);
+            if (tag != null) 
+            {
+                return tag.gettxy(wari, wari).x.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// Y座標を取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <param name="wari">=Nan で中心点</param>
+        /// <returns>__ANIM__</returns>
+        protected string GetY(Entity e, string Target, string parts, float wari = float.NaN)
+        {
+            var tag = GetTarget(e, Target, parts);
+            if (tag != null)
+            {
+                return tag.gettxy(wari, wari).y.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 幅を取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <returns>__ANIM__</returns>
+        protected string GetW(Entity e, string Target, string parts)
+        {
+            var tag = GetTarget(e, Target, parts);
+            if (tag != null)
+            {
+                return tag.w.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 高さを取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <returns>__ANIM__</returns>
+        protected string GetH(Entity e, string Target, string parts)
+        {
+            var tag = GetTarget(e, Target, parts);
+            if (tag != null)
+            {
+                return tag.h.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 中心点Xを取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <returns>__ANIM__</returns>
+        protected string GetTX(Entity e, string Target, string parts)
+        {
+            var tag = GetTarget(e, Target, parts);
+            if (tag != null)
+            {
+                return tag.tx.ToString();
+            }
+            return "";
+        }
+
+        /// <summary>
+        /// 中心点Yを取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <returns>__ANIM__</returns>
+        protected string GetTY(Entity e, string Target, string parts)
+        {
+            var tag = GetTarget(e, Target, parts);
+            if (tag != null)
+            {
+                return tag.ty.ToString();
+            }
+            return "";
+        }
+
+
+        /// <summary>
+        /// 角度を取得
+        /// </summary>
+        /// <param name="Target"></param>
+        /// <param name="parts"></param>
+        /// <returns>__ANIM__</returns>
+        protected string GetDegree(Entity e, string Target, string parts)
+        {
+            var tag = GetTarget(e, Target, parts);
+            if (tag != null)
+            {
+                return tag.degree.ToString();
+            }
+            return "";
+        }
+
+
         /// <summary>
         /// Blockのコンポーネントを発射。する前にSetComponentしておくこと
         /// </summary>
         /// <param name="e"></param>
         /// <param name="time">現在の時間</param>
+        /// <param name="mng">マネージャー</param>
         /// <returns></returns>
-        public bool Add(Entity e, float time)
+        public bool Add(Entity e, float time,AnimeBlockManager mng)
         {
+            //変数処理はこっちに組み込む
+           
             if (AddComponent != null)
             {
                 //ここで発動。
                 if (time >= StartTime)
                 {
+                    {
+                        var d = new DataSaver(Script);
+                        string t = "";
+                        bool ok = true;
+                        switch (Command)
+                        {
+                            case "GetX":
+                                t = GetX(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','), d.splitOneDataF(2, float.NaN, ','));
+
+                                break;
+                            case "GetY":
+                                t = GetY(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','), d.splitOneDataF(2, float.NaN, ','));
+                                break;
+
+                            case "GetW":
+                                t = GetW(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','));
+                                break;
+
+                            case "GetH":
+                                t = GetH(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','));
+                                break;
+
+                            case "GetTX":
+                                t = GetTX(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','));
+                                return true;
+
+                            case "GetTY":
+                                t = GetTY(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','));
+                                break;
+
+                            case "GetDegree":
+                                t = GetDegree(e, d.splitOneDataS(0, "", ','), d.splitOneDataS(1, "", ','));
+                                break;
+                            default:
+                                ok = false;
+                                break;
+                        }
+                        if (ok == true)
+                        {
+                            mng.RegistVariable(Target, t);
+                            AddComponent = null;
+                            return true;
+                        }
+                    }
+
+
                     if (e.world != null)
                     {
-                        
+                        AddComponent = GetComponentData(mng);//replaceがあるのでもう一度設置
                         if (Target == "")
                         {
                             AddComponent.add(e, time - StartTime + AddCl);
@@ -604,33 +806,50 @@ namespace Charamaker3.CharaModel
         //Scalechange,"FirePic",10:10,1,1;  
 
         public Component AddComponent = null;
-        public float BlockTime { get
+        public float GetBlockTime(AnimeBlockManager mng)
+        {
+            var tcomp = AddComponent;
+            if (tcomp == null)
             {
-                var tcomp = AddComponent;
-                if (tcomp == null) 
-                {
-                    tcomp = GetComponentData();
-                }
-                var res = tcomp.time;
-                if (Mathf.isSubClassOf(tcomp.GetType(), typeof(SummonEntity)))
-                {
-                    res += ((SummonEntity)tcomp).LifeTimer;
-                }
-                else if (Mathf.isSubClassOf(tcomp.GetType(), typeof(SummonCharacter)))
-                {
-                    res += ((SummonCharacter)tcomp).LifeTime;
-                }
-                else if(Mathf.isSubClassOf(tcomp.GetType(), typeof(Motion)))
-                {
-                    res /= ((Motion)tcomp).speed;
-                }
-                    return res;
+                tcomp = GetComponentData(mng);
             }
+            if (tcomp == null)
+            {
+                return 0;
+            }
+            var res = tcomp.time;
+            if (Mathf.isSubClassOf(tcomp.GetType(), typeof(SummonEntity)))
+            {
+                res += ((SummonEntity)tcomp).LifeTimer;
+            }
+            else if (Mathf.isSubClassOf(tcomp.GetType(), typeof(SummonCharacter)))
+            {
+                res += ((SummonCharacter)tcomp).LifeTime;
+            }
+            else if (Mathf.isSubClassOf(tcomp.GetType(), typeof(Motion)))
+            {
+                res /= ((Motion)tcomp).speed;
+            }
+            return res;
+
         }
 
-        public void SetAddComponent()
+        public void SetAddComponent(AnimeBlockManager mng)
         {
-            AddComponent = GetComponentData();
+            switch (Command)
+            {
+                case "GetX":
+                case "GetY":
+                case "GetW":
+                case "GetH":
+                case "GetTX":
+                case "GetTY":
+                case "GetDegree":
+                   AddComponent= new Component(0);
+                    mng.RegistVariable(Target, "");
+                    return ;
+            }
+            AddComponent = GetComponentData(mng);
         }
 
         /// <summary>
@@ -639,7 +858,7 @@ namespace Charamaker3.CharaModel
         /// <param name="funcname">関数の名前</param>
         /// <param name="d"></param>
         /// <returns>何もなかったら引数と同時に返される</returns>
-        protected virtual Component GetComponentData()
+        protected virtual Component GetComponentData(AnimeBlockManager mng)
         {
             Component resolve(MethodInfo methinfo)
             {
@@ -657,7 +876,19 @@ namespace Charamaker3.CharaModel
                     {
                         try
                         {
-                            var conved = conv.ConvertFrom(sp[i]);
+                            var st = sp[i];
+                            foreach (var a in mng.variables) 
+                            {
+                                float f;
+                                if (float.TryParse(a.Value,out f))
+                                {
+                                    st = st.Replace($"-@{a.Key}@", (-f).ToString());
+                                }
+                                st =st.Replace($"@{a.Key}@",a.Value);
+                                
+
+                            }
+                            var conved = conv.ConvertFrom(st);
                             args.Add(conved);
                         }
                         catch (Exception)
@@ -687,6 +918,7 @@ namespace Charamaker3.CharaModel
                 var comp = (Component)methinfo.Invoke(null, args.ToArray());
                 return comp;
             }
+         
             {
                 var t = typeof(AnimeBlockManager);
                 var methinfo = t.GetMethod(Command);
@@ -725,6 +957,7 @@ namespace Charamaker3.CharaModel
             }
             return new Component();
         }
+
 
 
 
@@ -841,6 +1074,8 @@ namespace Charamaker3.CharaModel
         }
 
 
+
+
         /// <summary>
         /// 即席のキャラクターを召喚する。textureは"core"に追加される
         /// </summary>
@@ -858,6 +1093,9 @@ namespace Charamaker3.CharaModel
 
         List<AnimBlock> _Blocks=new List<AnimBlock>();
         public List<AnimBlock> Blocks { get { return new List<AnimBlock>(_Blocks); } }
+
+        public Dictionary<string, string> variables = new Dictionary<string, string>();
+
         /// <summary>
         /// StartTime,TargetName,CommandName:引数
         /// でモーション系の関数を飛ばせる。
@@ -895,7 +1133,7 @@ namespace Charamaker3.CharaModel
 
         }
         /// <summary>
-        /// 開始処理。ブロックを全部リセット
+        /// 開始処理。ブロック・変数を全部リセット
         /// </summary>
         public void Start() 
         {
@@ -903,11 +1141,11 @@ namespace Charamaker3.CharaModel
             MaxTime = 0;
             foreach (var a in _Blocks)
             {
-                a.SetAddComponent();
+                a.SetAddComponent(this);
 
-                MaxTime = Math.Max(a.BlockTime + a.StartTime, MaxTime);
+                MaxTime = Math.Max(a.GetBlockTime(this) + a.StartTime, MaxTime);
             }
-        
+            variables.Clear();
         }
 
 
@@ -930,13 +1168,23 @@ namespace Charamaker3.CharaModel
             _Time += cl;
             foreach (var a in _Blocks)
             {
-                if (a.Add(ManageEntity, _Time))
+                if (a.Add(ManageEntity, _Time,this))
                 {
-                   Debug.WriteLine(_Time+" Block Invoked!!:" + a.ToString());
+               //    Debug.WriteLine(_Time+" Block Invoked!!:" + a.ToString());
                 }
             }
         }
-
+        public void RegistVariable(string name,string value) 
+        {
+            if (variables.ContainsKey(name) == false)
+            {
+                variables.Add(name, value);
+            }
+            else 
+            {
+                variables[name] = value;
+            }
+        }
 
         public string ToString() 
         {

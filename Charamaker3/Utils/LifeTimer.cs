@@ -210,8 +210,9 @@ namespace Charamaker3.Utils
         /// <param name="tag">召喚に対応した部位</param>
         /// <param name="summonentity"></param>
         /// <param name="time"></param>
+        /// <param name="lifetime"></param>
         /// <param name="name"></param>
-        public SummonSerif(string tag,Serif summonentity, float time, string name = "") : base(summonentity, time,name)
+        public SummonSerif(string tag, Serif summonentity, float time, float lifetime ,string name = "") : base(summonentity, time,name,lifetime)
         {
             this.tag = tag;
         }

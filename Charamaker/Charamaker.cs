@@ -20,6 +20,27 @@ namespace Charamaker
         Texture SLP, TXYP;
         DataSaver save;
 
+        public void OffControls() 
+        {
+            foreach (var a in this.Controls) 
+            {
+                if (Mathf.isSubClassOf(a.GetType(), typeof(Control)))
+                {
+                    ((Control)a).Hide();
+                }
+            }
+        }
+
+        public void OnControls()
+        {
+            foreach (var a in this.Controls)
+            {
+                if (Mathf.isSubClassOf(a.GetType(), typeof(Control)))
+                {
+                    ((Control)a).Show();
+                }
+            }
+        }
 
         public Charamaker()
         {
