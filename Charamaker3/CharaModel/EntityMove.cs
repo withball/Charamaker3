@@ -41,6 +41,25 @@ namespace Charamaker3.CharaModel
             return new FreeEventer(time, eventName);
         }
 
+        /// <summary>
+        /// SetTXYをするムーブ
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">座標の参照パーツ=""</param>
+        /// <param name="SetX">=0</param>
+        /// <param name="SetY">=0</param>
+        /// <param name="Txp">割合=Nan</param>
+        /// <param name="Typ">割合=Nan</param>
+        /// <returns>__MOVE__</returns>
+        static public SetTXYMove SetTXY(float time, string name = "", float SetX = 0, float SetY = 0, float Txp = float.NaN, float Typ = float.NaN)
+        {
+            SetTXYMove res;
+
+            res = new SetTXYMove(time,name,SetX,SetY,Txp,Typ);
+
+            return res;
+        }
+
         //res.addmove(,False);
         /// <summary>
         /// XYDに動かすムーブ
@@ -411,18 +430,20 @@ namespace Charamaker3.CharaModel
         /// <param name="dyp">場所</param>
         /// <param name="size">吹き出しの大きさ割合</param>
         /// <param name="Text">テキスト</param>
+        /// <param name="name">=""</param>
         /// <returns>__MOVE__</returns>
-        static public Component MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text) 
+        static public Component MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text,string name="") 
         {
             float textSize = 16;
 
             var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
             var f = new FontC(textSize, textSize * 15, textSize * 3);
-            f.ali = FontC.alignment.left;
-            f.aliV = FontC.alignment.left;
+            f.ali = FontC.alignment.center;
+            f.aliV = FontC.alignment.right;
             var fd=f.ToSave();
             var t=new Text(0,new ColorC(0,0,0,1),"",f);
             var serif=Charamaker3.Utils.Serif.MakeSerif(e, t);//
+            serif.name = name;
             serif.WakuHaba = textSize / 8;
             serif.SiroSiro = textSize / 8;
             DrawableMove.SetText(Time , "Text",Text).add(serif);
@@ -444,22 +465,25 @@ namespace Charamaker3.CharaModel
         /// <param name="dyp">場所</param>
         /// <param name="size">吹き出しの大きさ割合</param>
         /// <param name="FPText">FPから読み込むテキスト</param>
+        /// <param name="name">=""</param>
         /// <returns>__MOVE__</returns>
-        static public Component MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText)
+        static public Component MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText, string name = "")
         {
+            string Text = FP.l.GT(FPText);
+
             float textSize = 16;
 
             var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
             var f = new FontC(textSize, textSize * 15, textSize * 3);
-            f.ali = FontC.alignment.left;
-            f.aliV = FontC.alignment.left;
+            f.ali = FontC.alignment.center;
+            f.aliV = FontC.alignment.right;
             var fd = f.ToSave();
             var t = new Text(0, new ColorC(0, 0, 0, 1), "", f);
             var serif = Charamaker3.Utils.Serif.MakeSerif(e, t);//
+            serif.name= name;
             serif.WakuHaba = textSize / 8;
             serif.SiroSiro = textSize / 8;
 
-            string Text = FP.l.GT(FPText);
 
             DrawableMove.SetText(Time, "Text", Text).add(serif);
 
@@ -1637,6 +1661,166 @@ namespace Charamaker3.CharaModel
 
     }
 
+    public class SetTXYMove :Component
+    {
+        string tag="";
+        List<float[]> speeds = new List<float[]>();
+        List<Entity> tags = new List<Entity>();
+
+        float[] basespeeds = new float[4];
+
+        const int _X = 0;
+        const int _Y = 1;
+        const int _TPX = 2;
+        const int _TPY = 3;
+        bool instant { get { return time <= 0; } }
+
+        rationOption RatioOption = rationOption.Liner;
+
+        public SetTXYMove(float time, string tag, float x, float y, float tpx=float.NaN, float tpy = float.NaN) : base(time) 
+        {
+            basespeeds[_X] = x;
+            basespeeds[_Y] = y;
+            basespeeds[_TPX] = tpx;
+            basespeeds[_TPY] = tpy;
+
+            if (time == 0)
+            {
+            }
+            else if (time < 0)
+            {
+                Debug.WriteLine("このコンポーネントはtime<0じゃダメなので勝手に0にしました♡");
+                this.time = 0;
+            }
+            else
+            {
+
+            }
+        }
+
+        public override void copy(Component c)
+        {
+            var cc = (SetTXYMove)c;
+            base.copy(c);
+            for (int i = 0; i < basespeeds.Length; i++)
+            {
+                cc.basespeeds[i] = this.basespeeds[i];
+            }
+            cc.RatioOption = this.RatioOption;
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.linechange();
+            res.packAdd("RatioOption", RatioOption);
+            res.packAdd("_X", basespeeds[_X]);
+            res.packAdd("_Y", basespeeds[_Y]); 
+            res.packAdd("_TPX", basespeeds[_TPX]);
+            res.packAdd("_TPY", basespeeds[_TPY]);
+
+            return res;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+
+            RatioOption=d.unpackDataE<rationOption>("RatioOption", RatioOption);
+            basespeeds[_X] = d.unpackDataF("_X", basespeeds[_X]);
+            basespeeds[_Y] = d.unpackDataF("_Y", basespeeds[_Y]);
+            basespeeds[_TPX] = d.unpackDataF("_TPX", basespeeds[_TPX]);
+            basespeeds[_TPY] = d.unpackDataF("_TPY", basespeeds[_TPY]);
+
+
+        }
+
+        protected virtual void addDefference(float ratio)
+        {
+            for (int t = 0; t < tags.Count; t++)
+            {
+                tags[t].x += (float)(speeds[t][_X] * ratio);
+                tags[t].y += (float)(speeds[t][_Y] * ratio);
+
+            }
+
+        }
+        protected override void onadd(float cl)
+        {
+            tags.Clear();
+            speeds.Clear();
+
+            //座標の参照
+            Entity sansyo = null;
+
+            tags.Add(e);
+
+            //characterから得るtag
+            var cs = e.getcompos<Character>();
+            if (cs.Count == 0)
+            {
+
+            }
+            else
+            {
+                var ee = e.getCharacter().getEntity(tag);
+                sansyo = ee;
+            }
+            if (sansyo == null)
+            {
+                speeds.Add(new float[2]);
+            }
+            else 
+            {
+                speeds.Add(new float[2]);
+
+                var fxy=sansyo.gettxy2(basespeeds[_TPX], basespeeds[_TPY]);
+                speeds[0][0] = basespeeds[0] - fxy.x;
+                speeds[0][1] = basespeeds[1] - fxy.y;
+            }
+
+            if (instant)
+            {
+                addDefference(1);
+            }
+            /*else
+            {
+                float speed = 1 / time;
+                addDefference(speed * cl);
+            }*/
+            base.onadd(cl);
+        }
+        protected override void onupdate(float cl)
+        {
+            if (cl > 0)
+            {
+                if (!instant)
+                {
+                    switch (RatioOption)
+                    {
+                        case rationOption.Liner:
+                            {
+                                float speed = 1 / time;
+                                addDefference(speed * cl);
+                            }
+                            break;
+                        case rationOption.cos:
+                            {
+                                float pretimer = timer - cl;
+
+                                float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180)) * -0.5f;
+
+                                addDefference(speed);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
+            }
+            base.onupdate(cl);
+
+        }
+    }
     public class EntityMirror : Component
     {
 

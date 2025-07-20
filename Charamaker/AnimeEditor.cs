@@ -27,20 +27,30 @@ namespace Charamaker
         float StartTimer = 0;
         float maxtime = 1;
         //AnimeLoader anm;
-        AnimeBlockManager BlockManager=new AnimeBlockManager(new DataSaver());
-        AnimTumiki Tumiki=new AnimTumiki();
+        AnimeBlockManager BlockManager = new AnimeBlockManager(new DataSaver());
+        AnimTumiki Tumiki = new AnimTumiki();
         public AnimeEditor(Charamaker c)
         {
             this.charamaker = c;
             InitializeComponent();
             cam = Component.ToPointer(charamaker.display.makeCamera(new ColorC(0, 0, 0, 0)));
             newWorld();
+
+            StartUD.Maximum = (decimal)charamaker.AnimStartTime;
+            StartUD.Value = (decimal)charamaker.AnimStartTime;
+            EndUD.Maximum = (decimal)charamaker.AnimEndTime;
+            EndUD.Value = (decimal)charamaker.AnimEndTime;
+
+            loadBox.Text = charamaker.LoadAnim;
+            LoadAnime(loadBox.Text);
+
+            
         }
-        void newWorld() 
+        void newWorld()
         {
 
             cam.c.watchRect.remove();
-            foreach (var a in FileMan.SoundEngines) 
+            foreach (var a in FileMan.SoundEngines)
             {
                 a.stopAll();
             }
@@ -80,7 +90,7 @@ namespace Charamaker
         public void SetText(string d)
         {
             MessageBox.Text = "";
-            foreach (var a in Debug.downMess()) 
+            foreach (var a in Debug.downMess())
             {
                 MessageBox.Text += a + Environment.NewLine;
             }
@@ -143,47 +153,52 @@ namespace Charamaker
             MessageBox.Text += new AnimeLoader(new DataSaver()).ToSave().getData().Replace("\n", Environment.NewLine);
 
         }
+        public void LoadAnime(string loadText)
+        {
+            var Truepath = FileMan.s_rootpath + @"animation/" + loadText + ".anm";
+            var path = @"animation/" + loadText;
 
+            if (!File.Exists(Truepath))
+            {
+                BlockManager = new AnimeBlockManager(new DataSaver());
+                //anm = new AnimeLoader(new DataSaver());
+            }
+            else
+            {
+
+                var info = new FileInfo(Truepath);
+                if (preinfo == null || DateTime.Compare(info.LastWriteTime, preinfo.LastWriteTime) > 0)
+                {
+                    //var anmD = DataSaver.loadFromPath(path, true, "");
+
+                    var blockD = DataSaver.loadFromPath(path, false, ".anm");
+                    //Debug.WriteLine("POI " + blockD.getData());
+                    //anm = new AnimeLoader(anmD);
+                    BlockManager = new AnimeBlockManager(blockD);
+                    //Debug.WriteLine(path+"Was "+BlockManager.ToString());
+                    preinfo = info;
+                    StartTimer = TimeBar.Value / 10f;
+
+                    anmDChanged();
+                    float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
+                    w.update(TrueStart);
+
+                    BlockManager.update(w.staticEntity, TrueStart);
+                    w.update(0);
+                    FileMan.SE.stopAll();
+
+
+                }
+            }
+        }
+        public void AfterDrawupdate() 
+        {
+            w.AfterDrawUpdate();
+        }
         private void tiked(object sender, EventArgs e)
         {
-            if (started == false)//始まってない場合読み込み
             {
-                var Truepath = FileMan.s_rootpath + @"animation/" + this.loadBox.Text + ".anm";
-                var path = @"animation/" + this.loadBox.Text;
-
-                if (!File.Exists(Truepath))
-                {
-                    BlockManager = new AnimeBlockManager(new DataSaver());
-                    //anm = new AnimeLoader(new DataSaver());
-                }
-                else
-                {
-
-                    var info = new FileInfo(Truepath);
-                    if (preinfo == null || DateTime.Compare(info.LastWriteTime, preinfo.LastWriteTime) > 0)
-                    {
-                        //var anmD = DataSaver.loadFromPath(path, true, "");
-
-                        var blockD = DataSaver.loadFromPath(path, false, ".anm");
-                        //Debug.WriteLine("POI " + blockD.getData());
-                        //anm = new AnimeLoader(anmD);
-                        BlockManager = new AnimeBlockManager(blockD);
-                        //Debug.WriteLine(path+"Was "+BlockManager.ToString());
-                        preinfo = info;
-                        StartTimer = TimeBar.Value / 10f;
-
-                        anmDChanged();
-
-                        w.update(StartTimer);
-
-                        BlockManager.update(w.staticEntity, StartTimer);
-                        w.update(0);
-                        FileMan.SE.stopAll();
-
-
-                    }
-                }
-
+                LoadAnime(this.loadBox.Text);
             }
             if (started)
             {
@@ -195,6 +210,17 @@ namespace Charamaker
 
                 PlayTimeLabel.Text += " is playing";
                 TimeBar.Value = (int)Mathf.min((float)(BlockManager.Time) * 2, (float)TimeBar.Maximum);
+
+                if (BlockManager.Time > (float)EndUD.Value)
+                {
+                    anmDChanged();
+                    float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
+
+                    w.update(TrueStart);
+                    BlockManager.update(w.staticEntity, TrueStart);
+                    w.update(0);
+                    FileMan.SE.stopAll();
+                }
             }
             else
             {
@@ -204,7 +230,7 @@ namespace Charamaker
                 w.update(0);
                 FileMan.SE.stopAll();
             }
-            Tumiki.UpdateTumiki(BlockManager.Time,charamaker.km.GetCursourPoint(charamaker.cam, true));
+            Tumiki.UpdateTumiki(BlockManager.Time, charamaker.km.GetCursourPoint(charamaker.cam, true));
             ScrollTimer.OnlyUpdate(1);
         }
         void anmDChanged()
@@ -214,15 +240,19 @@ namespace Charamaker
 
             //maxtime = Mathf.max(Mathf.abs(d.unpackDataF("maxtime")),1);
             BlockManager.Start();
-            
-            maxtime = BlockManager.MaxTime*4;
+
+            maxtime = BlockManager.MaxTime;
+
+            StartUD.Maximum = (decimal)maxtime;
+            EndUD.Maximum = (decimal)maxtime;
+
             {
-                TimeBar.Maximum = (int)(maxtime * 10);
+                TimeBar.Maximum = (int)(maxtime);
             }
 
-            var st = charamaker.cam.watchRect.gettxy2(0.1f, 0.75f);
-            var ed = charamaker.cam.watchRect.gettxy2(0.5f, 0.89f);
-            Tumiki.SetBlockManager(BlockManager, new Rectangle(st.x, st.y, (ed - st).x, (ed - st).y),charamaker.w);
+            var st = charamaker.cam.watchRect.gettxy2(0.05f, 0.75f);
+            var ed = charamaker.cam.watchRect.gettxy2(0.95f, 0.95f);
+            Tumiki.SetBlockManager(BlockManager, new Rectangle(st.x, st.y, (ed - st).x, (ed - st).y), charamaker.w);
 
 
             Debug.WriteLine("animchange!");
@@ -244,10 +274,10 @@ namespace Charamaker
         /// <summary>
         /// バーをスクロールしてめっちゃ変更かかるとうるさいから
         /// </summary>
-        SuperTimer ScrollTimer = new SuperTimer(20,20);
+        SuperTimer ScrollTimer = new SuperTimer(0, 0);
         private void TimeBar_Scroll(object sender, EventArgs e)
         {
-            StartTimer = TimeBar.Value / 10f;
+            StartTimer = TimeBar.Value;
             timeLabel.Text = StartTimer + " / " + maxtime;
             if (ScrollTimer.OnlyGet())
             {
@@ -269,13 +299,15 @@ namespace Charamaker
 
         private void PlayB_Click(object sender, EventArgs e)
         {
-            if (!started )
+            if (!started)
             {
                 PlayB.Text = "Stop";
                 {
-                    anmDChanged(); 
-                    w.update(StartTimer);
-                    BlockManager.update(w.staticEntity, StartTimer);
+                    anmDChanged();
+
+                    float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
+                    w.update(TrueStart);
+                    BlockManager.update(w.staticEntity, TrueStart);
                     w.update(0);
                     FileMan.SE.stopAll();
                     started = true;
@@ -339,6 +371,35 @@ namespace Charamaker
                 // text += anm.Check3();
                 SetText(text);
             }
+        }
+
+        private void PlayTimeLabel_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ResetDataB_Click(object sender, EventArgs e)
+        {
+            charamaker.ResetLoadDatas();
+        }
+
+        private void loadBox_TextChanged(object sender, EventArgs e)
+        {
+            charamaker.LoadAnim = loadBox.Text;
+            charamaker.Save();
+        }
+
+        private void StartUD_ValueChanged(object sender, EventArgs e)
+        {
+            charamaker.AnimStartTime = (float)StartUD.Value;
+            charamaker.Save();
+        }
+
+        private void EndUD_ValueChanged(object sender, EventArgs e)
+        {
+
+            charamaker.AnimEndTime = (float)EndUD.Value;
+            charamaker.Save();
         }
     }
     /// <summary>

@@ -166,6 +166,18 @@ namespace Charamaker3
 
 
         }
+
+        /// <summary>
+        /// フレームを更新する
+        /// </summary>
+        /// <param name="cl"></param>
+        virtual public void AfterDrawUpdate()
+        {
+            foreach (var a in getEdic())
+            {
+                a.AfterDrawUpdate();
+            }
+        }
         /// <summary>
         /// 当たり判定を一フレーム前のものとする。
         /// </summary>

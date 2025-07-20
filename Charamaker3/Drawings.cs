@@ -1544,6 +1544,15 @@ namespace Charamaker3
             Trender.SetRayout(text, font);
         }
 
+        /// <summary>
+        /// 描画のレイアウトを、Trenderを取得しているならセットする
+        /// </summary>
+        internal void SetRayout() 
+        {
+
+            Trender?.SetRayout(text, font);
+        }
+
         public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
             MakeTrender(cam.d);

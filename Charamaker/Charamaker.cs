@@ -51,6 +51,9 @@ namespace Charamaker
                 LastLoad = save.unpackDataS("LastLoad", @"yoshino");
 
                 MotionString = save.unpackDataS("MotionString", "");
+                LoadAnim = save.unpackDataS("LoadAnim", LoadAnim);
+                AnimStartTime = save.unpackDataF("AnimStartTime", AnimStartTime);
+                AnimEndTime = save.unpackDataF("AnimEndTime",AnimEndTime);
                 Debug.WriteLine("SaveData " + save.getData());
                 ChangeRootpath(save.unpackDataS("rootpath", @".\"));
                 LoadCharacter(save.unpackDataS("LastLoad", @"yoshino"));
@@ -58,8 +61,7 @@ namespace Charamaker
 
             ClientSize = BaseSize;
 
-            FP.l.seting(textsn: new List<string> { @"texts\text.txt" });
-            FP.SetDefault(FP.l);//呼び出し元のFPを読み込む
+
 
             inp = new NameInput(km);
             inp.Bind("CamSlide", new IButton(MouseButtons.XButton1));
@@ -76,6 +78,8 @@ namespace Charamaker
 
             cam = display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
             cam.watchRect.add(w);
+            
+            ResetLoadDatas();
             /*
             if (Directory.Exists(@".\character"))
             {
@@ -168,9 +172,13 @@ namespace Charamaker
 
 
             float cl = SpeedBar.Value / (float)SpeedBar.Maximum;
+
             w.update(cl);
 
             display.draw(cl);
+
+            w.AfterDrawUpdate();
+            anmE?.AfterDrawupdate();
 
             moveCamera();
             moveSelected();
@@ -568,8 +576,11 @@ namespace Charamaker
 
         }
 
-        public AnimeEditor anmE;
+        public AnimeEditor anmE=null;
 
+        public string LoadAnim="";
+        public float AnimStartTime =0;
+        public float AnimEndTime =10000;
         private void animationB_Click(object sender, EventArgs e)
         {
             if (anmE == null || anmE.Visible == false)
@@ -631,6 +642,10 @@ namespace Charamaker
             save.packAdd("LastLoad", LastLoad);
             save.packAdd("MotionString", MotionString);
 
+            save.packAdd("LoadAnim", LoadAnim);
+            save.packAdd("AnimStartTime", AnimStartTime);
+            save.packAdd("AnimEndTime", AnimEndTime);
+
             var temp = FileMan.s_rootpath;
             FileMan.s_rootpath = "./";
             save.saveToPath(@"CharamakerSave");
@@ -651,10 +666,20 @@ namespace Charamaker
                 Select();
             }
         }
+        /// <summary>
+        /// いろいろデータをリセットする
+        /// </summary>
+        public void ResetLoadDatas() 
+        {
+            FP.l.seting(textsn: new List<string> { @"texts\text.txt" });
+            FP.SetDefault(FP.l);//呼び出し元のFPを読み込む
+            FileMan.LoadedDS.Clear();
 
+            cam.d.setupTextureLoader();
+        }
         private void ResetTextureB_Click(object sender, EventArgs e)
         {
-            cam.d.setupTextureLoader();
+            ResetLoadDatas();
         }
 
         private void ForceMirrorButton_Click(object sender, EventArgs e)

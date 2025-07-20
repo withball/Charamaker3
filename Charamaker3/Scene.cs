@@ -53,6 +53,12 @@ namespace Charamaker3
         /// </summary>
         public event EventHandler<float> onUpdates;
 
+
+        /// <summary>
+        /// frameの際に呼び出される
+        /// </summary>
+        public event EventHandler<float> onAfterDrawUpdate;
+
         /// <summary>
         /// SceneManager
         /// </summary>
@@ -129,13 +135,19 @@ namespace Charamaker3
         /// 画面の描画。
         /// </summary>
         /// <param name="cl">クロック時間</param>
-        /// <param name="OnDraw">画面の描画を行うか</param>
+        /// <param name="OnDraw">画面の描画を行うか(しない場合、AfterDrawUpdateを呼び出すこと)</param>
         virtual public void Update(float cl=1,bool OnDraw=true)
         {
             if (started)
             {
-                if (OnDraw) sc.display.draw(cl);
                 onUpdate(cl);
+
+                if (OnDraw)
+                {
+                    sc.display.draw(cl);
+                    onAfterDrawUpadete();
+
+                }
             }
         }
         /// <summary>
@@ -146,6 +158,15 @@ namespace Charamaker3
         {
             onUpdates?.Invoke(this, cl);
             wol.update(cl);
+        }
+
+        /// <summary>
+        /// updateでついでに描画しない場合、呼び出す！！！
+        /// </summary>
+        virtual public void onAfterDrawUpadete()
+        {
+            onAfterDrawUpdate?.Invoke(this, 0);
+            wol.AfterDrawUpdate();
         }
         /// <summary>
         /// 標準はnextをスタートしてstartedをfalseにするだけ。

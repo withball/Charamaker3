@@ -162,7 +162,7 @@ namespace Charamaker3.Utils
             var summons = summon;
 
             onSummon?.Invoke(this, summons);
-            if (float.IsNaN(dxp) == false)
+            if (float.IsNaN(sizep) == false)
             {
                 float motosize = (summon.w + summon.h) / 2;
                 if (motosize != 0)
@@ -176,11 +176,11 @@ namespace Charamaker3.Utils
             FXY setxy = summon.gettxy();
             if (float.IsNaN(dxp) == false)
             {
-                setxy.x = e.gettxy().x + e.gettxy2(dxp, 0).x - e.gettxy2().x;
+                setxy.x = e.gettxy2(dxp, 0).x + (e.gettxy2().x - e.gettxy2(0,0).x);
             }
             if (float.IsNaN(dyp) == false)
             {
-                setxy.y = e.gettxy().y + e.gettxy2(0, dyp).y - e.gettxy2().y;
+                setxy.y = e.gettxy2(0, dyp).y + (e.gettxy2().y - e.gettxy2(0, 0).y);
             }
             summon.settxy(setxy);
             if(float.IsNaN(dz) == false)
@@ -318,19 +318,15 @@ namespace Charamaker3.Utils
         {
             base.onremove(cl);
             var c = FileMan.ldCharacter(charaPath);
-            EntityMove.ScaleChange(10, "", scale, scale).add(c.e,100);
-            EntityMove.ScaleChange(10, "", scale, scale).add(c.BaseCharacter.e, 100);
 
             new Utils.LifeTimer(LifeTime,"").add(c.e);
 
-            c.e.name = charaName;
-            c.BaseCharacter.e.name = charaName;
 
             c.e.settxy(0, 0);
             
             onSummon?.Invoke(this, c.e);
 
-            c.SetBaseCharacter();
+            Character.SetupCharacter(c.e, charaName,scale,1,1);
 
             c.e.add(world);
             c.e.update(cl);
@@ -640,6 +636,9 @@ namespace Charamaker3.Utils
         public float SiroSiro = 4;
 
         public Entity Target=null;
+
+        bool CanRend = true;
+
         /// <summary>
         /// 
         /// </summary>
@@ -647,7 +646,7 @@ namespace Charamaker3.Utils
         /// <param name="t">セリフのテキスト</param>
         /// <param name="dis">表示するディスプレー(初期化に使う。)</param>
         /// <returns></returns>
-        static public Serif MakeSerif(Entity e,Text t,Display dis=null) 
+        static public Serif MakeSerif(Entity e, Text t, Display dis = null)
         {
             var res = new Serif();
             e.copy(res);
@@ -678,21 +677,31 @@ namespace Charamaker3.Utils
             c.addJoint(new Joint("TextJoi", 0.5f, 0.5f, null, new List<Entity> { Text }));
             c.addJoint(new Joint("BodyJoi", 0.0f, 0.0f, Text, new List<Entity> { Body }));
             c.addJoint(new Joint("WakuJoi", 0.0f, 0.0f, Text, new List<Entity> { Waku }));
-            c.addJoint(new Joint("TagJoi", 0.0f, 0.0f, Text, new List<Entity> { WTag,BTag }));
+            c.addJoint(new Joint("TagJoi", 0.0f, 0.0f, Text, new List<Entity> { WTag, BTag }));
+
+            EntityMove.ScaleChange(10, "", 10, 10).addAndRemove(Body, 100);
+            EntityMove.ScaleChange(10, "", 10, 10).addAndRemove(Waku, 100);
+            EntityMove.ScaleChange(10, "", 10, 10).addAndRemove(WTag, 100);
+            EntityMove.ScaleChange(10, "", 10, 10).addAndRemove(BTag, 100);
 
             c.add(res);
             c.assembleCharacter();
             c.SetBaseCharacter();
 
-            if (dis != null) 
+            if (dis != null)
             {
                 t.MakeTrender(dis);
             }
+            else 
+            {
+                res.CanRend = false;
+                DrawableMove.BaseColorChange(10,"",0).addAndRemove(res,100);
+            }
 
-            return res;
+                return res;
         }
 
-        public override void update(float cl)
+        protected void SetSerifWaku() 
         {
             var t = Text;
             var te = TextE;
@@ -703,7 +712,12 @@ namespace Charamaker3.Utils
             var Wtge = WTagE;
             var Btge = BTagE;
             var tgj = TagJ;
-            if (t.Right != 0)
+
+            if (CanRend) 
+            {
+                Text.SetRayout();
+            }
+            if (t.Right != 0 && CanRend)
             {
                 be.w = Math.Max(te.w * t.Right, te.h * t.Bottom) + SiroSiro * 2;
                 we.w = be.w + (WakuHaba) * 2;
@@ -711,20 +725,20 @@ namespace Charamaker3.Utils
                 {
                     case FontC.alignment.left:
 
-                        bj.px = 0; 
-                        wj.px = 0; 
+                        bj.px = 0;
+                        wj.px = 0;
 
                         be.tx = SiroSiro;
-                        we.tx = WakuHaba+SiroSiro;
+                        we.tx = WakuHaba + SiroSiro;
                         break;
                     case FontC.alignment.center:
 
-                        bj.px = 0.5f; 
-                        wj.px = 0.5f; 
+                        bj.px = 0.5f;
+                        wj.px = 0.5f;
 
                         be.tx = be.w / 2;//+ SiroSiro;
                         we.tx = we.w / 2;// + WakuHaba + SiroSiro * 2;
-                     
+
 
                         break;
                     case FontC.alignment.right:
@@ -741,15 +755,15 @@ namespace Charamaker3.Utils
                 {
                     case FontC.alignment.left:
                         bj.py = 0; wj.py = 0;
-                        be.ty = SiroSiro; we.ty = WakuHaba +SiroSiro;
+                        be.ty = SiroSiro; we.ty = WakuHaba + SiroSiro;
                         break;
                     case FontC.alignment.center:
                         bj.py = 0.5f; wj.py = 0.5f;
-                        be.ty = be.h / 2 ; we.ty = we.h / 2 ;
+                        be.ty = be.h / 2; we.ty = we.h / 2;
                         break;
                     case FontC.alignment.right:
                         bj.py = 1.0f; wj.py = 1.0f;
-                        be.ty = be.h - SiroSiro; we.ty = we.h - (WakuHaba+SiroSiro);
+                        be.ty = be.h - SiroSiro; we.ty = we.h - (WakuHaba + SiroSiro);
                         break;
                     case FontC.alignment.None:
                         break;
@@ -762,7 +776,7 @@ namespace Charamaker3.Utils
                 be.h = 0;
                 we.h = 0;
             }
-
+            getCharacter().assembleCharacter();
 
             if (Target != null && t.Right != 0)
             {
@@ -770,14 +784,14 @@ namespace Charamaker3.Utils
                 dxy.length -= Target.bigs / 2;
 
                 Wtge.w = dxy.length;
-                Wtge.h = Mathf.min(Mathf.sqrt(we.w * we.w / 4 + we.h * we.h / 4), we.w, we.h)*0.75f;
+                Wtge.h = Mathf.min(Mathf.sqrt(we.w * we.w / 4 + we.h * we.h / 4), we.w, we.h) * 0.75f;
 
                 Wtge.tx = Wtge.h / 2 * 0;
                 Wtge.ty = Wtge.h / 2;
                 Wtge.degree = dxy.degree;
 
                 Btge.w = dxy.length - WakuHaba;
-                Btge.h = Wtge.h - WakuHaba*2;
+                Btge.h = Wtge.h - WakuHaba * 2;
 
                 Btge.tx = Btge.h / 2 * 0;
                 Btge.ty = Btge.h / 2;
@@ -801,7 +815,7 @@ namespace Charamaker3.Utils
                         tgj.py = 0.5f;
                         break;
                     case FontC.alignment.right:
-                        tgj.py = 1-t.Bottom / 2;
+                        tgj.py = 1 - t.Bottom / 2;
                         break;
                 }
             }
@@ -813,9 +827,28 @@ namespace Charamaker3.Utils
                 Btge.w = 0;
                 Btge.h = 0;
             }
-           
-            base.update(cl);
+            getCharacter().assembleCharacter();
         }
+
+        public override void update(float cl)
+        {
+
+
+
+            base.update(cl);
+            SetSerifWaku(); SetSerifWaku();
+        }
+        public override void AfterDrawUpdate()
+        {
+            //TODO:初Frameのとき、おかしくなるので透明にして解除する仕組み
+            if (CanRend == false)
+            {
+                DrawableMove.BaseColorChange(10, "", 1).addAndRemove(this, 100);
+                CanRend = true;
+            }
+            base.AfterDrawUpdate();
+        }
+       
         public override DataSaver ToSave()
         {
             var res = base.ToSave();

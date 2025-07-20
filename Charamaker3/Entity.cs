@@ -424,6 +424,18 @@ namespace Charamaker3
                 a.update(cl);
             }
         }
+
+        /// <summary>
+        /// 描画後のアップデート
+        /// </summary>
+        virtual public void AfterDrawUpdate()
+        {
+            var lis = components;
+            foreach (var a in lis)
+            {
+                a.AfterDrawUpdate();
+            }
+        }
         public bool remove()
         {
             if (added)
@@ -757,6 +769,13 @@ namespace Charamaker3
         /// アップデート
         /// </summary>
         public event EventHandler<float> updated;
+
+
+        /// <summary>
+        /// アップデート
+        /// </summary>
+        public event EventHandler<float> AfterDrawUpdated;
+
         /// <summary>
         /// 好きに使える奴
         /// </summary>
@@ -957,6 +976,15 @@ namespace Charamaker3
         virtual protected void onupdate(float cl) 
         {
             updated?.Invoke(e,cl);
+        }
+
+
+        /// <summary>
+        /// 描画の後のアップデート
+        /// </summary>
+        virtual public void AfterDrawUpdate()
+        {
+            AfterDrawUpdated?.Invoke(e, 0);
         }
 
         virtual public bool remove(float cl=0) 
