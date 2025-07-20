@@ -58,12 +58,12 @@ namespace Charamaker
 
             {
                 var e = Entity.make2(0, 0, 10000, 10, 0.5f, 0.5f);
-                new DRectangle(0, new ColorC(1, 0, 0, 0.5f)).add(e);
+                new DRectangle(-99999999, new ColorC(1, 0, 0, 0.5f)).add(e);
                 e.add(w);
             }
             {
                 var e = Entity.make2(0, 0, 10, 10000, 0.5f, 0.5f);
-                new DRectangle(0, new ColorC(1, 0, 0, 0.5f)).add(e);
+                new DRectangle(-9999999, new ColorC(1, 0, 0, 0.5f)).add(e);
                 e.add(w);
             }
             // new DRectangle(-99999999,new ColorC(1,0,0,0.5f)).add(cam.c.watchRect);
@@ -238,6 +238,7 @@ namespace Charamaker
             newWorld();
             charamaker.display.removeCamera(cam);
             charamaker.OnControls();
+            Tumiki.Clear();
         }
 
         /// <summary>
@@ -279,14 +280,12 @@ namespace Charamaker
                     FileMan.SE.stopAll();
                     started = true;
                 }
-                charamaker.OffControls();
             }
             else
             {
                 TimeBar.Value = (int)(StartTimer) * 10;
                 PlayB.Text = "Start";
                 started = false;
-                charamaker.OnControls();
             }
         }
 
@@ -297,6 +296,17 @@ namespace Charamaker
 
         private void CheckB_Click(object sender, EventArgs e)
         {
+            if (CheckB.Text == "Check")
+            {
+                CheckB.Text = "Back";
+                charamaker.OffControls();
+            }
+            else
+            {
+                CheckB.Text = "Check";
+                charamaker.OnControls();
+            }
+
             if (1 == 0)
             {
                 /*
@@ -317,7 +327,7 @@ namespace Charamaker
                 SetText(text);
                 */
             }
-            else 
+            else
             {
                 var text = "";
                 /*foreach (var a in anm.Check2()) 
@@ -326,7 +336,7 @@ namespace Charamaker
                 }*/
 
                 text = BlockManager.ToString();
-               // text += anm.Check3();
+                // text += anm.Check3();
                 SetText(text);
             }
         }
@@ -347,13 +357,10 @@ namespace Charamaker
         float Height = 0.01f;
 
         int Maxtumi = 0;
-        
-        public void SetBlockManager(AnimeBlockManager man,Rectangle r,World w) 
+        public void Clear() 
         {
-            this.man = man;
             //Clear
             {
-                zone = r;
                 Maxtumi = 0;
                 Height = zone.h / zone.w * 0.1f;
                 AddedBlocks.Clear();
@@ -367,6 +374,12 @@ namespace Charamaker
                     TimeLine.e.remove();
                 }
             }
+        }
+        public void SetBlockManager(AnimeBlockManager man,Rectangle r,World w) 
+        {
+            this.man = man;
+            zone = r;
+            Clear();
             MaxTime=man.MaxTime;
             supersort<AnimBlock> sort = new supersort<AnimBlock>();
             foreach (var a in man.Blocks)
