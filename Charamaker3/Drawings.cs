@@ -1336,18 +1336,17 @@ namespace Charamaker3
             {
                 //Debug.WriteLine(Text + " Drawed!");
                 //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
-                var raw = (RawRectF)rendZone;
+                var Clip = (RawRectF)rendZone;
 
-                /*
-                raw.Top -= 1f;
-                raw.Left -= 1f;
-                raw.Right += 1f;
-                raw.Bottom += 1f;
-                */
+                Clip.Left -= 1;
+                Clip.Right += 1;
+                Clip.Top -= 1;
+                Clip.Bottom += 1;
+
 
                 semaphores.TextRender.Wait();
                 
-                render.BitmapRender.PushAxisAlignedClip(rendZone, AntialiasMode.PerPrimitive);
+                render.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
                 render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
 
                 float R = 1, G = 0.98f, B = 0.97f;
@@ -1606,11 +1605,11 @@ namespace Charamaker3
 
                 var source = new Rectangle();
                 Trender.rendZone.copy(source);
-                source.x += 1;
+                /*source.x += 1;
                 source.w -= 2;
                 source.y += 1;
                 source.h -= 2;
-
+                */
                 render.DrawBitmap(Trender.render.BitmapRender.Bitmap
                   , rect
                   , this.col.opa, mode

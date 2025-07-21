@@ -421,6 +421,11 @@ namespace Charamaker3.CharaModel
             return c;
         }
         /// <summary>
+        /// セリフの標準の文字の大きさ
+        /// </summary>
+        public static float SerifStringSize = 32;
+
+        /// <summary>
         /// セリフを作るムーブ
         /// </summary>
         /// <param name="Time">表示時間</param>
@@ -434,7 +439,7 @@ namespace Charamaker3.CharaModel
         /// <returns>__MOVE__</returns>
         static public Component MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text,string name="") 
         {
-            float textSize = 16;
+            float textSize = SerifStringSize;
 
             var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
             var f = new FontC(textSize, textSize * 15, textSize * 3);
@@ -471,7 +476,7 @@ namespace Charamaker3.CharaModel
         {
             string Text = FP.l.GT(FPText);
 
-            float textSize = 16;
+            float textSize = SerifStringSize;
 
             var e = Entity.make2(0, 0, textSize * 15, textSize * 3);
             var f = new FontC(textSize, textSize * 15, textSize * 3);

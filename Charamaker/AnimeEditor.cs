@@ -167,12 +167,13 @@ namespace Charamaker
             {
                 BlockManager = new AnimeBlockManager(new DataSaver());
                 //anm = new AnimeLoader(new DataSaver());
+                preinfo = null;
             }
             else
             {
 
                 var info = new FileInfo(Truepath);
-                if (preinfo == null || DateTime.Compare(info.LastWriteTime, preinfo.LastWriteTime) > 0)
+                if (preinfo == null || preinfo.Name!= info.Name||DateTime.Compare(info.LastWriteTime, preinfo.LastWriteTime) > 0)
                 {
                     //var anmD = DataSaver.loadFromPath(path, true, "");
 
@@ -190,7 +191,6 @@ namespace Charamaker
                     BlockManager.update(w.staticEntity, TrueStart);
                     w.update(0);
                     FileMan.SE.stopAll();
-
 
                 }
             }

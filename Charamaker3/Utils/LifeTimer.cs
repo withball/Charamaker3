@@ -660,6 +660,7 @@ namespace Charamaker3.Utils
             t.z = 0.05f;
             t.add(Text);
 
+
             Entity Waku = new Entity();
             Waku.name = "Waku";
             new DRectangle(0.00f, new ColorC(0, 0, 0, 1)).add(Waku);
