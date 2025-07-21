@@ -1020,11 +1020,11 @@ namespace Charamaker3.CharaModel
         /// <param name="fadein">=-1</param>
         /// <param name="fadeout">=-1</param>
         /// <returns>__ANIM__</returns>
-        static public SummonEntity BGM(float stop, string path, float volume, float fadein = -1,float fadeout=-1)
+        static public SummonEntity BGM(float stop, string path, float volume, float fadein = -1, float fadeout = -1)
         {
             try
             {
-                var bgm = SoundComponent.MakeBGM(FileMan.BGM, path, volume, fadein,fadeout);
+                var bgm = SoundComponent.MakeBGM(FileMan.BGM, path, volume, fadein, fadeout);
                 var lifetime = new LifeTimer(stop);
 
                 var e = Entity.make(0, 0, 1, 1, 1, 1);
@@ -1052,7 +1052,7 @@ namespace Charamaker3.CharaModel
         /// <returns>__ANIM__</returns>
         static public SummonCharacter SummonCharacter(float lifetime, string path, string name, float scale = 1)
         {
-            return new SummonCharacter(path, scale, name, 0, path + name + "summon",lifetime);
+            return new SummonCharacter(path, scale, name, 0, path + name + "summon", lifetime);
         }
         /// <summary>
         /// モーションをパスから追加する。
@@ -1091,7 +1091,7 @@ namespace Charamaker3.CharaModel
             return new SummonEntity(e, 0, name, LifeTimer);
         }
 
-        List<AnimBlock> _Blocks=new List<AnimBlock>();
+        List<AnimBlock> _Blocks = new List<AnimBlock>();
         public List<AnimBlock> Blocks { get { return new List<AnimBlock>(_Blocks); } }
 
         public Dictionary<string, string> variables = new Dictionary<string, string>();
@@ -1106,24 +1106,42 @@ namespace Charamaker3.CharaModel
             //Debug.WriteLine(d.getData());
 
             string[] s = InD.getData().Split('\n');
+            float Ttime = 0;
             for (int i = 0; i < s.Length; ++i)
             {
 
                 var newb = new AnimBlock();
 
-                newb.Gyo = i+1;
-              
+                newb.Gyo = i + 1;
+
                 var LeftData = new DataSaver(DataSaver.escapen(s[i])).splitOneDataS(0, "", ':');
                 if (LeftData != "")
                 {
-                    if (LeftData.Length >= 2 && LeftData.Substring(0, 2) == "//") 
+                    if (LeftData.Length >= 1 && LeftData.Substring(0, 1) == "#")
+                    {
+                        switch (LeftData.Substring(1))
+                        {
+                            case "AddTime":
+                                Ttime += new DataSaver(DataSaver.escapen(s[i])).splitOneDataF(1, 0, ':');
+                                break;
+                            case "StartTime":
+                                _StartTime += new DataSaver(DataSaver.escapen(s[i])).splitOneDataF(1, 0, ':');
+                                break;
+                            case "EndTime":
+                                _EndTime += new DataSaver(DataSaver.escapen(s[i])).splitOneDataF(1, 0, ':');
+                                break;
+                        }
+                        continue;
+
+                    }
+                    else if (LeftData.Length >= 2 && LeftData.Substring(0, 2) == "//")
                     {
                         continue;
                     }
                     var Left = new DataSaver(LeftData);
                     newb.Script = new DataSaver(DataSaver.escapen(s[i])).splitOneDataS(1, "", ':');
 
-                    newb.StartTime = Left.splitOneDataF(0, 0, ',');
+                    newb.StartTime = Left.splitOneDataF(0, 0, ',')+Ttime;
                     newb.Target = Left.splitOneDataS(1, "", ',');
                     newb.Command = Left.splitOneDataS(2, "", ',');
                     newb.AddCl = Left.splitOneDataF(3, 0, ',');
@@ -1135,15 +1153,15 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 開始処理。ブロック・変数を全部リセット
         /// </summary>
-        public void Start() 
+        public void Start()
         {
             _Time = 0;
-            MaxTime = 0;
+            _MaxTime = 0;
             foreach (var a in _Blocks)
             {
                 a.SetAddComponent(this);
 
-                MaxTime = Math.Max(a.GetBlockTime(this) + a.StartTime, MaxTime);
+                _MaxTime = Math.Max(a.GetBlockTime(this) + a.StartTime, _MaxTime);
             }
             variables.Clear();
         }
@@ -1157,7 +1175,45 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 読み取るだけよ。最大時間
         /// </summary>
-        public float MaxTime = 0;
+        protected float _MaxTime = 0;
+
+        /// <summary>
+        /// 最大の時間
+        /// </summary>
+        public float MaxTime { get { return _MaxTime; } }
+
+        /// <summary>
+        /// アニメーションの開始時間
+        /// </summary>
+        public float StartTime{
+            get
+            {
+                if (_StartTime < 0) { return 0; }
+                return _StartTime;
+            }
+        }
+
+        /// <summary>
+        /// アニメーションの終了時間
+        /// </summary>
+        public float EndTime
+        {
+            get
+            {
+                if (_EndTime < 0) { return _MaxTime; }
+                return _EndTime;
+            }
+        }
+
+        /// <summary>
+        /// 開始時間
+        /// </summary>
+        protected float _StartTime = -1;
+        /// <summary>
+        /// 終了時間
+        /// </summary>
+        protected float _EndTime = -1;
+
         /// <summary>
         /// アニメーションを進める
         /// </summary>
