@@ -449,8 +449,8 @@ namespace Charamaker3.CharaModel
             var t=new Text(0,new ColorC(0,0,0,1),"",f);
             var serif=Charamaker3.Utils.Serif.MakeSerif(e, t);//
             serif.name = name;
-            serif.WakuHaba = textSize / 8;
-            serif.SiroSiro = textSize / 8;
+            serif.WakuHaba = textSize / 16;
+            serif.SiroSiro = textSize / 16;
             DrawableMove.SetText(Time , "Text",Text).add(serif);
             
             var c = new SummonSerif(Tag,serif,0, Time + Jizoku);
@@ -486,8 +486,8 @@ namespace Charamaker3.CharaModel
             var t = new Text(0, new ColorC(0, 0, 0, 1), "", f);
             var serif = Charamaker3.Utils.Serif.MakeSerif(e, t);//
             serif.name= name;
-            serif.WakuHaba = textSize / 8;
-            serif.SiroSiro = textSize / 8;
+            serif.WakuHaba = textSize / 16;
+            serif.SiroSiro = textSize / 16;
 
 
             DrawableMove.SetText(Time, "Text", Text).add(serif);
@@ -889,9 +889,9 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// サイズ、角度、中心、dxyを無理やり全体に適用する。
         /// </summary>
-        goOption GO = goOption.def;
+        public goOption GO = goOption.def;
 
-        rationOption RatioOption = rationOption.Liner;
+        public rationOption RatioOption = rationOption.Liner;
 
         public EntityMove() { }
         public EntityMove(float time, float dx = 0, float dy = 0, float dw = 0, float dh = 0, float dtx = 0, float dty = 0

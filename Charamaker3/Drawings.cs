@@ -332,7 +332,7 @@ namespace Charamaker3
             this.zDelta=d.unpackDataF("zDelta", this.zDelta);
             this.zRatio=d.unpackDataF("zRatio", this.zRatio);
 
-            this.linear = d.unpackDataB("liner",linear);
+            this.linear = d.unpackDataB("linear",linear);
             this.col.r = d.unpackDataF("r");
             this.col.g = d.unpackDataF("g");
             this.col.b = d.unpackDataF("b");

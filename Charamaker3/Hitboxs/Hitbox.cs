@@ -35,14 +35,12 @@ namespace Charamaker3.Hitboxs
         /// <summary>
         /// 自身についている属性。intだけど、enumを入れたほうがいい。
         /// </summary>
-        List<int> tag=new List<int>();
+        public List<int> tag=new List<int>();
 
         /// <summary>
         /// これがないならぶつからないってタグ。空にするとすべてに対してぶつかる。フィルターは後でかけてもいいけど、ここでやったほうが軽い
         /// </summary>
-        List<int> tagfilter=new List<int>();
-
-
+        public List<int> tagfilter=new List<int>();
 
 
         /// <summary>
@@ -67,20 +65,24 @@ namespace Charamaker3.Hitboxs
             this.HitShape = HitShape;
 
             this.preHitShape = HitShape.clone();
-            this.tag = tag;
-            tagfilter = filter;
+            this.tag = new List<int>(tag);
+            this.tagfilter = new List<int>(filter);
         }
         /// <summary>
         /// 空のコンストラクタ
         /// </summary>
         public Hitbox() { }
-
+        protected override void onadd(float cl)
+        {
+            base.onadd(cl);
+        }
         public override void copy(Component c)
         {
             base.copy(c);
             var cc = (Hitbox)c;
             cc.tag = new List<int>(this.tag);
             cc.tagfilter = new List<int>(this.tagfilter);
+
             cc.HitShape = this.HitShape.clone();
             cc.preHitShape = this.preHitShape.clone();
         }
@@ -113,11 +115,13 @@ namespace Charamaker3.Hitboxs
         {
             base.ToLoad(d);
             HitShape = Shape.ToLoadShape(d.unpackDataD("HitShape"));
+            tag.Clear();
             var tagD = d.unpackDataD("tag");
             foreach (var a in tagD.getAllPacks()) 
             {
                 tag.Add((int)tagD.unpackDataF(a));
             }
+            tagfilter.Clear();
             var filterD = d.unpackDataD("filter");
             foreach (var a in filterD.getAllPacks())
             {
@@ -248,7 +252,7 @@ namespace Charamaker3.Hitboxs
         public bool Filters(Hitbox h, FilterOption filteroption=FilterOption.AndFilter) 
         {
             bool thisOK = true;
-            var thisFilter = this.tagfilter;
+            var thisFilter = new List<int>(this.tagfilter);
             if (thisFilter.Count == 0) { thisFilter.AddRange(h.tag); }
 
             for (int i=0;i<thisFilter.Count;i++)
@@ -297,6 +301,11 @@ namespace Charamaker3.Hitboxs
                 }
             }
             return false;
+
+        }
+        protected override void onupdate(float cl)
+        {
+            base.onupdate(cl);
 
         }
 

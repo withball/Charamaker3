@@ -206,6 +206,10 @@ namespace Charamaker3
             }
             foreach (var task in tasks) { task.Wait(); }
         }
+        /// <summary>
+        /// ヒットボックスの表示フラグ
+        /// </summary>
+        public bool HitboxVisible = false;
         public override void update(float cl)
         {
             //この中ではcl=0のとき呼び出されないやつとかある。
@@ -248,10 +252,283 @@ namespace Charamaker3
                     }
                 }
                 render.Render.Transform = Matrix3x2.CreateRotation(0);
+                if (HitboxVisible)
+                {
+                    foreach (var e in watchRect.world.getEdic("HasHitbox"))
+                    {
+                        foreach (var b in e.getcompos<Hitboxs.Hitbox>())
+                        {
+                            if (b.Hitteds.Count == 0)
+                            {
+                                DrawHitbox(b.HitShape, new ColorC(0, 0, 0.5f, 0.5f));
+
+                                DrawHitbox(b.preHitShape, new ColorC(0, 0.5f, 0, 0.5f));
+                            }
+                            else
+                            {
+                                DrawHitbox(b.HitShape, new ColorC(0, 0, 1f, 0.5f));
+                                DrawHitbox(b.preHitShape, new ColorC(0, 1f, 0, 0.5f));
+                            }
+                            var text = "tag:";
+                            foreach (var a in b.tag)
+                            {
+                                text += a + ",";
+                            }
+                            text += " filter:";
+                            foreach (var a in b.tagfilter)
+                            {
+                                text += a + ",";
+                            }
+                            DrawText(b.HitShape, text, 16, new ColorC(0, 0, 0, 1));
+                        }
+                    }
+                }
             }
             if (isBitmap)
             {
                 render.Render.EndDraw();
+            }
+        }
+        protected void DrawEntity(Entity e)
+        {
+            var cam = this;
+            var watch = cam.watchRect;
+            {
+
+
+                //  左上
+                var upleft = camsoutai(cam, e.gettxy(0, 0));
+
+                //0.5の中心
+                var center = camsoutai(cam, e.gettxy(e.w / 2, e.h / 2));
+
+
+                //回転の合計
+                var rad = Mathf.toRadian(-watch.degree + e.degree);
+                var a = Matrix3x2.CreateScale(1, 1);
+
+                if (watch.mirror)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-Mathf.abs(watch.w) * 1, 0), a);
+                }
+                // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
+                if (watch.w < 0)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                }
+                if (watch.h < 0)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(1, -1), a);
+
+                }
+
+                a = Matrix3x2.Multiply(Matrix3x2.CreateRotation((float)rad, new Vector2(upleft.x, upleft.y)), a);
+
+
+                if (e.mirror)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(-1, 0, 0, 1, 0, 0), a);
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(upleft.x) * 2, 0), a);
+                }
+                if (e.w < 0)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(-1, 0, 0, 1, 0, 0), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(upleft.x) * 2, 0), a);
+                }
+
+
+                if (e.h < 0)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(1, 0, 0, -1, 0, 0), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(0, -(upleft.y) * 2), a);
+                }
+
+
+
+                render.Render.Transform = a;
+            }
+
+
+            using (var brh = this.render.Render.CreateSolidColorBrush(new ColorC(0, 0, 1, 0.5f)))
+            {
+                var upleft = camsoutai(cam, e.gettxy(0, 0));
+                //wも、hも絶対値で四角形を作り、transformの所で反転させて折り合いをつける。
+
+                var w = Mathf.sameSign((camsoutai(cam, e.gettxy(e.w, 0)) - upleft).length, e.w * 0 + 1);
+                var h = Mathf.sameSign((camsoutai(cam, e.gettxy(0, e.h)) - upleft).length, e.h * 0 + 1);
+
+
+                var rect = new RectangleF(upleft.x, upleft.y, w, h);
+                render.Render.FillRectangle(rect, brh);
+                //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Right, rect.Top/2+rect.Bottom/2),brh,20);
+                //render.DrawLine(new PointF(rect.Left, rect.Bottom), new PointF(rect.Right, rect.Top / 2 + rect.Bottom / 2), brh, 20);
+
+                //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Left, rect.Bottom), brh, 20);
+            }
+        }
+
+        protected void DrawHitbox(Shape e,ColorC col)
+        {
+            var cam = this;
+            var watch = cam.watchRect;
+            {
+
+
+                //  左上
+                var upleft = camsoutai(cam, e.gettxy(0, 0));
+
+                //0.5の中心
+                var center = camsoutai(cam, e.gettxy(e.w / 2, e.h / 2));
+
+
+                //回転の合計
+                var rad = Mathf.toRadian(-watch.degree + e.degree);
+                var a = Matrix3x2.CreateScale(1, 1);
+
+                if (watch.mirror)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-Mathf.abs(watch.w) * 1, 0), a);
+                }
+                // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
+                if (watch.w < 0)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                }
+                if (watch.h < 0)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(1, -1), a);
+
+                }
+
+                a = Matrix3x2.Multiply(Matrix3x2.CreateRotation((float)rad, new Vector2(upleft.x, upleft.y)), a);
+
+
+                if (e.w < 0)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(-1, 0, 0, 1, 0, 0), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(upleft.x) * 2, 0), a);
+                }
+
+
+                if (e.h < 0)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(1, 0, 0, -1, 0, 0), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(0, -(upleft.y) * 2), a);
+                }
+
+
+
+                render.Render.Transform = a;
+            }
+
+
+            using (var brh = this.render.Render.CreateSolidColorBrush(col))
+            {
+                var upleft = camsoutai(cam, e.gettxy(0, 0));
+                //wも、hも絶対値で四角形を作り、transformの所で反転させて折り合いをつける。
+
+                var w = Mathf.sameSign((camsoutai(cam, e.gettxy(e.w, 0)) - upleft).length, e.w * 0 + 1);
+                var h = Mathf.sameSign((camsoutai(cam, e.gettxy(0, e.h)) - upleft).length, e.h * 0 + 1);
+
+
+                var rect = new RectangleF(upleft.x, upleft.y, w, h);
+                render.Render.FillRectangle(rect, brh);
+                //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Right, rect.Top/2+rect.Bottom/2),brh,20);
+                //render.DrawLine(new PointF(rect.Left, rect.Bottom), new PointF(rect.Right, rect.Top / 2 + rect.Bottom / 2), brh, 20);
+
+                //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Left, rect.Bottom), brh, 20);
+            }
+        }
+
+        protected void DrawText(Shape e,string text,int size, ColorC col)
+        {
+            var cam = this;
+            var watch = cam.watchRect;
+            {
+
+
+                //  左上
+                var upleft = camsoutai(cam, e.gettxy(0, 0));
+
+                //0.5の中心
+                var center = camsoutai(cam, e.gettxy(e.w / 2, e.h / 2));
+
+
+                //回転の合計
+                var rad = Mathf.toRadian(-watch.degree + e.degree);
+                var a = Matrix3x2.CreateScale(1, 1);
+
+                if (watch.mirror)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-Mathf.abs(watch.w) * 1, 0), a);
+                }
+                // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
+                if (watch.w < 0)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
+
+                }
+                if (watch.h < 0)
+                {
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateScale(1, -1), a);
+
+                }
+
+                a = Matrix3x2.Multiply(Matrix3x2.CreateRotation((float)rad, new Vector2(upleft.x, upleft.y)), a);
+
+
+                if (e.w < 0)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(-1, 0, 0, 1, 0, 0), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-(upleft.x) * 2, 0), a);
+                }
+
+
+                if (e.h < 0)
+                {
+                    a = Matrix3x2.Multiply(new Matrix3x2(1, 0, 0, -1, 0, 0), a);
+
+                    a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(0, -(upleft.y) * 2), a);
+                }
+
+
+
+                render.Render.Transform = a;
+            }
+
+
+            using (var brh = this.render.Render.CreateSolidColorBrush(col))
+            {
+                var upleft = camsoutai(cam, e.gettxy(0, 0));
+                //wも、hも絶対値で四角形を作り、transformの所で反転させて折り合いをつける。
+
+                var w = Mathf.sameSign((camsoutai(cam, e.gettxy(e.w, 0)) - upleft).length, e.w * 0 + 1);
+                var h = Mathf.sameSign((camsoutai(cam, e.gettxy(0, e.h)) - upleft).length, e.h * 0 + 1);
+
+
+                var rect = new RectangleF(upleft.x, upleft.y, w, h);
+
+                var fa = Vortice.DirectWrite.DWrite.DWriteCreateFactory<IDWriteFactory>();
+                var fom = fa.CreateTextFormat("MS UI Gothic", FontWeight.Light, Vortice.DirectWrite.FontStyle.Normal, size);
+
+                render.Render.DrawText(text,fom,rect, brh);
+                //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Right, rect.Top/2+rect.Bottom/2),brh,20);
+                //render.DrawLine(new PointF(rect.Left, rect.Bottom), new PointF(rect.Right, rect.Top / 2 + rect.Bottom / 2), brh, 20);
+
+                //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Left, rect.Bottom), brh, 20);
             }
         }
         ~Camera()
