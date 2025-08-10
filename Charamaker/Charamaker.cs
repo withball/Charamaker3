@@ -163,7 +163,15 @@ namespace Charamaker
         private void ticked(object sender, EventArgs e)
         {
             // w = new World();
-            this.Text = cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
+            
+            {
+                string selectchara = "Select:" ;
+                if (sel != null && sel.c != null) 
+                {
+                    selectchara += sel.c.e.name;
+                }
+                this.Text = selectchara+" " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
+            }
             km.setpointer(this);
 
             {

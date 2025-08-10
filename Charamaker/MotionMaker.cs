@@ -324,5 +324,48 @@ namespace Charamaker
         {
 
         }
+
+        List<Character> narabeCharas = new List<Character>();
+
+        private void narabeB_Click(object sender, EventArgs e)
+        {
+            {
+                foreach (var a in narabeCharas) 
+                {
+                    a.e.remove();
+                }
+                narabeCharas.Clear();
+
+                messageB.Text = "";
+                string[] filesM = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\motion\" , pathB.Text+ "*.ctm", System.IO.SearchOption.AllDirectories);
+                for (int i = 0; i < filesM.Count(); i++)
+                {
+                    {
+                        messageB.Text += filesM[i].Replace(FileMan.s_rootpath + @".\motion\", @"") + Environment.NewLine;
+                     
+                        if (cm.sel.c != null && cm.sel.c.e != null)
+                        {
+                            var chara = cm.sel.c.e.clone();
+                            EntityMove.EResetMove().addAndRemove(chara, 100);
+                            DrawableMove.DResetMove().addAndRemove(chara, 100);
+                            narabeCharas.Add(chara.getCharacter());
+                            var m = FileMan.loadMotion(filesM[i].Split(@".\motion\")[1], true);
+                            if (m != null && m.Motion != null && m.Script != null && m.Script != "")
+                            {
+                                m.Motion.add(chara);
+                            }
+                            chara.name = filesM[i].Split(@".\motion\")[1];
+
+                            chara.add(cm.w);
+                            int num = (int)(cm.cam.watchRect.w / chara.w * 1.5f);
+
+                            chara.settxy(cm.cam.watchRect.gettxy2(0, 0), - chara.w * 2.5f * (i % num+0.5f), - chara.h * 1.5f * (i / num+0.1f));
+                        }
+                    }
+                }
+            }
+
+            setmanual();
+        }
     }
 }
