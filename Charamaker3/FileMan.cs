@@ -1062,7 +1062,11 @@ namespace Charamaker3
             var res = new List<float>();
             foreach (var a in sp)
             {
-                res.Add(float.Parse(a));
+                float f;
+                if (float.TryParse(a, out f))
+                {
+                    res.Add(f);
+                }
             }
             return res;
         }
