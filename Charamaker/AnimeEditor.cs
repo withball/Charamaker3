@@ -245,7 +245,7 @@ namespace Charamaker
             //maxtime = Mathf.max(Mathf.abs(d.unpackDataF("maxtime")),1);
             BlockManager.Start();
 
-            maxtime = BlockManager.MaxTime;
+            maxtime = Mathf.max(BlockManager.MaxTime,BlockManager.EndTime);
 
             StartUD.Maximum = (decimal)maxtime;
             EndUD.Maximum = (decimal)maxtime;
@@ -401,7 +401,6 @@ namespace Charamaker
 
         private void EndUD_ValueChanged(object sender, EventArgs e)
         {
-
             charamaker.AnimEndTime = (float)EndUD.Value;
             charamaker.Save();
         }

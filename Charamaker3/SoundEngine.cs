@@ -78,7 +78,7 @@ namespace Charamaker3
             bool mp3 = false;
             if (a != ".mp3") filem += ".mp3";
 
-            if (File.Exists(@".\sounds\" + filem) == true)
+            if (File.Exists(s_rootpath + @"sounds\" + filem) == true)
             {
                 file = filem;
                 mp3 = true;

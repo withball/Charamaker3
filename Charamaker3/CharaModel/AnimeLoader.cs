@@ -1012,7 +1012,7 @@ namespace Charamaker3.CharaModel
         }
 
         /// <summary>
-        /// BGMを流すコンポーネント。
+        /// BGMを流すコンポーネントを持つエンテティを召喚する。名前はBGM
         /// </summary>
         /// <param name="stop">止める時間</param>
         /// <param name="path"></param>
@@ -1031,14 +1031,14 @@ namespace Charamaker3.CharaModel
                 bgm.add(e);
                 lifetime.add(e);
 
-                return new SummonEntity(e, 0, "BGM::" + path);
+                return new SummonEntity(e, 0, SoundComponent.BGMname);
             }
             catch (Exception ex)
             {
                 Debug.Mess("BGM Load Missed " + path + " \n" + ex.ToString());
 
                 var e = Entity.make(0, 0, 1, 1, 1, 1);
-                return new SummonEntity(e, 0, "BGM::" + path);
+                return new SummonEntity(e, 0, SoundComponent.BGMname);
             }
         }
 
