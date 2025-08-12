@@ -722,7 +722,7 @@ namespace Charamaker3
             ,float fadein=0,float fadeout = 0,string name=""):base(name:name)
         {
             _sound = SE.playoto(file, volume);
-            this._loop = loop;
+            this.loop = loop;
             this.fadein= fadein;
             this.fadeout = fadeout;
             this.playThenEnd = playThenEnd;
