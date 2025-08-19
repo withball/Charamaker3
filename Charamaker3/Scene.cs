@@ -128,7 +128,7 @@ namespace Charamaker3
 
             cam.watchRect.add(wol);
             onStarts?.Invoke(this, cl);
-            Update(cl);
+            Update(cl,false);
         }
 
         /// <summary>

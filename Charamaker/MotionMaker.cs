@@ -357,9 +357,8 @@ namespace Charamaker
                             chara.name = filesM[i].Split(@".\motion\")[1];
 
                             chara.add(cm.w);
-                            int num = (int)(cm.cam.watchRect.w / chara.w * 1.5f);
-
-                            chara.settxy(cm.cam.watchRect.gettxy2(0, 0), - chara.w * 2.5f * (i % num+0.5f), - chara.h * 1.5f * (i / num+0.1f));
+                            int num = (int)Mathf.max(cm.cam.watchRect.w / (chara.w * 2.5f),1);
+                            chara.settxy(cm.cam.watchRect.gettxy2(0, 0), - chara.w * 2.5f * (i % (num)+0.5f), - chara.h * 1.5f * (i / (num)+0.1f));
                         }
                     }
                 }
