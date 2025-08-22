@@ -166,7 +166,20 @@ namespace Charamaker3
 
 
         }
-
+        /// <summary>
+        /// ワールドの要素を全部削除する。staticEntityに付与したBGMを消すときとかにも。
+        /// </summary>
+        public void Clear() 
+        {
+            foreach (var a in new List<Entity>(Entities)) 
+            {
+                a.remove();
+            }
+            foreach (var a in staticEntity.components) 
+            {
+                a.remove();
+            }
+        }
         /// <summary>
         /// フレームを更新する
         /// </summary>
