@@ -679,7 +679,10 @@ namespace Charamaker
         /// </summary>
         public void ResetLoadDatas() 
         {
+            var temp=FileMan.s_rootpath;
+            FileMan.s_rootpath = "./";
             FP.l.seting(textsn: new List<string> { @"texts\text.txt" });
+            FileMan.s_rootpath = temp;
             FP.SetDefault(FP.l);//ŒÄ‚Ño‚µŒ³‚ÌFP‚ğ“Ç‚İ‚Ş
             FileMan.LoadedDS.Clear();
 

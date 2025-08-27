@@ -42,8 +42,8 @@ namespace Charamaker3.ParameterFile
         /// <param name="l"></param>
         static public void SetDefault(FP l) 
         {
-            var Texts=Directory.GetFiles(FileMan.s_rootpath + "texts/", "*.txt");
-            var Params = Directory.GetFiles(FileMan.s_rootpath + "params/", "*.txt");
+            var Texts = FileMan.GetFolderFiles("texts/", "*.txt");
+            var Params = FileMan.GetFolderFiles("params/", "*.txt");
 
             foreach (var a in Texts) 
             {
@@ -280,7 +280,7 @@ namespace Charamaker3.ParameterFile
         }
         private void loadparam(string file)
         {
-            using (var fs = new StreamReader(file))
+            using (var fs = new StreamReader(FileMan.s_rootpath + file))
             {
                 string load;
                 string region = "";
@@ -316,7 +316,7 @@ namespace Charamaker3.ParameterFile
         }
         private void loadtexts(string file)
         {
-            using (var fs = new StreamReader(file))
+            using (var fs = new StreamReader(FileMan.s_rootpath + file))
             {
                 string load;
                 string region = "";
@@ -388,7 +388,7 @@ namespace Charamaker3.ParameterFile
 
         private void loadcsv(string file)
         {
-            using (var fs = new StreamReader(file))
+            using (var fs = new StreamReader(FileMan.s_rootpath + file))
             {
                 string load;
                 List<string> names = new List<string>();

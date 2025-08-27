@@ -72,6 +72,16 @@ namespace Charamaker3
             }
             return @".\temp.temp";
         }
+        static public List<string> GetFolderFiles(string folder,string wildcard) 
+        {
+            var res=Directory.GetFiles(FileMan.s_rootpath + folder, wildcard);
+            for (int i=0;i<res.Length;++i) 
+            {
+                int idx=res[i].IndexOf(FileMan.s_rootpath);
+                res[i]=res[i].Substring(idx+FileMan.s_rootpath.Length);
+            }
+            return new List<string>(res);
+        }
 
         #region Texture
 
