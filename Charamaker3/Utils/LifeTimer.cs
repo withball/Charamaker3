@@ -229,6 +229,12 @@ namespace Charamaker3.Utils
                 ((Serif)summon).Target = e;
                 base.DoSummon(e, cl);
             }
+            if (float.IsNaN(dz) == false)
+            {
+                DrawableMove.ZDeltaChange(0, "", ((Serif)summon).Target.getDrawable<Drawable>().zDelta, ((Serif)summon).Target.getDrawable<Drawable>().zRatio).addAndRemove(summon, 100);
+                DrawableMove.ZChange(0, "", ((Serif)summon).Target.getDrawable<Drawable>().z + dz).addAndRemove(summon, 100);
+
+            }
         }
         public override DataSaver ToSave()
         {

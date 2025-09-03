@@ -605,7 +605,7 @@ namespace Charamaker3
             try
             {
 
-                using (var writer = new StreamWriter(path))
+                using (var writer = new StreamWriter(path,false,Encoding.UTF8))
                 {
                     writer.Write(Data);
                 }

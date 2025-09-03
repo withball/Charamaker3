@@ -109,7 +109,7 @@ namespace Charamaker3.CharaModel
                 res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
                 res.SO = scaleOption.F;
             }
-            res.RatioOption = rationOption.cos;
+            res.RatioOption = rationOption.Cos;
             return res;
         }
 
@@ -437,7 +437,7 @@ namespace Charamaker3.CharaModel
         /// <param name="Text">テキスト</param>
         /// <param name="name">=""</param>
         /// <returns>__MOVE__</returns>
-        static public Component MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text,string name="") 
+        static public SummonSerif MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text,string name="") 
         {
             float textSize = SerifStringSize;
 
@@ -472,7 +472,7 @@ namespace Charamaker3.CharaModel
         /// <param name="FPText">FPから読み込むテキスト</param>
         /// <param name="name">=""</param>
         /// <returns>__MOVE__</returns>
-        static public Component MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText, string name = "")
+        static public SummonSerif MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText, string name = "")
         {
             string Text = FP.l.GT(FPText);
 
@@ -806,7 +806,7 @@ namespace Charamaker3.CharaModel
     /// </summary>
     public enum rationOption 
     {
-        Liner=0,cos=1
+        Liner=0,Cos=1
     }
     public enum scaleOption
     {
@@ -1584,7 +1584,7 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed * cl);
                             }
                             break;
-                        case rationOption.cos:
+                        case rationOption.Cos:
                             {
                                 float pretimer = timer - cl;
 
@@ -1807,7 +1807,7 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed * cl);
                             }
                             break;
-                        case rationOption.cos:
+                        case rationOption.Cos:
                             {
                                 float pretimer = timer - cl;
 
@@ -2498,7 +2498,7 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed * cl);
                             }
                             break;
-                        case rationOption.cos:
+                        case rationOption.Cos:
                             {
                                 float pretimer = timer - cl;
 
