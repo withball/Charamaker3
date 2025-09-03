@@ -1560,6 +1560,10 @@ namespace Charamaker3
         }
         public override void draw(Camera cam)
         {
+            if (Trender == null) 
+            {
+                return;
+            }
             Trender.OnDraw(text, font, col);
             var render = cam.render.Render;
 

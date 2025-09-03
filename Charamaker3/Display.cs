@@ -177,7 +177,7 @@ namespace Charamaker3
         {
             this.d = d;
             this.render = render;
-            isBitmap = render.GetType() == typeof(ID2D1BitmapRenderTarget);
+            isBitmap = Mathf.isSubClassOf(render.GetType(),typeof(C3BitmapRenderSet));
             this.watchRect = WatchRect;
 
         }
@@ -216,13 +216,17 @@ namespace Charamaker3
             base.update(cl);
 
             //cl=0でも呼び出される
-            if (isBitmap)
+            if (isBitmap == true)
             {
                 render.Render.BeginDraw();
             }
-            if (!(!isBitmap && col.opa <= 0))
+            if (isBitmap == false)
             {
                 render.Render.Clear(col);
+            }
+            else //ビットマップの場合、背景は透明に。
+            {
+                render.Render.Clear(new ColorC(0,0,0,0));
             }
             if (watchRect.world != null)
             {
@@ -244,7 +248,7 @@ namespace Charamaker3
 
                 foreach (var task in tasks) { task.Wait(); }
 
-                for (int i = 0;i<lis.Count;i++)
+                for (int i = 0; i < lis.Count; i++)
                 {
                     if (oks[i])
                     {
@@ -536,10 +540,19 @@ namespace Charamaker3
             //d.removeCamera(this);//いらないよね？
             if (isBitmap)
             {
-                Brender?.Bitmap.Dispose();
-                Brender.Dispose();
+                if (Mathf.isSubClassOf(render.GetType(), typeof(C3BitmapRenderSet)))
+                {
+                    d.BackBitMapRenderSet((C3BitmapRenderSet)render);
+                }
             }
         }
+        public override bool CanDraw(Camera cam)
+        {
+            //Zが下のカメラor 自身には映らない
+            if (cam.z < this.z  || this==cam) { return false; }
+            return base.CanDraw(cam);
+        }
+
         override public void draw(Camera cam)
         {
             if (isBitmap)
@@ -559,6 +572,7 @@ namespace Charamaker3
                 render.Render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, mode, source);
             }
         }
+        
         /// <summary>
         /// ビットマップ全体
         /// </summary>
@@ -855,7 +869,42 @@ namespace Charamaker3
             setupTextureLoader(); 
         }
 
+        /// <summary>
+        /// 新しくビットマップレンダーを作る
+        /// </summary>
+        /// <returns>必ず返すように！</returns>
+        internal C3BitmapRenderSet GetBitMapRenderSet()
+        {
+            //残ってないときに作成
+            if (BitmapCameraRenderSet.Count == 0) {
+                var fom = new Vortice.DCommon.PixelFormat();
+
+                var TextRSize = new System.Drawing.Size((int)((_render.Render.Size.Width)) , (int)((_render.Render.Size.Height)) );
+                var tempRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+                    , fom
+                    , CompatibleRenderTargetOptions.GdiCompatible));
+                BitmapCameraRenderSet.Add(tempRender);
+            }
+            var res = BitmapCameraRenderSet[0];
+            BitmapCameraRenderSet.RemoveAt(0);
+            return res;
+        }
+
+        /// <summary>
+        /// ビットマップレンダーを返す
+        /// </summary>
+        /// <param name="back">返すときはしょうめつするとき！</param>
+        internal void BackBitMapRenderSet(C3BitmapRenderSet back)
+        {
+            BitmapCameraRenderSet.Add(back);
+        }
+
         List<CP<Camera>> cameras = new List<CP<Camera>>();
+
+        /// <summary>
+        /// 画像を作るカメラのレンダーを貯めておく
+        /// </summary>
+        List<C3BitmapRenderSet> BitmapCameraRenderSet=new List<C3BitmapRenderSet>();
         /// <summary>
         /// 画面に直接描画するカメラを作る。Cameraが追加されてるEntityはマジどうでもいい
         /// </summary>
@@ -882,6 +931,25 @@ namespace Charamaker3
 
             return makeCamera(Watchrect, backcolor);
         }
+        /// <summary>
+        /// ワールドにおくカメラを返す。
+        /// </summary>
+        /// <param name="backcolor"></param>
+        /// <returns></returns>
+        public Camera makeBitmapCamera(ColorC backcolor) 
+        {
+            Entity Watchrect = Entity.make2(0, 0, render.Render.Size.Width / resol, render.Render.Size.Height / resol, name: WatchRectName);
+
+            Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height);
+            Camera res;
+            res = new Camera(Watchrect, 0, backcolor, GetBitMapRenderSet(), this);
+            res.add(back);
+
+            cameras.Add(Component.ToPointer(res));
+            return res;
+
+        }
+
         /// <summary>
         /// Cameraデストラクタでだけ呼び出す。
         /// </summary>

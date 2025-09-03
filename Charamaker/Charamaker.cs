@@ -20,6 +20,7 @@ namespace Charamaker
         Texture SLP, TXYP;
         DataSaver save;
 
+        public Camera cam2;
         public void OffControls() 
         {
             foreach (var a in this.Controls) 
@@ -78,7 +79,12 @@ namespace Charamaker
 
             cam = display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
             cam.watchRect.add(w);
-            
+
+            /*cam2 = display.makeBitmapCamera(new ColorC(1, 1,1, 1));
+            cam2.watchRect.add(w);
+            cam2.e.add(w);
+            EntityMove.ScaleChange(10,"",0.5f,0.5f).addAndRemove(cam2.e,100);
+            */
             ResetLoadDatas();
             /*
             if (Directory.Exists(@".\character"))
