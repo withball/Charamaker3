@@ -548,8 +548,8 @@ namespace Charamaker3
         }
         public override bool CanDraw(Camera cam)
         {
-            //Zが下のカメラor 自身には映らない
-            if (cam.z < this.z  || this==cam) { return false; }
+            // 自身には映らない
+            if (this==cam) { return false; }
             return base.CanDraw(cam);
         }
 

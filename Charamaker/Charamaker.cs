@@ -11,6 +11,7 @@ namespace Charamaker
     {
         public Display display;
         public World w = new World();
+        public World w2 = new World();
         public Camera cam;
         public KeyMouse km = new KeyMouse();
         System.Drawing.Size BaseSize = new Size((int)(1600 * 0.85f), (int)(900 * 0.85f));
@@ -79,12 +80,14 @@ namespace Charamaker
 
             cam = display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
             cam.watchRect.add(w);
-
-            /*cam2 = display.makeBitmapCamera(new ColorC(1, 1,1, 1));
-            cam2.watchRect.add(w);
-            cam2.e.add(w);
-            EntityMove.ScaleChange(10,"",0.5f,0.5f).addAndRemove(cam2.e,100);
-            */
+            {
+                //カメラテスト
+                cam2 = display.makeBitmapCamera(new ColorC(1, 1, 1, 1));
+                cam2.watchRect.add(w2);
+                cam2.e.add(w);
+                new DRectangle(10,new ColorC(1,0,0,0.5f)).add(cam2.watchRect);
+                EntityMove.ScaleChange(10, "", 0.5f, 0.5f).addAndRemove(cam2.e, 100);
+            }
             ResetLoadDatas();
             /*
             if (Directory.Exists(@".\character"))
@@ -188,10 +191,11 @@ namespace Charamaker
             float cl = SpeedBar.Value / (float)SpeedBar.Maximum;
 
             w.update(cl);
-
+            w2.update(cl);
             display.draw(cl);
 
             w.AfterDrawUpdate();
+            w2.AfterDrawUpdate();
             anmE?.AfterDrawupdate();
 
             moveCamera();
