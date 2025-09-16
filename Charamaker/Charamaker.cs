@@ -24,17 +24,29 @@ namespace Charamaker
         public Camera cam2;
         public void OffControls() 
         {
-            foreach (var a in this.Controls) 
-            {
-                if (Mathf.isSubClassOf(a.GetType(), typeof(Control)))
-                {
-                    ((Control)a).Hide();
-                }
-            }
+            this.DSB.Hide();
+            this.screenshotB.Hide();
+            this.texturelabel.Hide();
+            this.printoutB.Hide();
+            this.ResetTextureB.Hide();
+            this.ForceMirrorButton.Hide();
+            this.setBaseB.Hide();
+            this.messageB.Hide();
+          
         }
 
         public void OnControls()
         {
+
+            this.DSB.Show();
+            this.screenshotB.Show();
+            this.texturelabel.Show();
+            this.printoutB.Show();
+            this.ResetTextureB.Show();
+            this.ForceMirrorButton.Show();
+            this.setBaseB.Show();
+            this.messageB.Show();
+            /*
             foreach (var a in this.Controls)
             {
                 if (Mathf.isSubClassOf(a.GetType(), typeof(Control)))
@@ -42,6 +54,7 @@ namespace Charamaker
                     ((Control)a).Show();
                 }
             }
+        */
         }
 
         public Charamaker()
@@ -80,14 +93,14 @@ namespace Charamaker
 
             cam = display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
             cam.watchRect.add(w);
-            {
+            /*{
                 //カメラテスト
                 cam2 = display.makeBitmapCamera(new ColorC(1, 1, 1, 1));
                 cam2.watchRect.add(w2);
                 cam2.e.add(w);
                 new DRectangle(10,new ColorC(1,0,0,0.5f)).add(cam2.watchRect);
                 EntityMove.ScaleChange(10, "", 0.5f, 0.5f).addAndRemove(cam2.e, 100);
-            }
+            }*/
             ResetLoadDatas();
             /*
             if (Directory.Exists(@".\character"))

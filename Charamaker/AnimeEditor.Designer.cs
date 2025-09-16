@@ -41,6 +41,7 @@
             StartUD = new NumericUpDown();
             EndUD = new NumericUpDown();
             ResetDataB = new Button();
+            blockB = new Button();
             ((System.ComponentModel.ISupportInitialize)SpeedUd).BeginInit();
             ((System.ComponentModel.ISupportInitialize)TimeBar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartUD).BeginInit();
@@ -72,7 +73,7 @@
             SpeedUd.DecimalPlaces = 1;
             SpeedUd.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             SpeedUd.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-            SpeedUd.Location = new Point(553, 66);
+            SpeedUd.Location = new Point(569, 56);
             SpeedUd.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
             SpeedUd.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
             SpeedUd.Name = "SpeedUd";
@@ -83,7 +84,7 @@
             // PlayB
             // 
             PlayB.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            PlayB.Location = new Point(695, 66);
+            PlayB.Location = new Point(695, 56);
             PlayB.Name = "PlayB";
             PlayB.Size = new Size(75, 35);
             PlayB.TabIndex = 3;
@@ -164,7 +165,7 @@
             // ResetDataB
             // 
             ResetDataB.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            ResetDataB.Location = new Point(453, 50);
+            ResetDataB.Location = new Point(472, 50);
             ResetDataB.Name = "ResetDataB";
             ResetDataB.Size = new Size(75, 35);
             ResetDataB.TabIndex = 10;
@@ -172,11 +173,23 @@
             ResetDataB.UseVisualStyleBackColor = true;
             ResetDataB.Click += ResetDataB_Click;
             // 
+            // blockB
+            // 
+            blockB.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            blockB.Location = new Point(371, 91);
+            blockB.Name = "blockB";
+            blockB.Size = new Size(75, 29);
+            blockB.TabIndex = 11;
+            blockB.Text = "ShowBlock";
+            blockB.UseVisualStyleBackColor = true;
+            blockB.Click += blockB_Click;
+            // 
             // AnimeEditor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(blockB);
             Controls.Add(ResetDataB);
             Controls.Add(EndUD);
             Controls.Add(StartUD);
@@ -215,5 +228,6 @@
         private NumericUpDown StartUD;
         private NumericUpDown EndUD;
         private Button ResetDataB;
+        private Button blockB;
     }
 }

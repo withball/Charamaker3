@@ -153,6 +153,36 @@ namespace Charamaker3
         {
             settxy(xy.x, xy.y, ww, hh);
         }
+
+        /// <summary>
+        /// ワールド座標をエンテティ内の座標(0~1)に変換する
+        /// </summary>
+        /// <param name="WorldXY"></param>
+        public FXY GetEntityPoint(FXY WorldXY)
+        {
+            var xy = WorldXY - gettxy(0, 0) ;
+
+            xy.degree -= this.degree;
+            if (this.w != 0)
+            {
+                xy.x /= this.w;
+            }
+            else 
+            {
+                xy.x = 1;
+            }
+            if (this.h != 0)
+            {
+                xy.y /= this.h;
+            }
+            else
+            {
+                xy.y = 1;
+            }
+            //WorldXY.x;
+            return xy;
+        }
+
         /// <summary>
         /// entityを作る
         /// </summary>

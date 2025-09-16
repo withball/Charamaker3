@@ -112,6 +112,32 @@ namespace Charamaker3.CharaModel
             res.RatioOption = rationOption.Cos;
             return res;
         }
+        /// <summary>
+        /// sinでXYDに動かすムーブ
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">=""</param>
+        /// <param name="dx">=0</param>
+        /// <param name="dy">=0</param>
+        /// <param name="ddegree">=0</param>
+        /// <param name="withbigs">dx,dyを(w+h)/2に依存するか=false</param>
+        /// <returns>__MOVE__</returns>
+        static public EntityMove XYDsin(float time, string name = "", float dx = 0, float dy = 0, float ddegree = 0, bool withbigs = false)
+        {
+            EntityMove res;
+            if (withbigs)
+            {
+                res = new EntityMove(time, dx, dy, float.NaN, float.NaN, float.NaN, float.NaN, ddegree, float.NaN, float.NaN, name);
+                res.SO = scaleOption.scale;
+            }
+            else
+            {
+                res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
+                res.SO = scaleOption.F;
+            }
+            res.RatioOption = rationOption.Sin;
+            return res;
+        }
 
 
 
@@ -806,7 +832,7 @@ namespace Charamaker3.CharaModel
     /// </summary>
     public enum rationOption 
     {
-        Liner=0,Cos=1
+        Liner=0,Cos=1,Sin=2
     }
     public enum scaleOption
     {
@@ -1593,6 +1619,15 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed);
                             }
                             break;
+                        case rationOption.Sin:
+                            {
+                                float pretimer = timer - cl;
+
+                                float speed = (Mathf.sin(timer / time * 180) - Mathf.sin(pretimer / time * 180)) * -0.5f;
+
+                                addDefference(speed);
+                            }
+                            break;
                         default:
                             break;
                     }
@@ -1812,6 +1847,15 @@ namespace Charamaker3.CharaModel
                                 float pretimer = timer - cl;
 
                                 float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180)) * -0.5f;
+
+                                addDefference(speed);
+                            }
+                            break;
+                        case rationOption.Sin:
+                            {
+                                float pretimer = timer - cl;
+
+                                float speed = (Mathf.sin(timer / time * 180) - Mathf.sin(pretimer / time * 180)) * -0.5f;
 
                                 addDefference(speed);
                             }
@@ -2218,7 +2262,7 @@ namespace Charamaker3.CharaModel
                 var lis = new List<List<Drawable>>();
                 if (GO == goOption.goAll)
                 {
-                    lis = tags;
+                    lis = new List<List<Drawable>>(tags);
                 }
                 else
                 {
@@ -2260,18 +2304,15 @@ namespace Charamaker3.CharaModel
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
-
                 tags.Add(e.getcompos<Drawable>());
                 tagBases.Add(e.getcompos<Drawable>());
             }
             else
             {
-                //こっちはキャラクターのベースね。後で実装
                 foreach (var a in cs)
                 {
                     foreach (var b in a.getTree(name))
                     {
-
                         var lis = b.getcompos<Drawable>();
                         tags.Add(lis);
                     }
@@ -2438,7 +2479,7 @@ namespace Charamaker3.CharaModel
                                     default:
                                         if (speeds[0].Count > 0)
                                         {
-                                            speeds[t][i][j] = speeds[0][i][j];
+                                            speeds[t][i][j] = speeds[t][i][j];
                                         }
                                         else
                                         {
@@ -2503,6 +2544,14 @@ namespace Charamaker3.CharaModel
                                 float pretimer = timer - cl;
 
                                 float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180) ) * -0.5f;
+                                addDefference(speed);
+                            }
+                            break;
+                        case rationOption.Sin:
+                            {
+                                float pretimer = timer - cl;
+
+                                float speed = (Mathf.sin(timer / time * 180) - Mathf.sin(pretimer / time * 180)) * -0.5f;
                                 addDefference(speed);
                             }
                             break;

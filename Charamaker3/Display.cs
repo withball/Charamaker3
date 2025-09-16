@@ -222,7 +222,10 @@ namespace Charamaker3
             }
             if (isBitmap == false)
             {
-                render.Render.Clear(col);
+                if (col.opa != 0)
+                {
+                    render.Render.Clear(col);
+                }
             }
             else //ビットマップの場合、背景は透明に。
             {
@@ -1248,7 +1251,6 @@ namespace Charamaker3
                     var rect = new Shapes.Rectangle(maxx, maxy, np.x - maxx, np.y - maxy);
 
                     rects.Add(rect);
-
                 }
             }
 

@@ -912,7 +912,7 @@ namespace Charamaker3
 
                 var rect = rectRectF(cam);
                 //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
-                cam.render.DeviceContext.DrawImage(trans,InterpolationMode.NearestNeighbor,CompositeMode.SourceOver);
+                cam.render.DeviceContext.DrawImage(trans,InterpolationMode.Linear,CompositeMode.SourceOver);
 
 
             }
