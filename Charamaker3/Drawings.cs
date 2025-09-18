@@ -42,7 +42,7 @@ namespace Charamaker3
         {
             this.px = px;
             this.py = py;
-            this.cam = cam;
+            setCamera(cam);
         }
         public Haikei() { }
 
@@ -72,7 +72,7 @@ namespace Charamaker3
         /// <summary>
         /// 相対位置のカメラ
         /// </summary>
-        protected Camera cam = null;
+        public Entity cam = null;
         /// <summary>
         /// 本来の位置
         /// </summary>
@@ -120,8 +120,10 @@ namespace Charamaker3
         /// <param name="cam"></param>
         public void setCamera(Camera cam)
         {
-            this.cam = cam;
-
+            if (cam != null)
+            {
+                this.cam = cam.watchRect;
+            }
         }
         /// <summary>
         /// カメラを考慮した座標をセットする<br></br>
@@ -136,22 +138,22 @@ namespace Charamaker3
             }
             else if (OnStart)
             {
-                var center = cam.watchRect.gettxy();
+                var center = cam.gettxy();
                 truex = e.x;
                 truey = e.y;
-                prex = e.x + center.x * (px - 1);
-                prey = e.y + center.y * (py - 1);
+                prex = e.x + center.x * -(px -1);
+                prey = e.y + center.y * -(py -1);
                 e.x = prex;
                 e.y = prey;
 
             }
             else
             {
-                var center = cam.watchRect.gettxy();
+                var center = cam.gettxy();
                 truex += e.x - prex;
                 truey += e.y - prey;
-                prex = truex + center.x * (px - 1);
-                prey = truey + center.y * (py - 1);
+                prex = truex + center.x * -(px - 1);
+                prey = truey + center.y * -(py - 1);
                 e.x = prex;
                 e.y = prey;
             }
@@ -174,13 +176,13 @@ namespace Charamaker3
             {
                 throw new Exception("追従するカメラが無いですやん");
             }
-            var center = h.cam.watchRect.gettxy();
+            var center = h.cam.gettxy();
             e.settxy(tx, ty);
             //この辺を逆算
             h.prex = e.x;
             h.prey = e.y;
-            h.truex = h.prex - center.x * (h.px - 1);
-            h.truey = h.prey - center.y * (h.py - 1);
+            h.truex = h.prex - center.x * -(h.px - 1);
+            h.truey = h.prey - center.y * -(h.py - 1);
 
 
             return true;
@@ -197,10 +199,10 @@ namespace Charamaker3
             }
             else
             {
-                var center = cam.watchRect.gettxy();
+                var center = cam.gettxy();
 
-                e.x = e.x - center.x * (px - 1);
-                e.y = e.y - center.y * (py - 1);
+                e.x = e.x - center.x * -(px - 1);
+                e.y = e.y - center.y * -(py - 1);
 
             }
 

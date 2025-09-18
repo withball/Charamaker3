@@ -1082,12 +1082,21 @@ namespace Charamaker3.CharaModel
         /// <param name="LifeTimer">効果時間</param>
         /// <param name="texture">テクスチャ</param>
         /// <param name="size">サイズ</param>
-        /// <param name="name">名前</param>
+        /// <param name="name">名前</param>>
+        /// <param name="isLinear">リニア補完か</param>
         /// <returns>__ANIM__</returns>
-        static public SummonEntity SummonICharacter(float LifeTimer, string texture, float size, string name)
+        static public SummonEntity SummonICharacter(float LifeTimer, string texture, float size, string name,bool isLinear=true)
         {
             var e = CharaModel.Character.MakeCharacter(texture, 0, 0, size, 0.5f, 0.5f, 0);
             e.name = name;
+
+            foreach (var a in e.getCharacter().getTree("")) 
+            {
+                foreach (var b in a.getcompos<Drawable>()) 
+                {
+                b.linear = isLinear;
+                }
+            }
             return new SummonEntity(e, 0, name, LifeTimer);
         }
 
