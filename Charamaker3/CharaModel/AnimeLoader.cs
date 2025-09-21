@@ -1100,6 +1100,21 @@ namespace Charamaker3.CharaModel
             return new SummonEntity(e, 0, name, LifeTimer);
         }
 
+        /// <summary>
+        /// 背景用のスライドしない物体にするムーブ
+        /// </summary>
+        /// <param name="time">持続時間</param>
+        /// <param name="Tag">ターゲットの関節</param>
+        /// <param name="px">スクロール割合X</param>
+        /// <param name="py">Y</param>
+        /// <param name="watchRect">カメラ役のエンテティの名前</param>
+        /// <returns>__ANIM__</returns>
+        static public HaikeiMove SetHaikei( float time, string Tag, float px, float py, string watchRect) 
+        {
+        return new HaikeiMove(Tag,time,px,py,watchRect);
+        }
+       
+
         List<AnimBlock> _Blocks = new List<AnimBlock>();
         public List<AnimBlock> Blocks { get { return new List<AnimBlock>(_Blocks); } }
 

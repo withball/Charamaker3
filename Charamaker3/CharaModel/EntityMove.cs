@@ -3347,7 +3347,141 @@ namespace Charamaker3.CharaModel
             cc.TextLength = this.TextLength;
         }
     }
+    /// <summary>
+    /// 背景を設定するムーブ
+    /// </summary>
+    public partial class HaikeiMove : Component
+    {
+        public string Tag;
+        public string WatchRect;
+        public float Px,Py;
+        goOption Go;
 
+        List<List<Entity>> tags = new List<List<Entity>>();
+        bool instant { get { return time <= 0; } }
+
+        /// <summary>
+        /// からのコンストラクタ
+        /// </summary>
+        public HaikeiMove()
+        {
+        }
+        /// <summary>
+        /// 普通のコンストラクタ
+        /// </summary>
+        /// <param name="Tag">変化させるターゲット</param>
+        /// <param name="time"></param>
+        /// <param name="px">スクロール割合</param>
+        /// <param name="py">スクロール割合</param>
+        /// <param name="watchRect">探すカメラの名前</param>
+        /// <param name="name"></param>
+        public HaikeiMove(string Tag, float time,float px,float py,string watchRect, string name = "") : base(time, name)
+        {
+            this.Tag = Tag;
+            this.Px = px;
+            this.Py= py;
+            this.WatchRect = watchRect;
+        }
+
+        protected override void onadd(float cl)
+        {
+            tags.Clear();
+            //characterから得るtag
+            var cs = e.getcompos<Character>();
+            if (cs.Count == 0)
+            {
+
+                tags.Add(new List<Entity> { e });
+            }
+            else
+            {
+                switch (Go)
+                {
+                    case goOption.def:
+                    case goOption.goAll:
+                        foreach (var a in cs)
+                        {
+                            tags.Add(a.getTree(name));
+                        }
+                        break;
+                    case goOption.onlyRoot:
+                        foreach (var a in cs)
+                        {
+                            tags.Add(new List<Entity> { a.getEntity(name) });
+                        }
+                        break;
+                }
+            }
+
+            if (instant)
+            {
+                setHaikei();
+            }
+            /* else
+             {
+                 float speed = 1 / time;
+                 addDefference(Math.Min(speed * cl,1));
+             }*/
+            base.onadd(cl);
+        }
+        protected override void onremove(float cl)
+        {
+            if (!instant)
+            {
+                this.setHaikei();
+            }
+            base.onremove(cl);
+        }
+        void setHaikei() 
+        {
+            var watchRect = World.getNamedEntity(WatchRect, world.Entities);
+            if (watchRect.Count == 0) 
+            {
+                return;
+            }
+            foreach (var a in tags) 
+            {
+                foreach (var b in a)
+                {
+                    var h=new Haikei(Px,Py,null);
+                    h.cam = watchRect[0];
+                    h.add(b);
+                    
+                }
+            }
+        }
+      
+        public override DataSaver ToSave()
+        {
+            var d = base.ToSave();
+            d.packAdd("Px", Px);
+            d.packAdd("Py", Py);
+            d.linechange();
+            d.packAdd("WatchRect", this.WatchRect);
+            d.packAdd("Go", this.Go);
+
+            return d;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+
+            this.Px=d.unpackDataF("Px", Px);
+            this.Py=d.unpackDataF("Py", Py);
+            this.WatchRect=d.unpackDataS("WatchRect", this.WatchRect);
+            this.Go=d.unpackDataE("Go", this.Go);
+        }
+        public override void copy(Component c)
+        {
+            var cc = (HaikeiMove)c;
+            base.copy(c);
+
+            cc.Px=this.Px;
+            cc.Py=this.Py;
+            cc.WatchRect = this.WatchRect;
+            cc.Go = this.Go;
+        }
+    }
 
 }
 
