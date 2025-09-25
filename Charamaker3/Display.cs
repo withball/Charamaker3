@@ -954,7 +954,7 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// Cameraデストラクタでだけ呼び出す。
+        /// Cameraをdisplayの雑な管理から外す
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
@@ -968,14 +968,15 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// カメラを描画(Updateもするよあんま意味ないけど)する
+        /// カメラを描画(Updateもするよあんま意味ないけど)する。カメラごとの描画順は雑。
         /// </summary>
-        /// <param name="cam">描画するカメラ。このカメラはWorldに所属していない方がいい。(二重にUpdateされちゃうし)<br></br>
-        /// また、Cameraはもちろんこのdisplayから創出された画面用のカメラ</param>
         /// <param name="cl">カメラのフレームスピード</param>
-        public void draw(float cl = 1)
+        /// <param name="cameras">描画するカメラ。このカメラはWorldに所属していない方がいい。(二重にUpdateされちゃうし)<br></br>
+        /// また、Cameraはもちろんこのdisplayから創出された画面用のカメラ</param>
+        /// <param name="AddCameras">追加で描画するカメラ 順番通りになる</param>
+        public void draw(float cl = 1, List<CP<Camera>> AddCameras = null)
         {
-            PreDraw(cl);
+            PreDraw(cl,AddCameras);
             render.Render.BeginDraw();
             foreach (CP<Camera> a in cameras)
             {
@@ -984,8 +985,20 @@ namespace Charamaker3
                     a.c.e.update(cl);
                 }
             }
+            if (AddCameras != null)
+            {
+                foreach (CP<Camera> a in AddCameras)
+                {
+                    if (a.c.watchRect.added)
+                    {
+                        a.c.e.update(cl);
+                    }
+                }
+            }
             render.Render.EndDraw();
         }
+
+        
 
 
         //事前描画のセマフォア
@@ -997,12 +1010,19 @@ namespace Charamaker3
         /// テキストのやつなど、事前に描画が必要なやつなどをまとめて処理する
         /// </summary>
         /// <param name="cl"></param>
-        protected void PreDraw(float cl)
+        protected void PreDraw(float cl, List<CP<Camera>> AddPredraws=null)
         {
             _TextRender.BitmapRender.BeginDraw();
             foreach (var a in cameras)
             {
                 a.c.PreDraw(cl,Semaphores);
+            }
+            if (AddPredraws != null) 
+            {
+                foreach (var a in AddPredraws) 
+                {
+                    a.c.PreDraw(cl, Semaphores);
+                }
             }
             _TextRender.BitmapRender.EndDraw();
         }

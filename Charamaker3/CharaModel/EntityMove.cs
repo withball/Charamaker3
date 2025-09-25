@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Charamaker3.ParameterFile;
+using Charamaker3.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Charamaker3.ParameterFile;
-using Charamaker3.Utils;
 
 namespace Charamaker3.CharaModel
 {
@@ -109,7 +107,7 @@ namespace Charamaker3.CharaModel
                 res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
                 res.SO = scaleOption.F;
             }
-            res.RatioOption = rationOption.Cos;
+            res.RatioOption = ratioOption.Cos;
             return res;
         }
         /// <summary>
@@ -135,7 +133,7 @@ namespace Charamaker3.CharaModel
                 res = new EntityMove(time, dx, dy, 0, 0, 0, 0, ddegree, 0, 0, name);
                 res.SO = scaleOption.F;
             }
-            res.RatioOption = rationOption.Sin;
+            res.RatioOption = ratioOption.Sin;
             return res;
         }
 
@@ -830,7 +828,7 @@ namespace Charamaker3.CharaModel
     /// <summary>
     /// レシオの変化
     /// </summary>
-    public enum rationOption 
+    public enum ratioOption 
     {
         Liner=0,Cos=1,Sin=2
     }
@@ -917,7 +915,7 @@ namespace Charamaker3.CharaModel
         /// </summary>
         public goOption GO = goOption.def;
 
-        public rationOption RatioOption = rationOption.Liner;
+        public ratioOption RatioOption = ratioOption.Liner;
 
         public EntityMove() { }
         public EntityMove(float time, float dx = 0, float dy = 0, float dw = 0, float dh = 0, float dtx = 0, float dty = 0
@@ -996,7 +994,7 @@ namespace Charamaker3.CharaModel
             base.ToLoad(d);
 
             GO = (goOption)d.unpackDataF("GO");
-            RatioOption = d.unpackDataE<rationOption>("RatioOption", RatioOption);
+            RatioOption = d.unpackDataE<ratioOption>("RatioOption", RatioOption);
             basespeeds[_X] = d.unpackDataF("_X");
             basespeeds[_Y] = d.unpackDataF("_Y");
 
@@ -1604,13 +1602,13 @@ namespace Charamaker3.CharaModel
                 {
                     switch (RatioOption)
                     {
-                        case rationOption.Liner:
+                        case ratioOption.Liner:
                             {
                                 float speed = 1 / time;
                                 addDefference(speed * cl);
                             }
                             break;
-                        case rationOption.Cos:
+                        case ratioOption.Cos:
                             {
                                 float pretimer = timer - cl;
 
@@ -1619,7 +1617,7 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed);
                             }
                             break;
-                        case rationOption.Sin:
+                        case ratioOption.Sin:
                             {
                                 float pretimer = timer - cl;
 
@@ -1715,7 +1713,7 @@ namespace Charamaker3.CharaModel
         const int _TPY = 3;
         bool instant { get { return time <= 0; } }
 
-        rationOption RatioOption = rationOption.Liner;
+        ratioOption RatioOption = ratioOption.Liner;
 
         public SetTXYMove(float time, string tag, float x, float y, float tpx=float.NaN, float tpy = float.NaN) : base(time) 
         {
@@ -1764,7 +1762,7 @@ namespace Charamaker3.CharaModel
         {
             base.ToLoad(d);
 
-            RatioOption=d.unpackDataE<rationOption>("RatioOption", RatioOption);
+            RatioOption=d.unpackDataE<ratioOption>("RatioOption", RatioOption);
             basespeeds[_X] = d.unpackDataF("_X", basespeeds[_X]);
             basespeeds[_Y] = d.unpackDataF("_Y", basespeeds[_Y]);
             basespeeds[_TPX] = d.unpackDataF("_TPX", basespeeds[_TPX]);
@@ -1836,13 +1834,13 @@ namespace Charamaker3.CharaModel
                 {
                     switch (RatioOption)
                     {
-                        case rationOption.Liner:
+                        case ratioOption.Liner:
                             {
                                 float speed = 1 / time;
                                 addDefference(speed * cl);
                             }
                             break;
-                        case rationOption.Cos:
+                        case ratioOption.Cos:
                             {
                                 float pretimer = timer - cl;
 
@@ -1851,7 +1849,7 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed);
                             }
                             break;
-                        case rationOption.Sin:
+                        case ratioOption.Sin:
                             {
                                 float pretimer = timer - cl;
 
@@ -2152,7 +2150,7 @@ namespace Charamaker3.CharaModel
 
 
         protected changeOption CO = changeOption.difference;
-        rationOption RatioOption = rationOption.Liner;
+        public ratioOption RatioOption = ratioOption.Liner;
 
         public DrawableMove() { }
         public DrawableMove(float time, float dz = 0, float dr = 0, float dg = 0, float db = 0, float dopa = 0, string texture = ""
@@ -2218,7 +2216,7 @@ namespace Charamaker3.CharaModel
             base.ToLoad(d);
 
             GO = d.unpackDataE<goOption>("GO", goOption.def);
-            RatioOption = d.unpackDataE<rationOption>("RatioOption", RatioOption);
+            RatioOption = d.unpackDataE<ratioOption>("RatioOption", RatioOption);
             basespeeds[_Z] = d.unpackDataF("_Z");
             basespeeds[_R] = d.unpackDataF("_R");
             basespeeds[_G] = d.unpackDataF("_G");
@@ -2533,13 +2531,13 @@ namespace Charamaker3.CharaModel
                 {
                     switch (RatioOption)
                     {
-                        case rationOption.Liner:
+                        case ratioOption.Liner:
                             {
                                 float speed = 1 / time;
                                 addDefference(speed * cl);
                             }
                             break;
-                        case rationOption.Cos:
+                        case ratioOption.Cos:
                             {
                                 float pretimer = timer - cl;
 
@@ -2547,7 +2545,7 @@ namespace Charamaker3.CharaModel
                                 addDefference(speed);
                             }
                             break;
-                        case rationOption.Sin:
+                        case ratioOption.Sin:
                             {
                                 float pretimer = timer - cl;
 
