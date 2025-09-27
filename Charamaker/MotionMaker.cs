@@ -326,15 +326,24 @@ namespace Charamaker
         }
 
         List<Character> narabeCharas = new List<Character>();
+        List<Entity>narabeTexts= new List<Entity>();
 
         private void narabeB_Click(object sender, EventArgs e)
         {
+            if(pathB.Text!="")
             {
                 foreach (var a in narabeCharas) 
                 {
                     a.e.remove();
                 }
                 narabeCharas.Clear();
+
+
+                foreach (var a in narabeTexts)
+                {
+                    a.remove();
+                }
+                narabeTexts.Clear();
 
                 messageB.Text = "";
                 string[] filesM = System.IO.Directory.GetFiles(FileMan.s_rootpath + @".\motion\" , pathB.Text+ "*.ctm", System.IO.SearchOption.AllDirectories);
@@ -356,9 +365,16 @@ namespace Charamaker
                             }
                             chara.name = filesM[i].Split(@".\motion\")[1];
 
+
+                            float haba = chara.w * ((float)cm.PointB.Value/ cm.PointB.Maximum * 4f+1);
                             chara.add(cm.w);
-                            int num = (int)Mathf.max(cm.cam.watchRect.w / (chara.w * 2.5f),1);
-                            chara.settxy(cm.cam.watchRect.gettxy2(-0.5f, -0.5f) - cm.cam.watchRect.gettxy2(-0.0f, -0.0f), - chara.w * 2.5f * (i % (num)+0.5f), - chara.h * 1.5f * (i / (num)+0.1f));
+                            int num = (int)Mathf.max(cm.cam.watchRect.w / (haba),1);
+                            chara.settxy(cm.cam.watchRect.gettxy2(-0.5f, -0.5f) - cm.cam.watchRect.gettxy2(-0.0f, -0.0f), - haba * (i % (num)+0.5f), - chara.h * 1.5f * (i / (num)+0.1f));
+                            var text=Entity.make2(chara.gettxy2().x, chara.gettxy2(float.NaN, 1).y, haba, haba, 0.5f, 0);
+
+                            new Text(99999, new ColorC(0, 0, 0, 1), chara.name, new FontC(haba/10, haba, haba, alignment: FontC.alignment.center)).add(text);
+                            text.add(cm.w);
+                            narabeTexts.Add(text);
                         }
                     }
                 }

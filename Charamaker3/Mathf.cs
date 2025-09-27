@@ -309,6 +309,18 @@ namespace Charamaker3
             }
             return a[idx];
         }
+        /// <summary>
+        /// 最大最小で枠決めする
+        /// </summary>
+        /// <param name="value">値</param>
+        /// <param name="min">最小値</param>
+        /// <param name="max">最大値</param>
+        /// <returns></returns>
+
+        public static float Clamp(float value, float min, float max) 
+        {
+            return Mathf.min(Mathf.max(value, min), max);
+        }
 
         /// <summary>
         /// 最も大きい値を返す

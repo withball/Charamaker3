@@ -50,6 +50,7 @@
             speedLabel = new Label();
             ResetTextureB = new Button();
             ForceMirrorButton = new Button();
+            CheckB = new Button();
             ((System.ComponentModel.ISupportInitialize)zoomUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)PointB).BeginInit();
             ((System.ComponentModel.ISupportInitialize)SpeedBar).BeginInit();
@@ -283,11 +284,24 @@
             ForceMirrorButton.UseVisualStyleBackColor = true;
             ForceMirrorButton.Click += ForceMirrorButton_Click;
             // 
+            // CheckB
+            // 
+            CheckB.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            CheckB.Font = new Font("Yu Gothic UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            CheckB.Location = new Point(1289, 7);
+            CheckB.Name = "CheckB";
+            CheckB.Size = new Size(75, 23);
+            CheckB.TabIndex = 20;
+            CheckB.Text = "Check";
+            CheckB.UseVisualStyleBackColor = true;
+            CheckB.Click += CheckB_Click;
+            // 
             // Charamaker
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1584, 861);
+            Controls.Add(CheckB);
             Controls.Add(ForceMirrorButton);
             Controls.Add(ResetTextureB);
             Controls.Add(speedLabel);
@@ -335,7 +349,6 @@
         private TextBox DSB;
         private TextBox messageB;
         private Button setBaseB;
-        private TrackBar PointB;
         private Button motionB;
         private Button screenshotB;
         private Button animationB;
@@ -347,5 +360,7 @@
         private Label speedLabel;
         private Button ResetTextureB;
         private Button ForceMirrorButton;
+        private Button CheckB;
+        public TrackBar PointB;
     }
 }

@@ -22,7 +22,7 @@ namespace Charamaker
         DataSaver save;
 
         public Camera cam2;
-        public void OffControls() 
+        public void OffControls()
         {
             this.DSB.Hide();
             this.screenshotB.Hide();
@@ -32,7 +32,7 @@ namespace Charamaker
             this.ForceMirrorButton.Hide();
             this.setBaseB.Hide();
             this.messageB.Hide();
-          
+
         }
 
         public void OnControls()
@@ -68,7 +68,7 @@ namespace Charamaker
                 MotionString = save.unpackDataS("MotionString", "");
                 LoadAnim = save.unpackDataS("LoadAnim", LoadAnim);
                 AnimStartTime = save.unpackDataF("AnimStartTime", AnimStartTime);
-                AnimEndTime = save.unpackDataF("AnimEndTime",AnimEndTime);
+                AnimEndTime = save.unpackDataF("AnimEndTime", AnimEndTime);
                 Debug.WriteLine("SaveData " + save.getData());
                 ChangeRootpath(save.unpackDataS("rootpath", @".\"));
                 LoadCharacter(save.unpackDataS("LastLoad", @"yoshino"));
@@ -185,14 +185,14 @@ namespace Charamaker
         private void ticked(object sender, EventArgs e)
         {
             // w = new World();
-            
+
             {
-                string selectchara = "Select:" ;
-                if (sel != null && sel.c != null) 
+                string selectchara = "Select:";
+                if (sel != null && sel.c != null)
                 {
                     selectchara += sel.c.e.name;
                 }
-                this.Text = selectchara+" " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
+                this.Text = selectchara + " " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
             }
             km.setpointer(this);
 
@@ -607,11 +607,11 @@ namespace Charamaker
 
         }
 
-        public AnimeEditor anmE=null;
+        public AnimeEditor anmE = null;
 
-        public string LoadAnim="";
-        public float AnimStartTime =0;
-        public float AnimEndTime =10000;
+        public string LoadAnim = "";
+        public float AnimStartTime = 0;
+        public float AnimEndTime = 10000;
         private void animationB_Click(object sender, EventArgs e)
         {
             if (anmE == null || anmE.Visible == false)
@@ -700,9 +700,9 @@ namespace Charamaker
         /// <summary>
         /// いろいろデータをリセットする
         /// </summary>
-        public void ResetLoadDatas() 
+        public void ResetLoadDatas()
         {
-            var temp=FileMan.s_rootpath;
+            var temp = FileMan.s_rootpath;
             FileMan.s_rootpath = "./";
             FP.l.seting(textsn: new List<string> { @"texts\text.txt" });
             FileMan.s_rootpath = temp;
@@ -720,15 +720,29 @@ namespace Charamaker
         {
             if (sel.c != null)
             {
-                
+
                 foreach (var a in sel.c.getTree(""))
                 {
-                    a.tx = - (a.tx - a.w * 0.5f)+a.w*0.5f;
-                    foreach (var b in sel.c.getJoint(a.name)) 
+                    a.tx = -(a.tx - a.w * 0.5f) + a.w * 0.5f;
+                    foreach (var b in sel.c.getJoint(a.name))
                     {
-                        b.px = - (b.px - 0.5f)+0.5f;
+                        b.px = -(b.px - 0.5f) + 0.5f;
                     }
                 }
+            }
+        }
+
+        private void CheckB_Click(object sender, EventArgs e)
+        {
+            if (CheckB.Text == "Check")
+            {
+                CheckB.Text = "Back";
+                OffControls();
+            }
+            else
+            {
+                CheckB.Text = "Check";
+                OnControls();
             }
         }
     }

@@ -910,9 +910,10 @@ namespace Charamaker3.CharaModel
                     }
                     else
                     {
-                        //Debug.WriteLine($"{this.ToString()} 's argument is not collect\n argument number {i} named {param[i].Name}\n {methinfo.ToString()}");
+                        Debug.WriteLine($"{this.ToString()} 's argument is not collect\n argument number {i} named {param[i].Name}\n {methinfo.ToString()}");
                         return new Component();
                     }
+                    //Debug.WriteLine($"{this.ToString()} 's argument is OK!!\n argument number {i} named {param[i].Name}\n {methinfo.ToString()}");
                 }
 
                 var comp = (Component)methinfo.Invoke(null, args.ToArray());

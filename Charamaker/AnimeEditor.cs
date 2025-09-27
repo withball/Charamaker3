@@ -332,16 +332,6 @@ namespace Charamaker
 
         private void CheckB_Click(object sender, EventArgs e)
         {
-            if (CheckB.Text == "Check")
-            {
-                CheckB.Text = "Back";
-                charamaker.OffControls();
-            }
-            else
-            {
-                CheckB.Text = "Check";
-                charamaker.OnControls();
-            }
 
             if (1 == 0)
             {
