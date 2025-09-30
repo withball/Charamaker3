@@ -1249,8 +1249,20 @@ namespace Charamaker3
             cs.Add(c);
             stops.Add(stop);
             time = sumtime;
-            
         }
+
+        public void insertmove(int index,Component c, bool stop = false)
+        {
+            if (idx >= index) //既にidxが進んでいたら
+            {
+                fakeadd(c);
+                c.resettimer();
+            }
+            cs.Insert(index,c);
+            stops.Insert(index,stop);
+            time = sumtime;
+        }
+
         /// <summary>
         /// 
         /// </summary>

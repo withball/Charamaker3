@@ -317,7 +317,7 @@ namespace Charamaker3
         /// <param name="max">最大値</param>
         /// <returns></returns>
 
-        public static float Clamp(float value, float min, float max) 
+        public static float clamp(float value, float min, float max) 
         {
             return Mathf.min(Mathf.max(value, min), max);
         }
