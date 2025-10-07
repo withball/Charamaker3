@@ -33,7 +33,7 @@ namespace Charamaker3.Hitboxs
 
 
         /// <summary>
-        /// 自身についている属性。intだけど、enumを入れたほうがいい。
+        /// 自身についている属性。intだけど、enumを入れたほうがいい。無しで当たり判定しない。
         /// </summary>
         public List<int> tag=new List<int>();
 
@@ -251,6 +251,9 @@ namespace Charamaker3.Hitboxs
         /// <returns></returns>
         public bool Filters(Hitbox h, FilterOption filteroption=FilterOption.AndFilter) 
         {
+            //タグが無ければ当たらない。
+            if(this.tag.Count==0)return false;
+
             bool thisOK = true;
             var thisFilter = new List<int>(this.tagfilter);
             if (thisFilter.Count == 0) { thisFilter.AddRange(h.tag); }

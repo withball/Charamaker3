@@ -924,6 +924,248 @@ namespace Charamaker3
     }
 
     #region Text
+    //テキストに色を付けたりサイズを変えたりするやつ。
+    public class TextAnallyzer 
+    {
+        /// <summary>
+        /// 色を掛け算でやるか。やらない場合はオーバーライド
+        /// </summary>
+        public bool isMultiplyColor=false;
+        /// <summary>
+        /// 文字の色。無い場合は普通の色
+        /// </summary>
+        public ColorC Color=null;
+
+        /// <summary>
+        /// 文字サイズの倍率
+        /// </summary>
+        public float Size = 1;
+
+        /// <summary>
+        /// 分割された文字列
+        /// </summary>
+        public string TextSplited;
+
+        /// <summary>
+        /// xの位置
+        /// </summary>
+        public float x;
+
+        /// <summary>
+        /// yの位置
+        /// </summary>
+        public float y;
+
+
+        /// <summary>
+        /// yの位置
+        /// </summary>
+        public float w;
+
+        /// <summary>
+        /// yの位置
+        /// </summary>
+        public float h;
+
+        /// <summary>
+        /// ラインの番号
+        /// </summary>
+        public int line;
+        /// <summary>
+        /// テキストを一文字ずつに分割する。
+        /// </summary>
+        /// <param name="FullText"></param>
+        /// <param name="render"></param>
+        /// <param name="F"></param>
+        /// <param name="rendZone"></param>
+        /// <returns></returns>
+        static public List<List<TextAnallyzer>> AnalyzeText(string FullText,C3BitmapRenderSet render,FontC F,Rectangle rendZone)
+        {
+            float sumRight=0, sumBottom=0,maxBottom=0;
+            int sumLine = 0;
+
+            var res=new List<List<TextAnallyzer>>();
+            res.Add(new List<TextAnallyzer>());
+
+            List<int>colStart = new List<int>();
+            List<ColorC> cols=new List<ColorC>();
+
+            bool go = true;
+            string Ttext = FullText;
+            while (go)
+            {
+                go = false;
+
+                int cIdx = Ttext.IndexOf("<col", 0);
+
+                int cEdx = (cIdx != -1) ? Ttext.IndexOf(">", cIdx) : -1;
+
+                int ceIdx = Ttext.IndexOf("<colE>", 0);
+
+                if (ceIdx != -1 && ceIdx <= cIdx)
+                {
+                    colStart.Add(ceIdx);
+                    cols.Add(null);
+                    Ttext = Ttext.Remove(ceIdx, "<colE>".Length);
+                    go = true;
+                }
+                else if (cIdx != -1 && cIdx < cEdx)
+                {
+                    var d = new DataSaver(Ttext.Substring(cIdx, cEdx - cIdx ));
+                    if (d.splitOneDataS(0, "", ',') == "<col")
+                    {
+                        colStart.Add(cIdx);
+                        var add = new ColorC(d.splitOneDataF(1, 0, ','), d.splitOneDataF(2, 0, ','), d.splitOneDataF(3, 0, ','), d.splitOneDataF(4, 0, ','));
+                        cols.Add(add);
+                        Ttext = Ttext.Remove(cIdx, cEdx - cIdx + 1);
+                        go = true;
+                    }
+                }
+
+            }
+            ColorC getColor(int TI)
+            {
+                int l = 0;
+                int r = colStart.Count-1;
+                while(true)
+                {
+                    int idx = (l + r) / 2;
+
+                    int ri = idx + 1;
+
+
+                    if (ri < colStart.Count)
+                    {
+                        if (colStart[idx] <= TI && TI < colStart[ri])
+                        {
+                            return cols[idx];
+                        }
+                        else if (TI < colStart[idx])
+                        {
+                            if (r == l)
+                            {
+                                if (r == 0)
+                                {
+                                    return null;
+                                }
+                                else
+                                {
+                                    return cols[r];
+                                }
+                            }
+                            r = idx;
+                        }
+                        else
+                        {
+                            if (r == l)
+                            {
+                                return cols[r];
+                            }
+                            l = ri;
+                        }
+                    }
+                    else 
+                    {
+                        if (idx < cols.Count)
+                        {
+                            if (TI < colStart[idx])
+                            {
+                                return null;
+                            }
+                            else 
+                            {
+                                return cols[idx];
+                            }
+                        }
+                        return null;
+                    }
+                }
+            }
+
+
+            for (int i = 0; i < Ttext.Length; ++i)
+            {
+                var add=new TextAnallyzer();
+
+                var Text = Ttext.Substring(i, 1);
+                var tf = new FontC();
+                F.copy(tf);
+                tf.ali = FontC.alignment.left;
+                tf.aliV = FontC.alignment.left;
+                IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(Text, F.ToFont(), rendZone.w, rendZone.h);
+
+                //文字の幅と高さ
+                float _right=0,_bottom=0;
+
+                int maxline = 2;
+                if (F.size > 0)
+                {
+                    maxline = (int)(rendZone.h / F.size) * 2;
+                }
+                LineMetrics[] Lmets = new LineMetrics[maxline];
+                ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
+                int LCount;
+                int CCount;
+                var Lres = Layout.GetLineMetrics(Lmets, out LCount);
+                var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
+
+                if (Lres.Success)
+                {
+                    //文字列の高さをさぐる
+                    _bottom = 0;
+                    for (int t = 0; t < LCount; ++t)
+                    {
+                        _bottom = Mathf.max(Lmets[t].Height,_bottom);
+                    }
+                }
+                if (Cres.Success)
+                {
+                    //文字列の幅をさぐる 
+                    _right = 0;
+                    for (int t = 0; t < CCount; ++t)
+                    {
+                        _right = Mathf.max(Cmets[t].Width,_right);
+                    }
+                }
+                Layout.Dispose();
+                add.Size = 1;
+                add.TextSplited = Text;
+                add.Color = getColor(i);
+                if (add.Color != null) 
+                {
+                    add.Color=new ColorC(add.Color);
+                }
+                add.isMultiplyColor = false;
+
+
+                maxBottom = Mathf.max(maxBottom, sumBottom + _bottom);
+                sumBottom = Mathf.max(sumBottom, maxBottom - _bottom);
+
+                add.x = sumRight ;
+                add.w = _right;
+
+                sumRight += _right;
+
+                add.h = maxBottom - sumBottom;
+                add.y = sumBottom ;
+
+
+                if (sumRight > rendZone.w || Text == "\n")
+                {
+                    sumRight = 0;
+                    sumLine += 1;
+                    sumBottom = maxBottom;
+                    res.Add(new List<TextAnallyzer>());
+                }
+
+                add.line = sumLine;
+                res.Last().Add(add);
+            }
+            return res;
+        }
+    }
+
+
     /// <summary>
     /// フォントを扱うクラス
     /// </summary>
@@ -1347,7 +1589,7 @@ namespace Charamaker3
 
 
                 semaphores.TextRender.Wait();
-                
+
                 render.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
                 render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
 
@@ -1356,11 +1598,11 @@ namespace Charamaker3
 
                     //render.Clear(new ColorC(FileMan.whrandhani(R), FileMan.whrandhani(G), FileMan.whrandhani(B)
                     //    , 0.5f));
-                    render.BitmapRender.Clear(new ColorC(R,G,B,0));
+                    render.BitmapRender.Clear(new ColorC(R, G, B, 0));
                 }
                 if (F.hutiZure > 0)
                 {
-                    
+
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
                     var slb = render.BitmapRender.CreateSolidColorBrush(c);
@@ -1376,15 +1618,98 @@ namespace Charamaker3
                     lis[3].y -= zure;
                     for (int i = 0; i < lis.Count; i++)
                     {
-                   
+
                         render.BitmapRender.DrawText(Text, F.ToFont(), lis[i], slb);
                     }
                 }
-                SetRayout(Text,F);
+                SetRayout(Text, F);
+
+
+                var AedTexts = TextAnallyzer.AnalyzeText(Text, render, F, rendZone);
+                float zentaiH = 0;
+                foreach (var a in AedTexts)
                 {
-                    var slb = render.BitmapRender.CreateSolidColorBrush(PastColor);
-                    render.BitmapRender.DrawText(Text, F.ToFont(), rendZone, slb);
+                    foreach (var b in a)
+                    {
+                        zentaiH = Mathf.max(b.y + b.h, zentaiH);
+                    }
                 }
+                foreach (var a in AedTexts) 
+                {
+                    float lineW = 0;
+                    foreach (var b in a)
+                    {
+                        lineW =Mathf.max(b.x+b.w,lineW);
+                    }
+
+                    foreach (var b in a)
+                    {
+                        var col = new ColorC(PastColor);
+                        var f = new FontC();
+                        F.copy(f);
+                        f.size *= b.Size;
+                        f.ali = FontC.alignment.left;
+                        f.aliV = FontC.alignment.left;
+                        if (b.Color != null)
+                        {
+                            if (b.isMultiplyColor == false)
+                            {
+                                col = b.Color;
+                            }
+                            else
+                            {
+                                col.r *= b.Color.r;
+                                col.g *= b.Color.g;
+                                col.b *= b.Color.b;
+                                col.opa *= b.Color.opa;
+                            }
+                        }
+                        
+                        var drawRect=new Rectangle(b.x,b.y,b.w,b.h);
+
+                        switch (F.ali)
+                        {
+                            case FontC.alignment.left:
+                                drawRect.x += rendZone.x;
+                                break;
+                            case FontC.alignment.center:
+                                drawRect.x += rendZone.x + (rendZone.w - lineW)/2;
+                                break;
+                            case FontC.alignment.right:
+                                drawRect.x += rendZone.x + (rendZone.w - lineW);
+                                break;
+                            case FontC.alignment.justify:
+                            case FontC.alignment.None:
+                                drawRect.x += rendZone.x;
+                                break;
+                        }
+                        switch (F.aliV)
+                        {
+                            case FontC.alignment.left:
+                                drawRect.y += rendZone.y;
+                                break;
+                            case FontC.alignment.center:
+                                drawRect.y += rendZone.y + (rendZone.h - zentaiH)*0;
+                                break;
+                            case FontC.alignment.right:
+                                drawRect.y += rendZone.y + (rendZone.h - zentaiH)*0;
+                                break;
+                            case FontC.alignment.justify:
+                            case FontC.alignment.None:
+                                drawRect.y += rendZone.y;
+                                break;
+                        }
+
+
+                        using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
+                        {
+                            render.BitmapRender.DrawText(b.TextSplited, F.ToFont(), drawRect, slb);
+                        }
+                      //  Debug.WriteLine(" adsad " + rendZone.x + "::" + rendZone.y + "[" + rendZone.w + "::" + rendZone.h + "]");
+                      //  Debug.WriteLine(b.x+"::"+ b.y+" asd " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
+                    }
+                }
+
                 render.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
 
