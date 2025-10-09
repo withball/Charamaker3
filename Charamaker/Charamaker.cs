@@ -154,7 +154,7 @@ namespace Charamaker
                 text.font.hutiColor = new ColorC(1, 1, 1, 1);
                 text.updated += (aa, bb) =>
                 {
-                    text.text = inp.Replace(FP.l.GT("CamSlide")) + "\n" + inp.Replace(FP.l.GT("SelSlide"));
+                    text.text.TextSource = inp.Replace(FP.l.GT("CamSlide")) + "\n" + inp.Replace(FP.l.GT("SelSlide"));
                     //  cam.watchRect.degree += 0.1f * bb;
                 };
 

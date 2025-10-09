@@ -1052,7 +1052,7 @@ namespace Charamaker3
                 }
             }
             screenShot(_SCSRender,render);
-            //screenShot(_TextRender);
+//            screenShot(_TextRender,render);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);
         }

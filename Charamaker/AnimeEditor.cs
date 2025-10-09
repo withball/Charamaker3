@@ -613,7 +613,7 @@ namespace Charamaker
             {
                 TimeLine.e.x = time/MaxTime*zone.w;
                 TimeLine.e.x += zone.x;
-                TimeLine.getEntity("text").getDrawable<Text>().text = time.ToString();
+                TimeLine.getEntity("text").getDrawable<Text>().text.TextSource = time.ToString();
             }
         }
 

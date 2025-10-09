@@ -720,6 +720,7 @@ namespace Charamaker3.Utils
             var Btge = BTagE;
             var tgj = TagJ;
 
+
             if (CanRend) 
             {
                 Text.SetRayout();

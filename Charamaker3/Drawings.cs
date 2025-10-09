@@ -141,8 +141,8 @@ namespace Charamaker3
                 var center = cam.gettxy();
                 truex = e.x;
                 truey = e.y;
-                prex = e.x + center.x * -(px -1);
-                prey = e.y + center.y * -(py -1);
+                prex = e.x + center.x * -(px - 1);
+                prey = e.y + center.y * -(py - 1);
                 e.x = prex;
                 e.y = prey;
 
@@ -229,18 +229,62 @@ namespace Charamaker3
         {
             if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
-                return ReferenceEquals(a, null) == ReferenceEquals(b, null);
+                return ReferenceEquals(a, b) == true;
             }
 
-            return a.r == b.r && a.g == b.g && a.b == b.b && a.opa == b.opa;
+            bool Br = a.r == b.r;
+            if (float.IsNaN(a.r) && float.IsNaN(b.r))
+            {
+                Br = true;
+            }
+            bool Bg = a.g == b.g;
+            if (float.IsNaN(a.g) && float.IsNaN(b.g))
+            {
+                Bg = true;
+            }
+            bool Bb = a.b == b.b;
+            if (float.IsNaN(a.b) && float.IsNaN(b.b))
+            {
+                Bb = true;
+            }
+            bool Bo = a.opa == b.opa;
+            if (float.IsNaN(a.opa) && float.IsNaN(b.opa))
+            {
+                Bo = true;
+            }
+
+            return Br == true && Bg == true && Bb == true && Bo ==true ;
         }
         public static bool operator !=(ColorC a, ColorC b)
         {
             if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
-                return ReferenceEquals(a, null) != ReferenceEquals(b, null);
+                return ReferenceEquals(a, b) == false;
             }
-            return a.r != b.r || a.g != b.g || a.b != b.b || a.opa != b.opa;
+
+            bool Br = a.r == b.r;
+            if (float.IsNaN(a.r) && float.IsNaN(b.r))
+            {
+                Br = true;
+            }
+            bool Bg = a.g == b.g;
+            if (float.IsNaN(a.g) && float.IsNaN(b.g))
+            {
+                Bg = true;
+            }
+            bool Bb = a.b == b.b;
+            if (float.IsNaN(a.b) && float.IsNaN(b.b))
+            {
+                Bb = true;
+            }
+            bool Bo = a.opa == b.opa;
+            if (float.IsNaN(a.opa) && float.IsNaN(b.opa))
+            {
+                Bo = true;
+            }
+
+
+            return Br==false || Bg==false || Bb==false || Bo==false;
         }
 
         public DataSaver ToSave()
@@ -275,12 +319,12 @@ namespace Charamaker3
         /// <summary>
         /// 描画順番のプラスされる値。保存されない
         /// </summary>
-        public float zDelta=0;
+        public float zDelta = 0;
 
         /// <summary>
         /// 描画順番の倍率。保存されない
         /// </summary>
-        public float zRatio=1;
+        public float zRatio = 1;
 
 
         /// <summary>
@@ -331,21 +375,21 @@ namespace Charamaker3
         {
             base.ToLoad(d);
             this.z = d.unpackDataF("z");
-            this.zDelta=d.unpackDataF("zDelta", this.zDelta);
-            this.zRatio=d.unpackDataF("zRatio", this.zRatio);
+            this.zDelta = d.unpackDataF("zDelta", this.zDelta);
+            this.zRatio = d.unpackDataF("zRatio", this.zRatio);
 
-            this.linear = d.unpackDataB("linear",linear);
+            this.linear = d.unpackDataB("linear", linear);
             this.col.r = d.unpackDataF("r");
             this.col.g = d.unpackDataF("g");
             this.col.b = d.unpackDataF("b");
             this.col.opa = d.unpackDataF("opa");
         }
-        
+
         /// <summary>
         /// 描画可能な条件
         /// </summary>
         /// <returns></returns>
-        virtual public bool CanDraw(Camera cam) 
+        virtual public bool CanDraw(Camera cam)
         {
             return col.opa > 0 && onCamera(cam);
         }
@@ -468,7 +512,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="cam"></param>
         /// <returns></returns>
-        protected Matrix3x2 rectTransMax(Camera cam,float bitmapW,float bitmapH)
+        protected Matrix3x2 rectTransMax(Camera cam, float bitmapW, float bitmapH)
         {
 
             if (bitmapW <= 0 || bitmapH <= 0)
@@ -492,12 +536,12 @@ namespace Charamaker3
 
             //回転の合計
             var rad = Mathf.toRadian(-watch.degree + e.degree);
-            var a = Matrix3x2.CreateScale(1,1);
+            var a = Matrix3x2.CreateScale(1, 1);
             if (watch.mirror)
             {
                 a = Matrix3x2.Multiply(Matrix3x2.CreateScale(-1, 1), a);
 
-                a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-1*watch.w,0), a);
+                a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(-1 * watch.w, 0), a);
                 //Debug.WriteLine($"{a.M11} {a.M12} \n {a.M21} {a.M22} \n {a.M31} {a.M32} \n");
             }
             // Debug.WriteLine("wacthrect w "+watch.w+" upleft " +upleft.ToString());
@@ -511,8 +555,8 @@ namespace Charamaker3
 
             }
 
-            a = Matrix3x2.Multiply( Matrix3x2.CreateTranslation(upleft.x, upleft.y),a);
-          
+            a = Matrix3x2.Multiply(Matrix3x2.CreateTranslation(upleft.x, upleft.y), a);
+
 
 
 
@@ -548,9 +592,9 @@ namespace Charamaker3
             }
 
             return a;
-         
 
-         
+
+
         }
 
         /// <summary>
@@ -610,7 +654,7 @@ namespace Charamaker3
     {
         //頂点の位置
         float wariai = 0.5f;
-        public DTriangle(float wariai,float z, ColorC c, float time = -1, string name = "") : base(z, c, time, name)
+        public DTriangle(float wariai, float z, ColorC c, float time = -1, string name = "") : base(z, c, time, name)
         {
             this.wariai = wariai;
         }
@@ -640,7 +684,7 @@ namespace Charamaker3
             //TODO:メモリリークメモリリークとかしてたらごめん
             var render = cam.render.Render;
 
-            render.Transform = Matrix3x2.CreateTranslation(0,0);//rectTrans(cam);
+            render.Transform = Matrix3x2.CreateTranslation(0, 0);//rectTrans(cam);
             //var rect = rectRectF(cam);
 
             using (var brh = render.CreateSolidColorBrush(col))
@@ -649,10 +693,10 @@ namespace Charamaker3
 
                 ID2D1GeometrySink sink = geometry.Open();
 
-                var leftup= camsoutai(cam,e.gettxy2(0, 0));
+                var leftup = camsoutai(cam, e.gettxy2(0, 0));
                 var leftdown = camsoutai(cam, e.gettxy2(0, 1));
                 var rightup = camsoutai(cam, e.gettxy2(1, wariai));
-                sink.BeginFigure(new PointF(leftup.x,leftup.y),FigureBegin.Filled);
+                sink.BeginFigure(new PointF(leftup.x, leftup.y), FigureBegin.Filled);
 
                 sink.AddLine(new PointF(leftdown.x, leftdown.y));
                 sink.AddLine(new PointF(rightup.x, rightup.y));
@@ -662,7 +706,7 @@ namespace Charamaker3
 
                 sink.Close();
 
-                render.FillGeometry(geometry,brh);
+                render.FillGeometry(geometry, brh);
                 render.DrawGeometry(geometry, brh);
             }
 
@@ -773,7 +817,7 @@ namespace Charamaker3
         public override void draw(Camera cam)
         {
             var render = cam.render.Render;
-           
+
 
             ID2D1Bitmap bitmap;
             bitmap = cam.d.ldtex(nowtex);
@@ -784,12 +828,12 @@ namespace Charamaker3
 
 
             //色ついてない場合高速描画
-            if (this.col.r == 1&&this.col.g == 1 && this.col.b == 1)
+            if (this.col.r == 1 && this.col.g == 1 && this.col.b == 1)
             {
                 var rect = rectRectF(cam);
                 render.Transform = rectTrans(cam);
                 //var blended = cam.d.Blend(bitmap, this.col);
-                BitmapInterpolationMode mode ;
+                BitmapInterpolationMode mode;
                 if (linear == true)
                 {
                     mode = BitmapInterpolationMode.Linear;
@@ -804,16 +848,16 @@ namespace Charamaker3
                        , new RawRectF(bitmap.Size.Width * CropL, bitmap.Size.Height * CropU
                        , bitmap.Size.Width * CropR - 0.0f, bitmap.Size.Height * CropD - 0.0f));//嘘->-0.5しないと1マスが2マスになって絶望したりする。
             }
-            else if(1==1)
+            else if (1 == 1)
             {
 
-                render.Transform =Matrix3x2.CreateScale(1,1);
+                render.Transform = Matrix3x2.CreateScale(1, 1);
                 //_BlendRender.PushAxisAlignedClip(new Rectangle(0,0,bitmap.PixelSize.Width, bitmap.PixelSize.Height)
                 //    , AntialiasMode.PerPrimitive);
 
 
                 /////////////////////////////クロップ
-              
+
 
                 var crop0 = cam.render.ECrop0;
                 crop0.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(true));
@@ -850,7 +894,7 @@ namespace Charamaker3
                 }
                 else*/
                 {
-                    crop0.TransformMatrix = Matrix3x2.CreateScale(1,1);
+                    crop0.TransformMatrix = Matrix3x2.CreateScale(1, 1);
                     sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, bitmap.Size.Height * CropU - 0.0f
                   , bitmap.PixelSize.Width * CropR - bitmap.Size.Width * CropL, bitmap.PixelSize.Height * CropD - bitmap.Size.Height * CropU);
                 }
@@ -862,12 +906,12 @@ namespace Charamaker3
 
 
 
-                crop1.Rectangle = new Vector4(sourceRect.x,sourceRect.y,sourceRect.x+sourceRect.w, sourceRect.y + sourceRect.h);
-                
+                crop1.Rectangle = new Vector4(sourceRect.x, sourceRect.y, sourceRect.x + sourceRect.w, sourceRect.y + sourceRect.h);
+
                 var crop2 = cam.render.ECrop2;
                 crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
 
-                crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x,-sourceRect.y);
+                crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
                 //crop.Rectangle = new Vector4(0, 0, 5, 5);
 
                 /////////////////////////色
@@ -903,7 +947,7 @@ namespace Charamaker3
                 var trans = cam.render.ETrans;
                 trans.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
 
-                var transmatrix = rectTransMax(cam, sourceRect.w,sourceRect.h);
+                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h);
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;
                 //_BlendRender.BeginDraw();
@@ -914,7 +958,7 @@ namespace Charamaker3
 
                 var rect = rectRectF(cam);
                 //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
-                cam.render.DeviceContext.DrawImage(trans,InterpolationMode.Linear,CompositeMode.SourceOver);
+                cam.render.DeviceContext.DrawImage(trans, InterpolationMode.Linear, CompositeMode.SourceOver);
 
 
             }
@@ -924,17 +968,182 @@ namespace Charamaker3
     }
 
     #region Text
+
+
+    /// <summary>
+    /// 解析済みのテキスト
+    /// </summary>
+    public class TextInformation
+    {
+        /// <summary>
+        /// ソーステキストを指定したか
+        /// </summary>
+        protected bool _SourceSetted = true;
+
+        /// <summary>
+        /// ソーステキストを指定したか
+        /// </summary>
+        public bool SourceSetted { get { return _SourceSetted; } }
+        /// <summary>
+        /// テキストソース
+        /// </summary>
+        protected string _TextSource = "";
+        /// <summary>
+        /// テキストソース
+        /// </summary>
+        public string TextSource { get { return _TextSource; }
+            set
+            {
+                _TextSource = value;
+                
+                Analyzed.Clear();
+                Analyzed = CharInformation.AnalyzeText(value);
+
+                _AnalyzedText = "";
+                foreach (var a in Analyzed) 
+                {
+                    _AnalyzedText += a.CharText;
+                }
+                _SourceSetted = true;
+            }
+        }
+
+        /// <summary>
+        /// 解析済みテキスト
+        /// </summary>
+        protected string _AnalyzedText = "";
+        
+        /// <summary>
+        /// 解析済みのテキスト
+        /// </summary>
+        public string AnalyzedText { get { return _AnalyzedText; } 
+            set 
+            {
+                _AnalyzedText = value;
+                _TextSource = value;
+
+                Analyzed.Clear();
+                for (int i = 0; i < value.Length; ++i) 
+                {
+                    Analyzed.Add(new CharInformation(null,false,1,value.Substring(i,1)));
+                }
+                _SourceSetted = false;
+            } 
+        }
+
+        public TextInformation(string t="",bool isSource=true) 
+        {
+            if (isSource)
+            {
+                this.TextSource = t;
+            }
+            else 
+            {
+                this.AnalyzedText = t;
+            }
+        }
+
+        /// <summary>
+        /// 描画テキスト 直接いじってもいいけどさ。
+        /// </summary>
+        public List<CharInformation> Analyzed=new List<CharInformation>();
+
+        /// <summary>
+        /// 先頭からn文字を抜き出す
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns>文字の方はいじらないでね</returns>
+        public TextInformation Substring(int length) 
+        {
+            var res=clone();
+            for (int i = length; i < res.Analyzed.Count;)
+            {
+                res.Analyzed.RemoveAt(i);
+            }
+            res._AnalyzedText = res._AnalyzedText.Substring(0, length);
+            return res;
+        }
+
+
+        static public bool operator ==(TextInformation a, TextInformation b)
+        {
+
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+            {
+                return ReferenceEquals(a, b) == true;
+            }
+
+            return a._SourceSetted == b._SourceSetted && a._TextSource == b._TextSource && a._AnalyzedText == b._AnalyzedText;
+        }
+        static public bool operator !=(TextInformation a, TextInformation b)
+        {
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+            {
+                return ReferenceEquals(a, b) == false;
+            }
+            return a._SourceSetted != b._SourceSetted || a._TextSource != b._TextSource || a._AnalyzedText != b._AnalyzedText;
+        }
+
+        public void copy(TextInformation pasted)
+        {
+            pasted._SourceSetted = this._SourceSetted;
+            pasted._TextSource = this._TextSource;
+            pasted._AnalyzedText = this._AnalyzedText;
+
+            pasted.Analyzed = new List<CharInformation>();
+            foreach (var a in this.Analyzed)
+            {
+                pasted.Analyzed.Add(new CharInformation(a));
+            }
+        }
+        public TextInformation clone() 
+        {
+            var res=new TextInformation();
+            this.copy(res);
+            return res;
+        }
+
+
+        public DataSaver ToSave() 
+        {
+            var d=new DataSaver();
+            d.packAdd("SourceSetted", SourceSetted);
+            if (SourceSetted)
+            {
+                d.packAdd("Text", TextSource);
+            }
+            else 
+            {
+                d.packAdd("Text", AnalyzedText);
+            }
+            return d;
+        }
+        public void ToLoad(DataSaver d)
+        {
+            _SourceSetted = d.unpackDataB("SourceSetted", SourceSetted);
+            if (SourceSetted)
+            {
+                TextSource = d.unpackDataS("Text", TextSource);
+            }
+            else
+            {
+                AnalyzedText = d.unpackDataS("Text", AnalyzedText);
+            }
+        }
+        
+    }
+
     //テキストに色を付けたりサイズを変えたりするやつ。
-    public class TextAnallyzer 
+    public class CharInformation
     {
         /// <summary>
         /// 色を掛け算でやるか。やらない場合はオーバーライド
         /// </summary>
-        public bool isMultiplyColor=false;
+        public bool isMultiplyColor = false;
         /// <summary>
         /// 文字の色。無い場合は普通の色
         /// </summary>
-        public ColorC Color=null;
+        public ColorC Color = null;
 
         /// <summary>
         /// 文字サイズの倍率
@@ -944,51 +1153,36 @@ namespace Charamaker3
         /// <summary>
         /// 分割された文字列
         /// </summary>
-        public string TextSplited;
+        public string CharText = "";
+        public CharInformation()
+        {
+        }
+        public CharInformation(CharInformation ci)
+        {
+            this.Color = ci.Color != null ? new ColorC(ci.Color) : null;
+            this.isMultiplyColor = ci.isMultiplyColor;
+            this.Size = ci.Size;
+            this.CharText = ci.CharText;
+        }
+        public CharInformation(ColorC c, bool isMultiplycolor, float size, string chartext)
+        {
+            this.Color = c != null ? new ColorC(c) : null;
+            this.isMultiplyColor = isMultiplycolor;
+            this.Size = size;
+            this.CharText = chartext;
+        }
 
-        /// <summary>
-        /// xの位置
-        /// </summary>
-        public float x;
-
-        /// <summary>
-        /// yの位置
-        /// </summary>
-        public float y;
-
-
-        /// <summary>
-        /// yの位置
-        /// </summary>
-        public float w;
-
-        /// <summary>
-        /// yの位置
-        /// </summary>
-        public float h;
-
-        /// <summary>
-        /// ラインの番号
-        /// </summary>
-        public int line;
         /// <summary>
         /// テキストを一文字ずつに分割する。
         /// </summary>
         /// <param name="FullText"></param>
-        /// <param name="render"></param>
-        /// <param name="F"></param>
-        /// <param name="rendZone"></param>
         /// <returns></returns>
-        static public List<List<TextAnallyzer>> AnalyzeText(string FullText,C3BitmapRenderSet render,FontC F,Rectangle rendZone)
+        static public List<CharInformation> AnalyzeText(string FullText)
         {
-            float sumRight=0, sumBottom=0,maxBottom=0;
-            int sumLine = 0;
+            var res = new List<CharInformation>();
 
-            var res=new List<List<TextAnallyzer>>();
-            res.Add(new List<TextAnallyzer>());
-
-            List<int>colStart = new List<int>();
-            List<ColorC> cols=new List<ColorC>();
+            List<int> colStart = new List<int>();
+            List<ColorC> cols = new List<ColorC>();
 
             bool go = true;
             string Ttext = FullText;
@@ -1011,7 +1205,7 @@ namespace Charamaker3
                 }
                 else if (cIdx != -1 && cIdx < cEdx)
                 {
-                    var d = new DataSaver(Ttext.Substring(cIdx, cEdx - cIdx ));
+                    var d = new DataSaver(Ttext.Substring(cIdx, cEdx - cIdx));
                     if (d.splitOneDataS(0, "", ',') == "<col")
                     {
                         colStart.Add(cIdx);
@@ -1026,8 +1220,8 @@ namespace Charamaker3
             ColorC getColor(int TI)
             {
                 int l = 0;
-                int r = colStart.Count-1;
-                while(true)
+                int r = colStart.Count - 1;
+                while (true)
                 {
                     int idx = (l + r) / 2;
 
@@ -1064,7 +1258,7 @@ namespace Charamaker3
                             l = ri;
                         }
                     }
-                    else 
+                    else
                     {
                         if (idx < cols.Count)
                         {
@@ -1072,7 +1266,7 @@ namespace Charamaker3
                             {
                                 return null;
                             }
-                            else 
+                            else
                             {
                                 return cols[idx];
                             }
@@ -1085,14 +1279,79 @@ namespace Charamaker3
 
             for (int i = 0; i < Ttext.Length; ++i)
             {
-                var add=new TextAnallyzer();
+                var add = new CharInformation();
 
                 var Text = Ttext.Substring(i, 1);
+
+                add.Size = 1;
+                add.CharText = Text;
+                add.Color = getColor(i);
+                if (add.Color != null)
+                {
+                    add.Color = new ColorC(add.Color);
+                }
+                add.isMultiplyColor = false;
+
+                res.Add(add);
+            }
+            return res;
+        } } 
+    
+        //テキストに色を付けたりサイズを変えたりするやつ。
+    public class TextLayout
+    {
+        public CharInformation c;
+        /// <summary>
+        /// xの位置
+        /// </summary>
+        public float x;
+
+        /// <summary>
+        /// yの位置
+        /// </summary>
+        public float y;
+
+
+        /// <summary>
+        /// yの位置
+        /// </summary>
+        public float w;
+
+        /// <summary>
+        /// yの位置
+        /// </summary>
+        public float h;
+
+        /// <summary>
+        /// ラインの番号
+        /// </summary>
+        public int line;
+        /// <summary>
+        /// テキストを一文字ずつに分割する。
+        /// </summary>
+        /// <param name="FullText"></param>
+        /// <param name="render"></param>
+        /// <param name="F"></param>
+        /// <param name="rendZone"></param>
+        /// <returns></returns>
+        static public List<List<TextLayout>> AnalyzeText(TextInformation text,C3BitmapRenderSet render,FontC F,Rectangle rendZone)
+        {
+            float sumRight=0, sumBottom=0,maxBottom=0;
+            int sumLine = 0;
+
+            var res=new List<List<TextLayout>>();
+            res.Add(new List<TextLayout>());
+
+            for (int i = 0; i < text.Analyzed.Count; ++i)
+            {
+                var add=new TextLayout();
+                add.c = text.Analyzed[i];
+
                 var tf = new FontC();
                 F.copy(tf);
                 tf.ali = FontC.alignment.left;
                 tf.aliV = FontC.alignment.left;
-                IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(Text, F.ToFont(), rendZone.w, rendZone.h);
+                IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, F.ToFont(), rendZone.w, rendZone.h);
 
                 //文字の幅と高さ
                 float _right=0,_bottom=0;
@@ -1128,15 +1387,7 @@ namespace Charamaker3
                     }
                 }
                 Layout.Dispose();
-                add.Size = 1;
-                add.TextSplited = Text;
-                add.Color = getColor(i);
-                if (add.Color != null) 
-                {
-                    add.Color=new ColorC(add.Color);
-                }
-                add.isMultiplyColor = false;
-
+              
 
                 maxBottom = Mathf.max(maxBottom, sumBottom + _bottom);
                 sumBottom = Mathf.max(sumBottom, maxBottom - _bottom);
@@ -1150,12 +1401,22 @@ namespace Charamaker3
                 add.y = sumBottom ;
 
 
-                if (sumRight > rendZone.w || Text == "\n")
+                if (sumRight > rendZone.w || add.c.CharText == "\n")
                 {
                     sumRight = 0;
                     sumLine += 1;
                     sumBottom = maxBottom;
-                    res.Add(new List<TextAnallyzer>());
+                    res.Add(new List<TextLayout>());
+
+
+                    add.x = sumRight;
+                    add.w = _right;
+
+                    sumRight += _right;
+
+                    add.h = maxBottom - sumBottom;
+                    add.y = sumBottom;
+
                 }
 
                 add.line = sumLine;
@@ -1365,24 +1626,33 @@ namespace Charamaker3
 
             if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
-                return ReferenceEquals(a, null) == ReferenceEquals(b, null);
+                return ReferenceEquals(a, b) == true;
+            }
+            bool Bhutizure = a.hutiZure==b.hutiZure;
+            if (float.IsNaN(a.hutiZure) && float.IsNaN(b.hutiZure)) 
+            {
+                Bhutizure = true;
             }
 
             return a.size == b.size && a.w == b.w && a.h == b.h &&
                 a.fontName == b.fontName && a.isItaric == b.isItaric
-                && a.isBold == b.isBold && a.hutiZure == b.hutiZure && a.hutiColor == b.hutiColor;
+                && a.isBold == b.isBold && Bhutizure == true && a.hutiColor == b.hutiColor;
         }
         static public bool operator !=(FontC a, FontC b)
         {
             if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
             {
-                return ReferenceEquals(a, null) != ReferenceEquals(b, null);
+                return ReferenceEquals(a, b) == false;
             }
-
+            bool Bhutizure = a.hutiZure == b.hutiZure;
+            if (float.IsNaN(a.hutiZure) && float.IsNaN(b.hutiZure))
+            {
+                Bhutizure = true;
+            }
 
             return a.size != b.size && a.w != b.w || a.h != b.h ||
                 a.fontName != b.fontName || a.isItaric != b.isItaric
-                || a.isBold != b.isBold || a.hutiZure != b.hutiZure || a.hutiColor != b.hutiColor;
+                || a.isBold != b.isBold || Bhutizure == false || a.hutiColor != b.hutiColor;
         }
         static public int ByteCount(string s)
         {
@@ -1449,7 +1719,7 @@ namespace Charamaker3
         /// <param name="F"></param>
         /// <param name="color"></param>
         /// <returns>変わっていたか</returns>
-        private bool CheckChange(string Text, FontC F, ColorC color)
+        private bool CheckChange(TextInformation Text, FontC F, ColorC color)
         {
             if (PastText == null || PastText != Text)
             {
@@ -1462,6 +1732,8 @@ namespace Charamaker3
             {
                 NoChange = false;
                 NoChange2 = false;
+            
+                var a = PastFont != F;
                 return true;
             }
             var tColor = new ColorC(color);
@@ -1487,9 +1759,9 @@ namespace Charamaker3
         /// <param name="Text"></param>
         /// <param name="F"></param>
         /// <param name="color"></param>
-        private void SetPast(string Text, FontC F, ColorC color)
+        private void SetPast(TextInformation Text, FontC F, ColorC color)
         {
-            PastText = Text;
+            PastText = Text.clone();
             PastFont = new FontC();
             F.copy(PastFont);
             PastColor = new ColorC(color);
@@ -1528,48 +1800,26 @@ namespace Charamaker3
             }
         }
 
-        private string PastText = null;
+        private TextInformation PastText = null;
         private FontC PastFont = null;
         private ColorC PastColor = null;
 
-        internal void SetRayout(string Text, FontC F)
+        internal void SetRayout(List<List<TextLayout>> AedTexts, FontC F)
         {
-            IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(Text, F.ToFont(), rendZone.w, rendZone.h);
+            _bottom = 0;
+            _right = 0;
 
-            int maxline = 2;
-            if (F.size > 0)
+            foreach (var a in AedTexts)
             {
-                maxline = (int)(rendZone.h / F.size) * 2;
-            }
-            LineMetrics[] Lmets = new LineMetrics[maxline];
-            ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
-            int LCount;
-            int CCount;
-            var Lres = Layout.GetLineMetrics(Lmets, out LCount);
-            var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
-
-            if (Lres.Success)
-            {
-                //文字列の高さをさぐる
-                _bottom = 0;
-                for (int t = 0; t < LCount; ++t)
+                foreach (var b in a)
                 {
-                    _bottom += Lmets[t].Height;
+                    _right = Mathf.max(b.x + b.w, _right);
+                    _bottom = Mathf.max(b.y + b.h, _bottom);
                 }
             }
-            if (Cres.Success)
-            {
-                //文字列の幅をさぐる
-                _right = 0;
-                for (int t = 0; t < CCount; ++t)
-                {
-                    _right += Cmets[t].Width;
-                }
-            }
-            Layout.Dispose();
         }
 
-        public void Draw(string Text, FontC F, ColorC color,DisplaySemaphores semaphores)
+        public void Draw(TextInformation Text, FontC F, ColorC color,DisplaySemaphores semaphores)
         {
             if (CheckChange(Text, F, color))
             {
@@ -1619,13 +1869,16 @@ namespace Charamaker3
                     for (int i = 0; i < lis.Count; i++)
                     {
 
-                        render.BitmapRender.DrawText(Text, F.ToFont(), lis[i], slb);
+                        render.BitmapRender.DrawText(Text.AnalyzedText, F.ToFont(), lis[i], slb);
                     }
                 }
-                SetRayout(Text, F);
 
 
-                var AedTexts = TextAnallyzer.AnalyzeText(Text, render, F, rendZone);
+                List<List<TextLayout>> AedTexts = TextLayout.AnalyzeText(Text, render, F, rendZone);
+
+
+                SetRayout(AedTexts, F);
+
                 float zentaiH = 0;
                 foreach (var a in AedTexts)
                 {
@@ -1634,6 +1887,7 @@ namespace Charamaker3
                         zentaiH = Mathf.max(b.y + b.h, zentaiH);
                     }
                 }
+                string drawed = "";
                 foreach (var a in AedTexts) 
                 {
                     float lineW = 0;
@@ -1647,21 +1901,21 @@ namespace Charamaker3
                         var col = new ColorC(PastColor);
                         var f = new FontC();
                         F.copy(f);
-                        f.size *= b.Size;
+                        f.size *= b.c.Size;
                         f.ali = FontC.alignment.left;
                         f.aliV = FontC.alignment.left;
-                        if (b.Color != null)
+                        if (b.c.Color != null)
                         {
-                            if (b.isMultiplyColor == false)
+                            if (b.c.isMultiplyColor == false)
                             {
-                                col = b.Color;
+                                col = b.c.Color;
                             }
                             else
                             {
-                                col.r *= b.Color.r;
-                                col.g *= b.Color.g;
-                                col.b *= b.Color.b;
-                                col.opa *= b.Color.opa;
+                                col.r *= b.c.Color.r;
+                                col.g *= b.c.Color.g;
+                                col.b *= b.c.Color.b;
+                                col.opa *= b.c.Color.opa;
                             }
                         }
                         
@@ -1703,13 +1957,13 @@ namespace Charamaker3
 
                         using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
                         {
-                            render.BitmapRender.DrawText(b.TextSplited, F.ToFont(), drawRect, slb);
+                            drawed += b.c.CharText;
+                            render.BitmapRender.DrawText(b.c.CharText, F.ToFont(), drawRect, slb);
                         }
                       //  Debug.WriteLine(" adsad " + rendZone.x + "::" + rendZone.y + "[" + rendZone.w + "::" + rendZone.h + "]");
                       //  Debug.WriteLine(b.x+"::"+ b.y+" asd " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
                     }
                 }
-
                 render.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
 
@@ -1730,7 +1984,7 @@ namespace Charamaker3
         /// <param name="Text"></param>
         /// <param name="F"></param>
         /// <param name="color"></param>
-        public void OnDraw(string Text, FontC F, ColorC color)
+        public void OnDraw(TextInformation Text, FontC F, ColorC color)
         {
             if (NoChange2 == false)
             {
@@ -1771,7 +2025,7 @@ namespace Charamaker3
 
     public class Text : Drawable
     {
-        public string text = "";
+        public TextInformation text = new TextInformation();
         public FontC font = new FontC();
         private TextRenderer _Trender = null;
 
@@ -1784,7 +2038,7 @@ namespace Charamaker3
         }
         public Text(float z, ColorC c, string text, FontC font, float time = -1, string name = "") : base(z, c, time, name)
         {
-            this.text = text;
+            this.text = new TextInformation(text);
             this.font = new FontC();
             font.copy(this.font);
         }
@@ -1801,7 +2055,7 @@ namespace Charamaker3
         {
             var d = base.ToSave();
             d.linechange();
-            d.packAdd("text", text);
+            d.packAdd("text", text.ToSave());
             var dd = font.ToSave();
             d.linechange();
             dd.indent();
@@ -1815,7 +2069,7 @@ namespace Charamaker3
         protected override void ToLoad(DataSaver d)
         {
             base.ToLoad(d);
-            this.text = d.unpackDataS("text", "なんもない");
+            this.text.ToLoad(d.unpackDataD("text"));
             this.font = new FontC();
             var dd = d.unpackDataD("font");
             this.font.ToLoad(dd);
@@ -1867,7 +2121,8 @@ namespace Charamaker3
                 Trender.Release();
                 Trender = dis.makeTextRenderer(font.w, font.h);
             }
-            Trender.SetRayout(text, font);
+           
+            Trender.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
         }
 
         /// <summary>
@@ -1876,7 +2131,7 @@ namespace Charamaker3
         internal void SetRayout() 
         {
 
-            Trender?.SetRayout(text, font);
+            Trender?.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
         }
 
         public override void PreDraw(Camera cam, DisplaySemaphores semaphores)

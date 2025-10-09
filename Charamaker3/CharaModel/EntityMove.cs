@@ -514,7 +514,7 @@ namespace Charamaker3.CharaModel
             serif.SiroSiro = textSize / 16;
 
 
-            DrawableMove.SetText(Time, "Text", Text).add(serif);
+            DrawableMove.SetText(Time, "Text", Text,true).add(serif);
 
             var c = new SummonSerif(Tag, serif, 0,Time+Jizoku);
             c.dxp = dxp;
@@ -757,7 +757,7 @@ namespace Charamaker3.CharaModel
             font.w = float.NaN;
             font.h = float.NaN;
 
-            var res = new TextMove(name, time, "", 0, font, name);
+            var res = new TextMove(name, time, new TextInformation(""), 0, font, name);
 
             return res;
         }
@@ -768,8 +768,9 @@ namespace Charamaker3.CharaModel
         /// <param name="time">=0</param>
         /// <param name="name">=""</param>
         /// <param name="Text">=""</param>
+        /// <param name="isSource">=true ソースのテキストを指定</param>
         /// <returns>__MOVE__</returns>
-        static public TextMove SetText(float time = 0,string name = "",string Text="")
+        static public TextMove SetText(float time = 0,string name = "",string Text="",bool isSource=true)
         {
             var font = new FontC();
             font.ali = FontC.alignment.None;
@@ -786,7 +787,8 @@ namespace Charamaker3.CharaModel
             font.w = float.NaN;
             font.h = float.NaN;
 
-            var res = new TextMove(name, time, Text, Text.Length, font, name);
+            var t = new TextInformation(Text, isSource);
+            var res = new TextMove(name, time,t, t.Analyzed.Count, font, name);
 
             return res;
         }
@@ -797,8 +799,9 @@ namespace Charamaker3.CharaModel
         /// <param name="time">=0</param>
         /// <param name="name">=""</param>
         /// <param name="FPText">=""</param>
+        /// <param name="isSource">=true ソースのテキストを指定</param>
         /// <returns>__MOVE__</returns>
-        static public TextMove SetTextFP(float time = 0, string name = "", string FPText = "")
+        static public TextMove SetTextFP(float time = 0, string name = "", string FPText = "", bool isSource = true)
         {
             var font = new FontC();
             font.ali = FontC.alignment.None;
@@ -819,8 +822,9 @@ namespace Charamaker3.CharaModel
             {
                 Text = FP.l.GT(FPText);
             }
-             
-            var res = new TextMove(name, time, Text, Text.Length, font, name);
+
+            var t = new TextInformation(Text, isSource);
+            var res = new TextMove(name, time, t, t.Analyzed.Count, font, name);
 
             return res;
         }
@@ -3073,7 +3077,7 @@ namespace Charamaker3.CharaModel
     public partial class TextMove : Component
     {
         public string Tag;
-        public string Text;//即時変更 ""で変更なし。 ""にするにはTextLengthを0にする。
+        public TextInformation Text;//即時変更 ""で変更なし。 ""にするにはTextLengthを0にする。
 
         public FontC Font;
         public float TextLength = 0;
@@ -3082,7 +3086,7 @@ namespace Charamaker3.CharaModel
         List<List<float[]>> speeds = new List<List<float[]>>();
         List<List<float[]>> bspeeds = new List<List<float[]>>();
         List<List<Text>> tags = new List<List<Text>>();
-        List<List<string>> TagTexts=new List<List<string>>();
+        List<List<TextInformation>> TagTexts=new List<List<TextInformation>>();
         bool instant { get { return time <= 0; } }
 
         const int _FSIZE = 0;
@@ -3107,13 +3111,15 @@ namespace Charamaker3.CharaModel
         /// <param name="Tag">変化させるターゲット</param>
         /// <param name="time"></param>
         /// <param name="Text">即時反映=""で変化なし</param>
+        /// <param name="isSource">ソース指定</param>
         /// <param name="TextLength">変化するテキストの長さ=0で""になる</param>
         /// <param name="font">変化するフォント。isItaricなどは即時反映</param>
         /// <param name="name"></param>
-        public TextMove(string Tag, float time, string Text, float TextLength, FontC font, string name = "") : base(time, name) 
+        public TextMove(string Tag, float time, TextInformation Text, float TextLength, FontC font, string name = "") : base(time, name) 
         {
             this.Tag = Tag;
-            this.Text = Text;
+            this.Text = Text.clone();
+
             this.TextLength = TextLength;
 
             this.Font = new FontC();
@@ -3149,17 +3155,17 @@ namespace Charamaker3.CharaModel
             {
                 speeds.Add(new List<float[]>());
                 bspeeds.Add(new List<float[]>());
-                TagTexts.Add(new List<string>());
+                TagTexts.Add(new List<TextInformation>());
                 for (int i = 0; i < tags[t].Count; i++)
                 {
-                    if (Text == "")
+                    if (Text.AnalyzedText == "")
                     {
 
-                        TagTexts[t].Add(tags[t][i].text);
+                        TagTexts[t].Add(tags[t][i].text.clone());
                     }
                     else 
                     {
-                        TagTexts[t].Add(Text);
+                        TagTexts[t].Add(Text.clone());
                     }
                     speeds[t].Add(new float[_speedLength]);
                     bspeeds[t].Add(new float[_speedLength]);
@@ -3204,13 +3210,13 @@ namespace Charamaker3.CharaModel
 
                             case _TEXTLENGTH:
                                 speeds[t][i][j] = TextLength;
-                                bspeeds[t][i][j] = tags[t][i].text.Length;
+                                bspeeds[t][i][j] = tags[t][i].text.Analyzed.Count;
                                 break;
                         }
                     }
                 }
             }
-            if (Text == "") 
+            if (Text.AnalyzedText == "") 
             {
                 
             }
@@ -3305,11 +3311,11 @@ namespace Charamaker3.CharaModel
                     }
                     else
                     {
-                        length = tags[t][i].text.Length;
+                        length = tags[t][i].text.Analyzed.Count;
                     }
-                    tags[t][i].text = TagTexts[t][i].Substring(0, (int)length);
+                    tags[t][i].text = TagTexts[t][i].Substring((int)length);
 
-
+                    
                 }
             }
         }
@@ -3318,7 +3324,7 @@ namespace Charamaker3.CharaModel
             var d = base.ToSave();
             d.packAdd("Font",Font.ToSave().indent());
             d.linechange();
-            d.packAdd("Text", this.Text);
+            d.packAdd("Text", this.Text.ToSave());
             d.packAdd("TextLength", this.TextLength);
 
             return d;
@@ -3331,7 +3337,7 @@ namespace Charamaker3.CharaModel
                 var dd = d.unpackDataD("Font");
                 this.Font.ToLoad(dd);
             }
-            this.Text=d.unpackDataS("Text", this.Text);
+            this.Text.ToLoad(d.unpackDataD("Text"));
             this.TextLength=d.unpackDataF("TextLength", this.TextLength);
         }
         public override void copy(Component c)
@@ -3341,7 +3347,7 @@ namespace Charamaker3.CharaModel
             cc.Font = new FontC();
 
             this.Font.copy(cc.Font);
-            cc.Text = this.Text;
+            cc.Text = this.Text.clone();
             cc.TextLength = this.TextLength;
         }
     }
