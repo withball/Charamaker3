@@ -1025,7 +1025,7 @@ namespace Charamaker3
                 Analyzed.Clear();
                 for (int i = 0; i < value.Length; ++i) 
                 {
-                    Analyzed.Add(new CharInformation(null,false,1,value.Substring(i,1)));
+                    Analyzed.Add(new CharInformation(null,false,1,value.Substring(i,1),-1,-1));
                 }
                 _SourceSetted = false;
             } 
@@ -1154,6 +1154,16 @@ namespace Charamaker3
         /// 分割された文字列
         /// </summary>
         public string CharText = "";
+
+        /// <summary>
+        /// 太字
+        /// </summary>
+        public int Bold =-1;
+        /// <summary>
+        /// 斜体
+        /// </summary>
+        public int Italic = -1;
+
         public CharInformation()
         {
         }
@@ -1163,13 +1173,17 @@ namespace Charamaker3
             this.isMultiplyColor = ci.isMultiplyColor;
             this.Size = ci.Size;
             this.CharText = ci.CharText;
+            this.Bold = ci.Bold;
+            this.Italic = ci.Italic;
         }
-        public CharInformation(ColorC c, bool isMultiplycolor, float size, string chartext)
+        public CharInformation(ColorC c, bool isMultiplycolor, float size, string chartext,int bold,int itaric)
         {
             this.Color = c != null ? new ColorC(c) : null;
             this.isMultiplyColor = isMultiplycolor;
             this.Size = size;
             this.CharText = chartext;
+            this.Bold = bold;
+            this.Italic= itaric;
         }
 
         /// <summary>
@@ -1187,6 +1201,14 @@ namespace Charamaker3
 
             List<int> sizeStart = new List<int>();
             List<float> sizes = new List<float>();
+
+
+            List<int> boldStart = new List<int>();
+            List<int> bolds = new List<int>();
+
+
+            List<int> itaricStart = new List<int>();
+            List<int> itarics = new List<int>();
 
             bool go = true;
             string Ttext = FullText;
@@ -1251,6 +1273,62 @@ namespace Charamaker3
                         sizeStart.Add(seIdx);
                         sizes.Add(1);
                         Ttext = Ttext.Remove(seIdx, "<sizeE>".Length);
+                    });
+                }
+                //太字/////////////////////////////////////
+                {
+                    int Idx = Ttext.IndexOf("<bold", 0);
+                    int Edx = (Idx != -1) ? Ttext.IndexOf(">", Idx) : -1;
+
+                    idxs.Add(Idx);
+                    funcs.Add(() =>
+                    {
+                        var d = new DataSaver(Ttext.Substring(Idx, Edx - Idx));
+                        if (d.splitOneDataS(0, "", ',') == "<bold")
+                        {
+                            boldStart.Add(Idx);
+                            int add = (int)d.splitOneDataF(1, -1, ',');
+                            bolds.Add(add);
+                            Ttext = Ttext.Remove(Idx, Edx - Idx + 1);
+                        }
+                    });
+                }
+                {
+                    int Idx = Ttext.IndexOf("<boldE>", 0);
+                    idxs.Add(Idx);
+                    funcs.Add(() =>
+                    {
+                        boldStart.Add(Idx);
+                        bolds.Add(-1);
+                        Ttext = Ttext.Remove(Idx, "<boldE>".Length);
+                    });
+                }
+                //斜体/////////////////////////////////////
+                {
+                    int Idx = Ttext.IndexOf("<itaric", 0);
+                    int Edx = (Idx != -1) ? Ttext.IndexOf(">", Idx) : -1;
+
+                    idxs.Add(Idx);
+                    funcs.Add(() =>
+                    {
+                        var d = new DataSaver(Ttext.Substring(Idx, Edx - Idx));
+                        if (d.splitOneDataS(0, "", ',') == "<itaric")
+                        {
+                            itaricStart.Add(Idx);
+                            int add = (int)d.splitOneDataF(1, -1, ',');
+                            itarics.Add(add);
+                            Ttext = Ttext.Remove(Idx, Edx - Idx + 1);
+                        }
+                    });
+                }
+                {
+                    int Idx = Ttext.IndexOf("<itaricE>", 0);
+                    idxs.Add(Idx);
+                    funcs.Add(() =>
+                    {
+                        itaricStart.Add(Idx);
+                        itarics.Add(-1);
+                        Ttext = Ttext.Remove(Idx, "<itaricE>".Length);
                     });
                 }
                 //一番ちっちゃいのを使用/////////////////////////////////////
@@ -1400,6 +1478,124 @@ namespace Charamaker3
                 }
             }
 
+            int getBold(int TI)
+            {
+                int l = 0;
+                int r = boldStart.Count - 1;
+                while (true)
+                {
+                    int idx = (l + r) / 2;
+
+                    int ri = idx + 1;
+
+
+                    if (ri < boldStart.Count)
+                    {
+                        if (boldStart[idx] <= TI && TI < boldStart[ri])
+                        {
+                            return bolds[idx];
+                        }
+                        else if (TI < boldStart[idx])
+                        {
+                            if (r == l)
+                            {
+                                if (r == 0)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return bolds[r];
+                                }
+                            }
+                            r = idx;
+                        }
+                        else
+                        {
+                            if (r == l)
+                            {
+                                return bolds[r];
+                            }
+                            l = ri;
+                        }
+                    }
+                    else
+                    {
+                        if (idx < bolds.Count)
+                        {
+                            if (TI < boldStart[idx])
+                            {
+                                return -1;
+                            }
+                            else
+                            {
+                                return bolds[idx];
+                            }
+                        }
+                        return -1;
+                    }
+                }
+            }
+
+            int getItaric(int TI)
+            {
+                int l = 0;
+                int r = itaricStart.Count - 1;
+                while (true)
+                {
+                    int idx = (l + r) / 2;
+
+                    int ri = idx + 1;
+
+
+                    if (ri < itaricStart.Count)
+                    {
+                        if (itaricStart[idx] <= TI && TI < itaricStart[ri])
+                        {
+                            return itarics[idx];
+                        }
+                        else if (TI < itaricStart[idx])
+                        {
+                            if (r == l)
+                            {
+                                if (r == 0)
+                                {
+                                    return -1;
+                                }
+                                else
+                                {
+                                    return itarics[r];
+                                }
+                            }
+                            r = idx;
+                        }
+                        else
+                        {
+                            if (r == l)
+                            {
+                                return itarics[r];
+                            }
+                            l = ri;
+                        }
+                    }
+                    else
+                    {
+                        if (idx < itarics.Count)
+                        {
+                            if (TI < itaricStart[idx])
+                            {
+                                return -1;
+                            }
+                            else
+                            {
+                                return itarics[idx];
+                            }
+                        }
+                        return -1;
+                    }
+                }
+            }
+
             for (int i = 0; i < Ttext.Length; ++i)
             {
                 var add = new CharInformation();
@@ -1409,6 +1605,8 @@ namespace Charamaker3
                 add.Size = getSize(i);
                 add.CharText = Text;
                 add.Color = getColor(i);
+                add.Bold = getBold(i);
+                add.Italic = getItaric(i);
                 if (add.Color != null)
                 {
                     add.Color = new ColorC(add.Color);
@@ -2025,6 +2223,14 @@ namespace Charamaker3
                             f.size *= b.c.Size;
                             f.ali = FontC.alignment.left;
                             f.aliV = FontC.alignment.left;
+                            if (b.c.Bold != -1)
+                            {
+                                f.isBold = b.c.Bold;
+                            }
+                            if (b.c.Italic != -1)
+                            {
+                                f.isItaric = b.c.Italic;
+                            }
 
                             if (back == false)
                             {
