@@ -1287,7 +1287,7 @@ namespace Charamaker3
                         if (d.splitOneDataS(0, "", ',') == "<bold")
                         {
                             boldStart.Add(Idx);
-                            int add = (int)d.splitOneDataF(1, -1, ',');
+                            int add = (int)d.splitOneDataF(1, 1, ',');
                             bolds.Add(add);
                             Ttext = Ttext.Remove(Idx, Edx - Idx + 1);
                         }
@@ -1315,7 +1315,7 @@ namespace Charamaker3
                         if (d.splitOneDataS(0, "", ',') == "<itaric")
                         {
                             itaricStart.Add(Idx);
-                            int add = (int)d.splitOneDataF(1, -1, ',');
+                            int add = (int)d.splitOneDataF(1, 1, ',');
                             itarics.Add(add);
                             Ttext = Ttext.Remove(Idx, Edx - Idx + 1);
                         }
