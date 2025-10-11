@@ -142,7 +142,7 @@ namespace Charamaker
 
             }*/
 
-
+            /*
             {
                 var text = new Text(10, new ColorC(0, 0, 0, 1), "ザ・カバ・チャン"
                    , new FontC(16, 16 * 40, 16 * 30, isBold: 0, alignment: FontC.alignment.left
@@ -158,7 +158,7 @@ namespace Charamaker
                     //  cam.watchRect.degree += 0.1f * bb;
                 };
 
-            }
+            }*/
 
             /*//セリフのテスト
             {

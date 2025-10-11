@@ -1184,36 +1184,102 @@ namespace Charamaker3
             List<int> colStart = new List<int>();
             List<ColorC> cols = new List<ColorC>();
 
+
+            List<int> sizeStart = new List<int>();
+            List<float> sizes = new List<float>();
+
             bool go = true;
             string Ttext = FullText;
             while (go)
             {
                 go = false;
 
-                int cIdx = Ttext.IndexOf("<col", 0);
-
-                int cEdx = (cIdx != -1) ? Ttext.IndexOf(">", cIdx) : -1;
-
-                int ceIdx = Ttext.IndexOf("<colE>", 0);
-
-                if (ceIdx != -1 && ceIdx <= cIdx)
+                List<int> idxs=new List<int>();
+                List<Action> funcs=new List<Action>();
+                //カラー////////////////////
                 {
-                    colStart.Add(ceIdx);
-                    cols.Add(null);
-                    Ttext = Ttext.Remove(ceIdx, "<colE>".Length);
-                    go = true;
-                }
-                else if (cIdx != -1 && cIdx < cEdx)
-                {
-                    var d = new DataSaver(Ttext.Substring(cIdx, cEdx - cIdx));
-                    if (d.splitOneDataS(0, "", ',') == "<col")
+                    int cIdx = Ttext.IndexOf("<col", 0);
+                    int cEdx = (cIdx != -1) ? Ttext.IndexOf(">", cIdx) : -1;
+
+                    idxs.Add(cIdx);
+                    funcs.Add(() =>
                     {
-                        colStart.Add(cIdx);
-                        var add = new ColorC(d.splitOneDataF(1, 0, ','), d.splitOneDataF(2, 0, ','), d.splitOneDataF(3, 0, ','), d.splitOneDataF(4, 0, ','));
-                        cols.Add(add);
-                        Ttext = Ttext.Remove(cIdx, cEdx - cIdx + 1);
-                        go = true;
+                        var d = new DataSaver(Ttext.Substring(cIdx, cEdx - cIdx));
+                        if (d.splitOneDataS(0, "", ',') == "<col")
+                        {
+                            colStart.Add(cIdx);
+                            var add = new ColorC(d.splitOneDataF(1, 0, ','), d.splitOneDataF(2, 0, ','), d.splitOneDataF(3, 0, ','), d.splitOneDataF(4, 1, ','));
+                            cols.Add(add);
+                            Ttext = Ttext.Remove(cIdx, cEdx - cIdx + 1);
+                        }
+                    });
+                }
+                {
+                    int ceIdx = Ttext.IndexOf("<colE>", 0);
+
+                    idxs.Add(ceIdx);
+                    funcs.Add(() =>
+                    {
+                        colStart.Add(ceIdx);
+                        cols.Add(null);
+                        Ttext = Ttext.Remove(ceIdx, "<colE>".Length);
+                    });
+                }
+                //サイズ/////////////////////////////////////
+                {
+                    int sIdx = Ttext.IndexOf("<size", 0);
+                    int sEdx = (sIdx != -1) ? Ttext.IndexOf(">", sIdx) : -1;
+
+                    idxs.Add(sIdx);
+                    funcs.Add(() =>
+                    {
+                        var d = new DataSaver(Ttext.Substring(sIdx, sEdx - sIdx));
+                        if (d.splitOneDataS(0, "", ',') == "<size")
+                        {
+                            sizeStart.Add(sIdx);
+                            var add = d.splitOneDataF(1, 0, ',');
+                            sizes.Add(add);
+                            Ttext = Ttext.Remove(sIdx, sEdx - sIdx + 1);
+                        }
+                    });
+                }
+                {
+                    int seIdx = Ttext.IndexOf("<sizeE>", 0);
+                    idxs.Add(seIdx);
+                    funcs.Add(() =>
+                    {
+                        sizeStart.Add(seIdx);
+                        sizes.Add(1);
+                        Ttext = Ttext.Remove(seIdx, "<sizeE>".Length);
+                    });
+                }
+                //一番ちっちゃいのを使用/////////////////////////////////////
+                for (int i = idxs.Count - 1; i >= 0; --i) 
+                {
+                    //-1なら消す。
+                    if (idxs[i] < 0)
+                    {
+                        idxs.RemoveAt(i);
+                        funcs.RemoveAt(i);
                     }
+                }
+                if (idxs.Count > 0)
+                {
+                    int minidx = 0;
+                    int min = idxs[minidx];
+
+                    for (int i = 1; i < idxs.Count; ++i)
+                    {
+                        //後ろの方(E系)を優先して発動
+                        if (idxs[i] <= min)
+                        {
+                            minidx = i;
+                            min = idxs[i];
+                        }
+                    }
+
+                    funcs[minidx].Invoke();
+                    go = true;
                 }
 
             }
@@ -1275,7 +1341,64 @@ namespace Charamaker3
                     }
                 }
             }
+            float getSize(int TI)
+            {
+                int l = 0;
+                int r = sizeStart.Count - 1;
+                while (true)
+                {
+                    int idx = (l + r) / 2;
 
+                    int ri = idx + 1;
+
+
+                    if (ri < sizeStart.Count)
+                    {
+                        if (sizeStart[idx] <= TI && TI < sizeStart[ri])
+                        {
+                            return sizes[idx];
+                        }
+                        else if (TI < sizeStart[idx])
+                        {
+                            if (r == l)
+                            {
+                                if (r == 0)
+                                {
+                                    return 1;
+                                }
+                                else
+                                {
+                                    return sizes[r];
+                                }
+                            }
+                            r = idx;
+                        }
+                        else
+                        {
+                            if (r == l)
+                            {
+                                return sizes[r];
+                            }
+                            l = ri;
+                        }
+                    }
+                    else
+                    {
+                        if (idx < sizes.Count)
+                        {
+                            if (TI < sizeStart[idx])
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return sizes[idx];
+                            }
+                        }
+                        return 1;
+                    }
+                }
+            }
 
             for (int i = 0; i < Ttext.Length; ++i)
             {
@@ -1283,7 +1406,7 @@ namespace Charamaker3
 
                 var Text = Ttext.Substring(i, 1);
 
-                add.Size = 1;
+                add.Size = getSize(i);
                 add.CharText = Text;
                 add.Color = getColor(i);
                 if (add.Color != null)
@@ -1336,7 +1459,11 @@ namespace Charamaker3
         /// <returns></returns>
         static public List<List<TextLayout>> AnalyzeText(TextInformation text,C3BitmapRenderSet render,FontC F,Rectangle rendZone)
         {
-            float sumRight=0, sumBottom=0,maxBottom=0;
+            float sumRight = 0;
+            //ラインの上側
+            float sumBottom = 0;
+            //ラインの一番下
+            float maxBottom=0;
             int sumLine = 0;
 
             var res=new List<List<TextLayout>>();
@@ -1349,17 +1476,18 @@ namespace Charamaker3
 
                 var tf = new FontC();
                 F.copy(tf);
+                tf.size *=text.Analyzed[i].Size;
                 tf.ali = FontC.alignment.left;
                 tf.aliV = FontC.alignment.left;
-                IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, F.ToFont(), rendZone.w, rendZone.h);
+                IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, tf.ToFont(), rendZone.w, rendZone.h);
 
                 //文字の幅と高さ
                 float _right=0,_bottom=0;
 
                 int maxline = 2;
-                if (F.size > 0)
+                if (tf.size > 0)
                 {
-                    maxline = (int)(rendZone.h / F.size) * 2;
+                    maxline = (int)(rendZone.h / tf.size) * 2;
                 }
                 LineMetrics[] Lmets = new LineMetrics[maxline];
                 ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
@@ -1390,22 +1518,28 @@ namespace Charamaker3
               
 
                 maxBottom = Mathf.max(maxBottom, sumBottom + _bottom);
-                sumBottom = Mathf.max(sumBottom, maxBottom - _bottom);
+                //sumBottom = Mathf.max(sumBottom, maxBottom - _bottom);
 
                 add.x = sumRight ;
                 add.w = _right;
 
                 sumRight += _right;
 
-                add.h = maxBottom - sumBottom;
-                add.y = sumBottom ;
+                add.h = _bottom;
+                add.y = maxBottom - add.h;
 
 
                 if (sumRight > rendZone.w || add.c.CharText == "\n")
                 {
+                    //改行したら現在の列を下に整列させる
+                    foreach (var a in res.Last())
+                    {
+                        a.y = maxBottom - a.h;
+                    }
+                    sumBottom = maxBottom;
+                    maxBottom = Mathf.max(maxBottom, sumBottom + _bottom);
                     sumRight = 0;
                     sumLine += 1;
-                    sumBottom = maxBottom;
                     res.Add(new List<TextLayout>());
 
 
@@ -1414,13 +1548,18 @@ namespace Charamaker3
 
                     sumRight += _right;
 
-                    add.h = maxBottom - sumBottom;
-                    add.y = sumBottom;
+                    add.h = _bottom;
+                    add.y = maxBottom-add.h;
 
                 }
 
                 add.line = sumLine;
                 res.Last().Add(add);
+            }
+            //さいごに現在の列を下に整列させる
+            foreach (var a in res.Last())
+            {
+                a.y = maxBottom - a.h;
             }
             return res;
         }
@@ -1850,120 +1989,138 @@ namespace Charamaker3
                     //    , 0.5f));
                     render.BitmapRender.Clear(new ColorC(R, G, B, 0));
                 }
+                //文字描画君
+                void DrawText(List<List<TextLayout>> ATexts,Rectangle drawR, FontC drawFont,bool back)
+                {
+                    float zentaiH = 0;
+                    foreach (var a in ATexts)
+                    {
+                        foreach (var b in a)
+                        {
+                            zentaiH = Mathf.max(b.y + b.h, zentaiH);
+                        }
+                    }
+                    string drawed = "";
+                    foreach (var a in ATexts)
+                    {
+                        float lineW = 0;
+                        foreach (var b in a)
+                        {
+                            lineW = Mathf.max(b.x + b.w, lineW);
+                        }
+
+                        foreach (var b in a)
+                        {
+                            ColorC col;
+                            if (back == true) 
+                            {
+                                col = new ColorC(drawFont.hutiColor);
+                            } 
+                            else
+                            {
+                                col = new ColorC(PastColor);
+                            }
+                            var f = new FontC();
+                            drawFont.copy(f);
+                            f.size *= b.c.Size;
+                            f.ali = FontC.alignment.left;
+                            f.aliV = FontC.alignment.left;
+
+                            if (back == false)
+                            {
+                                if (b.c.Color != null)
+                                {
+                                    if (b.c.isMultiplyColor == false)
+                                    {
+                                        col = b.c.Color;
+                                    }
+                                    else
+                                    {
+                                        col.r *= b.c.Color.r;
+                                        col.g *= b.c.Color.g;
+                                        col.b *= b.c.Color.b;
+                                        col.opa *= b.c.Color.opa;
+                                    }
+                                }
+                            }
+
+                            var drawRect = new Rectangle(b.x, b.y, b.w, b.h);
+
+                            switch (drawFont.ali)
+                            {
+                                case FontC.alignment.left:
+                                    drawRect.x += drawR.x;
+                                    break;
+                                case FontC.alignment.center:
+                                    drawRect.x += drawR.x + (drawR.w - lineW) / 2;
+                                    break;
+                                case FontC.alignment.right:
+                                    drawRect.x += drawR.x + (drawR.w - lineW);
+                                    break;
+                                case FontC.alignment.justify:
+                                case FontC.alignment.None:
+                                    drawRect.x += drawR.x;
+                                    break;
+                            }
+                            switch (drawFont.aliV)
+                            {
+                                case FontC.alignment.left:
+                                    drawRect.y += drawR.y;
+                                    break;
+                                case FontC.alignment.center:
+                                    drawRect.y += drawR.y + (drawR.h - zentaiH) * 0;
+                                    break;
+                                case FontC.alignment.right:
+                                    drawRect.y += drawR.y + (drawR.h - zentaiH) * 0;
+                                    break;
+                                case FontC.alignment.justify:
+                                case FontC.alignment.None:
+                                    drawRect.y += drawR.y;
+                                    break;
+                            }
+
+
+                            using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
+                            {
+                                drawed += b.c.CharText;
+                                render.BitmapRender.DrawText(b.c.CharText, f.ToFont(), drawRect, slb);
+                            }
+                            //  Debug.WriteLine(b.x+"::"+ b.y+" asd " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
+                        }
+                    }
+                }
+
+
                 if (F.hutiZure > 0)
                 {
 
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
-                    var slb = render.BitmapRender.CreateSolidColorBrush(c);
-                    var lis = new List<Shapes.Rectangle>();
-                    lis.Add((Shapes.Rectangle)rendZone.clone());
-                    lis.Add((Shapes.Rectangle)rendZone.clone());
-                    lis.Add((Shapes.Rectangle)rendZone.clone());
-                    lis.Add((Shapes.Rectangle)rendZone.clone());
-                    float zure = F.hutiZure * F.size;
-                    lis[0].x += zure;
-                    lis[1].x -= zure;
-                    lis[2].y += zure;
-                    lis[3].y -= zure;
+                    var lis = new List<FXY>();
+                    lis.Add(new FXY(1, 0));
+                    lis.Add(new FXY(-1, 0));
+                    lis.Add(new FXY(0, 1));
+                    lis.Add(new FXY(0, -1));
                     for (int i = 0; i < lis.Count; i++)
                     {
-
-                        render.BitmapRender.DrawText(Text.AnalyzedText, F.ToFont(), lis[i], slb);
-                    }
-                }
-
-
-                List<List<TextLayout>> AedTexts = TextLayout.AnalyzeText(Text, render, F, rendZone);
-
-
-                SetRayout(AedTexts, F);
-
-                float zentaiH = 0;
-                foreach (var a in AedTexts)
-                {
-                    foreach (var b in a)
-                    {
-                        zentaiH = Mathf.max(b.y + b.h, zentaiH);
-                    }
-                }
-                string drawed = "";
-                foreach (var a in AedTexts) 
-                {
-                    float lineW = 0;
-                    foreach (var b in a)
-                    {
-                        lineW =Mathf.max(b.x+b.w,lineW);
-                    }
-
-                    foreach (var b in a)
-                    {
-                        var col = new ColorC(PastColor);
-                        var f = new FontC();
-                        F.copy(f);
-                        f.size *= b.c.Size;
-                        f.ali = FontC.alignment.left;
-                        f.aliV = FontC.alignment.left;
-                        if (b.c.Color != null)
+                        var analyze=TextLayout.AnalyzeText(Text, render, F, rendZone);
+                        foreach (var a in analyze) 
                         {
-                            if (b.c.isMultiplyColor == false)
+                            foreach (var b in a)
                             {
-                                col = b.c.Color;
-                            }
-                            else
-                            {
-                                col.r *= b.c.Color.r;
-                                col.g *= b.c.Color.g;
-                                col.b *= b.c.Color.b;
-                                col.opa *= b.c.Color.opa;
+                                b.x += b.c.Size * F.size * F.hutiZure *lis[i].x;
+                                b.y += b.c.Size * F.size * F.hutiZure * lis[i].y;
                             }
                         }
-                        
-                        var drawRect=new Rectangle(b.x,b.y,b.w,b.h);
-
-                        switch (F.ali)
-                        {
-                            case FontC.alignment.left:
-                                drawRect.x += rendZone.x;
-                                break;
-                            case FontC.alignment.center:
-                                drawRect.x += rendZone.x + (rendZone.w - lineW)/2;
-                                break;
-                            case FontC.alignment.right:
-                                drawRect.x += rendZone.x + (rendZone.w - lineW);
-                                break;
-                            case FontC.alignment.justify:
-                            case FontC.alignment.None:
-                                drawRect.x += rendZone.x;
-                                break;
-                        }
-                        switch (F.aliV)
-                        {
-                            case FontC.alignment.left:
-                                drawRect.y += rendZone.y;
-                                break;
-                            case FontC.alignment.center:
-                                drawRect.y += rendZone.y + (rendZone.h - zentaiH)*0;
-                                break;
-                            case FontC.alignment.right:
-                                drawRect.y += rendZone.y + (rendZone.h - zentaiH)*0;
-                                break;
-                            case FontC.alignment.justify:
-                            case FontC.alignment.None:
-                                drawRect.y += rendZone.y;
-                                break;
-                        }
-
-
-                        using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
-                        {
-                            drawed += b.c.CharText;
-                            render.BitmapRender.DrawText(b.c.CharText, F.ToFont(), drawRect, slb);
-                        }
-                      //  Debug.WriteLine(" adsad " + rendZone.x + "::" + rendZone.y + "[" + rendZone.w + "::" + rendZone.h + "]");
-                      //  Debug.WriteLine(b.x+"::"+ b.y+" asd " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
+                        DrawText(analyze, rendZone, F,true);
+                        //render.BitmapRender.DrawText(Text.AnalyzedText, F.ToFont(), lis[i], slb);
                     }
                 }
+
+                List<List<TextLayout>> AnalysedTexts = TextLayout.AnalyzeText(Text, render, F, rendZone);
+                SetRayout(AnalysedTexts, F);
+
+               DrawText(AnalysedTexts, rendZone, F,false);
                 render.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
 
