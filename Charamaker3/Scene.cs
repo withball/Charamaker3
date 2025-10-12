@@ -117,6 +117,8 @@ namespace Charamaker3
                 onStart(cl);
                 //if (next == null) next = this;
                 _started = true;
+
+                Update(cl);
             }
         }
         /// <summary>
