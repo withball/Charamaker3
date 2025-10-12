@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Charamaker3.CharaModel;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,6 +26,10 @@ namespace Charamaker3
         /// 画面を表すデータ。
         /// </summary>
         public Display display;
+
+
+        public readonly SceneTransition transition;
+
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -32,8 +37,69 @@ namespace Charamaker3
         {
             this.display = display;
             this.input = input;
+            transition=new SceneTransition(display.makeBitmapCamera(new ColorC(1, 1, 1, 1)));
+        }
+
+    }
+    /// <summary>
+    /// シーン切り替えのビジュアル。カメラの描画はFormでWorldをうえにつくってやってよ
+    /// </summary>
+    public class SceneTransition
+    {
+        public enum TransitionType 
+        {
+            Fade
+        }
+        /// <summary>
+        /// ワールドをupDatteするか
+        /// </summary>
+        public bool IsUpdate = false;
+
+        public TransitionType type=TransitionType.Fade;
+        public World World = null;
+        /// <summary>
+        /// ビットマップカメラね。
+        /// </summary>
+        public CP<Camera> Camera = null;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="c">ビットマップカメラね</param>
+        public SceneTransition(CP<Camera> c)
+        {
+            this.Camera = c;
+        }
+
+        public void SetNewTransition(float time,World w,Entity WatchRect,bool isUpdate,TransitionType type) 
+        {
+            this.type = type;
+            {
+                DrawableMove.BaseColorChange(10, "", 1).addAndRemove(Camera.c.e,100);
+                DrawableMove.BaseColorChange(time, "", 0).add(Camera.c.e);
+            }
+            this.IsUpdate = isUpdate;
+            WatchRect.copy(Camera.c.watchRect);
+            this.World = w;
+            Camera.c.watchRect.add(World);
+
+            Camera.c.stopDraw = false;
+            World.update(0);
+            Camera.c.update(0);
+            Camera.c.stopDraw = isUpdate==false;
+
+
+           
+        }
+        public void Update(float cl) 
+        {
+            if (IsUpdate) 
+            {
+                World?.update(cl);
+            }
         }
     }
+
     /// <summary>
     /// シーン
     /// </summary>
@@ -118,7 +184,7 @@ namespace Charamaker3
                 //if (next == null) next = this;
                 _started = true;
 
-                Update(cl);
+                Update(cl,false);
             }
         }
         /// <summary>
@@ -131,6 +197,7 @@ namespace Charamaker3
             cam.watchRect.add(wol);
             onStarts?.Invoke(this, cl);
             Update(cl,false);
+            
         }
 
         /// <summary>
@@ -188,13 +255,14 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// シーンの正しきエンド時に呼び出される。標準ではカメラのWatchrectリムーブ。<br></br>
+        /// シーンの正しきエンド時に呼び出される。標準ではカメラのリムーブ。<br></br>
         /// ここに次のシーンを何にするか描くといい。
         /// </summary>
         virtual protected void onEnd(float cl)
         {
             onEnds?.Invoke(this, cl);
             cam.watchRect.remove();
+            sc.display.removeCamera(cam);
         }
 
 

@@ -21,7 +21,7 @@ namespace Charamaker
         Texture SLP, TXYP;
         DataSaver save;
 
-        public Camera cam2;
+        public CP<Camera> cam2;
         public void OffControls()
         {
             this.DSB.Hide();

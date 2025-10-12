@@ -181,12 +181,18 @@ namespace Charamaker3
             this.watchRect = WatchRect;
 
         }
-        
+
+        /// <summary>
+        /// 描画を停止する。
+        /// </summary>
+        public bool stopDraw = false;
+
         /// <summary>
         /// テキストなど事前描画が必要なやつを一気に処理する
         /// </summary>
         virtual public void PreDraw(float cl,DisplaySemaphores semaphores)
         {
+            if (stopDraw == true) { return; }
             List<Task>tasks = new List<Task>();
             //cl=0でも呼び出される
             if (watchRect.world != null)
@@ -215,6 +221,8 @@ namespace Charamaker3
             //この中ではcl=0のとき呼び出されないやつとかある。
             base.update(cl);
 
+
+            if (stopDraw == true) { return; }
             //cl=0でも呼び出される
             if (isBitmap == true)
             {
@@ -916,12 +924,12 @@ namespace Charamaker3
         public Camera makeCamera(Entity Watchrect, ColorC backcolor)
         {
             Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height);
-            Camera res;
-            res = new Camera(Watchrect, 0, backcolor, render, this);
+            CP<Camera> res;
+            res = Component.ToPointer(new Camera(Watchrect, 0, backcolor, render, this));
             res.add(back);
 
-            cameras.Add(Component.ToPointer(res));
-            return res;
+            cameras.Add(res);
+            return res.c;
         }
 
         /// <summary>
@@ -939,16 +947,15 @@ namespace Charamaker3
         /// </summary>
         /// <param name="backcolor"></param>
         /// <returns></returns>
-        public Camera makeBitmapCamera(ColorC backcolor) 
+        public CP<Camera> makeBitmapCamera(ColorC backcolor) 
         {
             Entity Watchrect = Entity.make2(0, 0, render.Render.Size.Width / resol, render.Render.Size.Height / resol, name: WatchRectName);
 
             Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height);
-            Camera res;
-            res = new Camera(Watchrect, 0, backcolor, GetBitMapRenderSet(), this);
+            CP<Camera> res;
+            res = Component.ToPointer(new Camera(Watchrect, 0, backcolor, GetBitMapRenderSet(), this));
             res.add(back);
 
-            cameras.Add(Component.ToPointer(res));
             return res;
 
         }
@@ -958,9 +965,17 @@ namespace Charamaker3
         /// </summary>
         /// <param name="c"></param>
         /// <returns></returns>
-        public bool removeCamera(CP<Camera> c)
+        public bool removeCamera(Camera c)
         {
-            return cameras.Remove(c);
+            for (int i = cameras.Count - 1; i >= 0; --i) 
+            {
+                if (cameras[i].c == c)
+                {
+                    cameras.RemoveAt(i);
+                    return true;
+                }
+            }
+            return false;   
         }
         public void clearCamera()
         {

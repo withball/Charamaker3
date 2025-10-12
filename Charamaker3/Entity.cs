@@ -705,6 +705,7 @@ namespace Charamaker3
             if (component.add(e)) 
             {
                 e = component.e;
+                Refresh();
                 return true;
             }
             Refresh();
@@ -719,6 +720,7 @@ namespace Charamaker3
             if (component.remove())
             {
                 e = null;
+                Refresh();
                 return true;
             }
             Refresh();

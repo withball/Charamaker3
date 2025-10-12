@@ -62,7 +62,7 @@ namespace Charamaker
                 }
             }
             w = new World();
-            charamaker.display.removeCamera(cam);
+            charamaker.display.removeCamera(cam.c);
             cam = Component.ToPointer(charamaker.display.makeCamera(new ColorC(0, 0, 0, 0)));
             cam.c.watchRect.add(w);
 
@@ -270,7 +270,7 @@ namespace Charamaker
         private void close(object sender, FormClosedEventArgs e)
         {
             newWorld();
-            charamaker.display.removeCamera(cam);
+            charamaker.display.removeCamera(cam.c);
             charamaker.OnControls();
             Tumiki.Clear();
         }
