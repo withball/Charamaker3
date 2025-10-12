@@ -3313,7 +3313,7 @@ namespace Charamaker3.CharaModel
                     {
                         length = tags[t][i].text.Analyzed.Count;
                     }
-                    tags[t][i].text = TagTexts[t][i].Substring((int)length);
+                    tags[t][i].text = TagTexts[t][i].Substring(0,(int)length);
 
                     
                 }

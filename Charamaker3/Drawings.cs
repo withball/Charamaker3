@@ -1049,18 +1049,46 @@ namespace Charamaker3
         public List<CharInformation> Analyzed=new List<CharInformation>();
 
         /// <summary>
-        /// 先頭からn文字を抜き出す
+        /// n文字を抜き出す
         /// </summary>
-        /// <param name="length"></param>
+        /// <param name="start">始まる位置</param>
+        /// <param name="length">長さ(-1で最後まで)</param>
         /// <returns>文字の方はいじらないでね</returns>
-        public TextInformation Substring(int length) 
+        public TextInformation Substring(int start,int length) 
         {
             var res=clone();
-            for (int i = length; i < res.Analyzed.Count;)
+            for (int i = 0; i<start;++i)
             {
-                res.Analyzed.RemoveAt(i);
+                if (res.Analyzed.Count > 0)
+                {
+                    res.Analyzed.RemoveAt(0);
+                    res._AnalyzedText.Remove(0);
+                }
+                else 
+                {
+                    //これは全部消えてしまったってこと
+                    res._AnalyzedText = "";
+                    return res;
+                }
             }
-            res._AnalyzedText = res._AnalyzedText.Substring(0, length);
+            int lengthcount = -1;
+            if (length >= 0)
+            {
+                lengthcount = 0;
+                for (int i = length; i < res.Analyzed.Count;)
+                {
+                    res.Analyzed.RemoveAt(i);
+                    lengthcount += 1;
+                }
+            }
+            if (lengthcount >= 0)
+            {
+                res._AnalyzedText = res._AnalyzedText.Substring(start, length);
+            }
+            else
+            {
+                res._AnalyzedText = res._AnalyzedText.Substring(start);
+            }
             return res;
         }
 
