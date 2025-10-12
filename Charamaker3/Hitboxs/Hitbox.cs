@@ -83,8 +83,8 @@ namespace Charamaker3.Hitboxs
             cc.tag = new List<int>(this.tag);
             cc.tagfilter = new List<int>(this.tagfilter);
 
-            cc.HitShape = this.HitShape.clone();
-            cc.preHitShape = this.preHitShape.clone();
+            cc.HitShape = this.HitShape != null ? this.HitShape.clone() : null;
+            cc.preHitShape = this.preHitShape != null ? this.preHitShape.clone() : null;
         }
         public override DataSaver ToSave()
         {

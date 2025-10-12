@@ -164,8 +164,8 @@ namespace Charamaker3.CharaModel
         /// <param name="dz"></param>
         /// <param name="zbai">zを全部倍にしたり</param>
         /// <param name="opacity"></param>
-        /// <param name="linear">描画方法</param>
-        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai, float opacity = 1,bool linear=true)
+        /// <param name="linear">描画方法 -1で変更なし1でtrue</param>
+        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai, float opacity = 1,int linear=-1)
         {
             if (name != null)
             {
@@ -199,8 +199,10 @@ namespace Charamaker3.CharaModel
                                 {
                                     b.z = (b.z - minz)/zpower;
                                 }
-                                b.linear = linear;
-
+                                if (linear >= 0)
+                                {
+                                    b.linear = linear==1;
+                                }
                             }
                         }
 
@@ -219,7 +221,10 @@ namespace Charamaker3.CharaModel
                         {
                             b.zDelta = dz;
                             b.zRatio = zbai;
-                            b.linear = linear;
+                            if (linear >= 0)
+                            {
+                                b.linear = linear == 1;
+                            }
                         }
                     }
 
