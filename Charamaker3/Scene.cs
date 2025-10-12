@@ -75,8 +75,8 @@ namespace Charamaker3
         {
             this.type = type;
             {
-                DrawableMove.BaseColorChange(10, "", 1).addAndRemove(Camera.c.e,100);
-                DrawableMove.BaseColorChange(time, "", 0).add(Camera.c.e);
+                DrawableMove.ChangeColor(10, "", 1-Camera.c.col.opa).addAndRemove(Camera.c.e,100);
+                DrawableMove.BaseColorChange(time, "", -1).add(Camera.c.e);
             }
             this.IsUpdate = isUpdate;
             WatchRect.copy(Camera.c.watchRect);
@@ -84,7 +84,6 @@ namespace Charamaker3
             Camera.c.watchRect.add(World);
 
             Camera.c.stopDraw = false;
-            World.update(0);
             Camera.c.update(0);
             Camera.c.stopDraw = isUpdate==false;
 

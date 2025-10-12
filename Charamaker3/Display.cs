@@ -67,7 +67,7 @@ namespace Charamaker3
         /// <summary>
         /// レンダーまでは開放しない
         /// </summary>
-         ~C3RenderSet() 
+         ~C3RenderSet()
         {
             ECrop0?.Release();
             ECrop1?.Release();
@@ -549,7 +549,7 @@ namespace Charamaker3
         ~Camera()
         {
             //d.removeCamera(this);//いらないよね？
-            if (isBitmap)
+            if (isBitmap==true)
             {
                 if (Mathf.isSubClassOf(render.GetType(), typeof(C3BitmapRenderSet)))
                 {
@@ -887,17 +887,18 @@ namespace Charamaker3
         internal C3BitmapRenderSet GetBitMapRenderSet()
         {
             //残ってないときに作成
-            if (BitmapCameraRenderSet.Count == 0) {
+            if (BitmapCameraRenderSetTaiki.Count == 0) {
                 var fom = new Vortice.DCommon.PixelFormat();
 
                 var TextRSize = new System.Drawing.Size((int)((_render.Render.Size.Width)) , (int)((_render.Render.Size.Height)) );
                 var tempRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                     , fom
                     , CompatibleRenderTargetOptions.GdiCompatible));
+                BitmapCameraRenderSetTaiki.Add(tempRender);
                 BitmapCameraRenderSet.Add(tempRender);
             }
-            var res = BitmapCameraRenderSet[0];
-            BitmapCameraRenderSet.RemoveAt(0);
+            var res = BitmapCameraRenderSetTaiki[0];
+            BitmapCameraRenderSetTaiki.RemoveAt(0);
             return res;
         }
 
@@ -907,7 +908,7 @@ namespace Charamaker3
         /// <param name="back">返すときはしょうめつするとき！</param>
         internal void BackBitMapRenderSet(C3BitmapRenderSet back)
         {
-            BitmapCameraRenderSet.Add(back);
+            BitmapCameraRenderSetTaiki.Add(back);
         }
 
         List<CP<Camera>> cameras = new List<CP<Camera>>();
@@ -916,6 +917,11 @@ namespace Charamaker3
         /// 画像を作るカメラのレンダーを貯めておく
         /// </summary>
         List<C3BitmapRenderSet> BitmapCameraRenderSet=new List<C3BitmapRenderSet>();
+
+        /// <summary>
+        /// 画像を作るカメラのレンダーのもう待機に入ってて仕える奴等
+        /// </summary>
+        List<C3BitmapRenderSet> BitmapCameraRenderSetTaiki = new List<C3BitmapRenderSet>();
         /// <summary>
         /// 画面に直接描画するカメラを作る。Cameraが追加されてるEntityはマジどうでもいい
         /// </summary>
