@@ -577,6 +577,7 @@ namespace Charamaker3
                 {
                     d.BackBitMapRenderSet((C3BitmapRenderSet)render);
                 }
+                d.removeCamera(this);
             }
         }
         public override bool CanDraw(Camera cam)
@@ -988,6 +989,8 @@ namespace Charamaker3
             res = Component.ToPointer(new Camera(Watchrect, 0, backcolor, GetBitMapRenderSet(), this));
             res.add(back);
 
+            //ついかしないとPreDrawができない　　
+            cameras.Add(res);
             return res;
 
         }
@@ -1050,8 +1053,6 @@ namespace Charamaker3
 
         //事前描画のセマフォア
         private DisplaySemaphores Semaphores =new DisplaySemaphores();
-
-        
 
         /// <summary>
         /// テキストのやつなど、事前に描画が必要なやつなどをまとめて処理する
