@@ -48,7 +48,7 @@ namespace Charamaker3
     {
         public enum TransitionType 
         {
-            Fade
+            Fade,Page
         }
         /// <summary>
         /// ワールドをupDatteするか
@@ -69,19 +69,51 @@ namespace Charamaker3
         public SceneTransition(CP<Camera> c)
         {
             this.Camera = c;
+            var chara=new Character(new Joint("joi",0,0,this.Camera.c.e,new List<Entity>()));
+            chara.add(Camera.c.e);
+            chara.SetBaseCharacter();
         }
 
         public void SetNewTransition(float time,World w,Entity WatchRect,bool isUpdate,TransitionType type) 
         {
             this.type = type;
+
+            var fxy=new FXY(Camera.c.e.getCharacter().BaseCharacter.e.x, Camera.c.e.getCharacter().BaseCharacter.e.y);
+            DrawableMove.DResetMove(time, "").addAndRemove(Camera.c.e,100);
+            EntityMove.EResetMove(time, "").addAndRemove(Camera.c.e,100);
+            foreach (var a in Camera.c.e.getcompos<DrawableMove>()) 
             {
-                DrawableMove.ChangeColor(10, "", 1-Camera.c.col.opa).addAndRemove(Camera.c.e,100);
-                DrawableMove.BaseColorChange(time, "", -1).add(Camera.c.e);
+                a.remove();
+            }
+            foreach (var a in Camera.c.e.getcompos<EntityMove>())
+            {
+                a.remove();
+            }
+            Camera.c.e.x= fxy.x; Camera.c.e.y = fxy.y;
+            switch (type)
+            {
+                case TransitionType.Fade:
+                    DrawableMove.BaseColorChange(time, "", 0).add(Camera.c.e);
+                    break;
+
+                case TransitionType.Page:
+                    {
+                        Camera.c.e.tx = Camera.c.e.w;
+                        var a = EntityMove.ScaleChange(time, "", -1);
+                        a.RatioOption = ratioOption.Cos;
+                        a.add(Camera.c.e);
+
+                        DrawableMove.BaseColorChange(time*1.5f, "", 0).add(Camera.c.e);
+                        EntityMove.XYD(time, "", Camera.c.e.w*0.15f,0,-15).add(Camera.c.e);
+                    }
+                    break;
             }
             this.IsUpdate = isUpdate;
+            
             WatchRect.copy(Camera.c.watchRect);
+            Camera.c.watchRect.remove();
             this.World = w;
-            Camera.c.watchRect.add(World);
+            Camera.c.watchRect.add(this.World);
 
             Camera.c.stopDraw = false;
             Camera.c.update(0);
@@ -92,6 +124,16 @@ namespace Charamaker3
         }
         public void Update(float cl) 
         {
+            /*if (World != null)
+            {
+                string s = "";
+                foreach (var a in World.Entities) 
+                {
+                    s += a.name + " ";
+                }
+
+                Debug.WriteLine(World.Entities.Count + " asdasd a" +s);
+            }*/
             if (IsUpdate) 
             {
                 World?.update(cl);
@@ -261,7 +303,6 @@ namespace Charamaker3
         {
             onEnds?.Invoke(this, cl);
             cam.watchRect.remove();
-            sc.display.removeCamera(cam);
         }
 
 
@@ -287,6 +328,9 @@ namespace Charamaker3
                 sc.input.input.y += dp.y;
             }
         }
-
+        ~Scene() 
+        {
+           sc.display.removeCamera(cam);
+        }
     }
 }

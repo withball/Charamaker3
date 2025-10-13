@@ -119,7 +119,7 @@ namespace Charamaker3
         }
     }
     /// <summary>
-    /// カメラは現在、コピーSAVE不可
+    /// カメラは現在、SAVE不可
     /// </summary>
     public class Camera : Drawable
     {
@@ -140,12 +140,36 @@ namespace Charamaker3
         /// <summary>
         /// このカメラがビットマップか。
         /// </summary>
-        readonly protected bool isBitmap;
+        protected bool isBitmap;
         /// <summary>
         /// ディスプレイ
         /// </summary>
-        public readonly Display d;
+        public Display d;
 
+        /// <summary>
+        /// 描画を停止する。
+        /// </summary>
+        public bool stopDraw = false;
+
+
+        /// <summary>
+        /// ヒットボックスの表示フラグ
+        /// </summary>
+        public bool HitboxVisible = false;
+
+        public override void copy(Component c)
+        {
+            var cc = (Camera)c;
+            cc.watchRect = this.watchRect!=null? this.watchRect.clone():null;
+            cc.render = this.render;
+
+            cc.isBitmap = this.isBitmap;
+            cc.d = this.d;
+            cc.stopDraw = this.stopDraw;
+            cc.HitboxVisible = this.HitboxVisible;
+
+            base.copy(c);
+        }
 
         /// <summary>
         /// カメラのx解像度。draw関数の中だとこっち
@@ -164,7 +188,13 @@ namespace Charamaker3
         {
             get { return render.Render.Size.Height / Mathf.abs(watchRect.h); }
         }
-
+        /// <summary>
+        /// 注意！いろいろnull!
+        /// </summary>
+        public Camera() 
+        {
+        
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -182,10 +212,6 @@ namespace Charamaker3
 
         }
 
-        /// <summary>
-        /// 描画を停止する。
-        /// </summary>
-        public bool stopDraw = false;
 
         /// <summary>
         /// テキストなど事前描画が必要なやつを一気に処理する
@@ -212,10 +238,6 @@ namespace Charamaker3
             }
             foreach (var task in tasks) { task.Wait(); }
         }
-        /// <summary>
-        /// ヒットボックスの表示フラグ
-        /// </summary>
-        public bool HitboxVisible = false;
         public override void update(float cl)
         {
             //この中ではcl=0のとき呼び出されないやつとかある。
@@ -815,6 +837,10 @@ namespace Charamaker3
 
 
         /// <summary>
+        /// カメラの標準の名前
+        /// </summary>
+        public const string CameraName = "Camera";
+        /// <summary>
         /// カメラのWatchRectの標準の名前
         /// </summary>
         public const string WatchRectName = "WatchRect";
@@ -929,7 +955,7 @@ namespace Charamaker3
         /// <returns></returns>
         public Camera makeCamera(Entity Watchrect, ColorC backcolor)
         {
-            Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height);
+            Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height, name: CameraName);
             CP<Camera> res;
             res = Component.ToPointer(new Camera(Watchrect, 0, backcolor, render, this));
             res.add(back);
@@ -957,7 +983,7 @@ namespace Charamaker3
         {
             Entity Watchrect = Entity.make2(0, 0, render.Render.Size.Width / resol, render.Render.Size.Height / resol, name: WatchRectName);
 
-            Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height);
+            Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height, name: CameraName);
             CP<Camera> res;
             res = Component.ToPointer(new Camera(Watchrect, 0, backcolor, GetBitMapRenderSet(), this));
             res.add(back);
@@ -999,7 +1025,7 @@ namespace Charamaker3
         {
             PreDraw(cl,AddCameras);
             render.Render.BeginDraw();
-            foreach (CP<Camera> a in cameras)
+            foreach (CP<Camera> a in new List<CP<Camera>>(cameras))
             {
                 if (a.c.watchRect.added)
                 {
