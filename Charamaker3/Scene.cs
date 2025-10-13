@@ -48,7 +48,7 @@ namespace Charamaker3
     {
         public enum TransitionType 
         {
-            Fade,Page
+            Fade,RPage,LPage
         }
         /// <summary>
         /// ワールドをupDatteするか
@@ -96,15 +96,26 @@ namespace Charamaker3
                     DrawableMove.BaseColorChange(time, "", 0).add(Camera.c.e);
                     break;
 
-                case TransitionType.Page:
+                case TransitionType.RPage:
                     {
                         Camera.c.e.tx = Camera.c.e.w;
                         var a = EntityMove.ScaleChange(time, "", -1);
                         a.RatioOption = ratioOption.Cos;
                         a.add(Camera.c.e);
 
-                        DrawableMove.BaseColorChange(time*1.5f, "", 0).add(Camera.c.e);
+                        DrawableMove.BaseColorChange(time*2f, "", 0).add(Camera.c.e);
                         EntityMove.XYD(time, "", Camera.c.e.w*0.15f,0,-15).add(Camera.c.e);
+                    }
+                    break;
+                case TransitionType.LPage:
+                    {
+                        Camera.c.e.tx = Camera.c.e.w*0;
+                        var a = EntityMove.ScaleChange(time, "", -1);
+                        a.RatioOption = ratioOption.Cos;
+                        a.add(Camera.c.e);
+
+                        DrawableMove.BaseColorChange(time * 2f, "", 0).add(Camera.c.e);
+                        EntityMove.XYD(time, "", -Camera.c.e.w * 0.15f, 0, 15).add(Camera.c.e);
                     }
                     break;
             }

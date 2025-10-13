@@ -1060,7 +1060,7 @@ namespace Charamaker3
         protected void PreDraw(float cl, List<CP<Camera>> AddPredraws=null)
         {
             _TextRender.BitmapRender.BeginDraw();
-            foreach (var a in cameras)
+            foreach (var a in new List<CP<Camera>>(cameras))
             {
                 a.c.PreDraw(cl,Semaphores);
             }
