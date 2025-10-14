@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace Charamaker3.CharaModel
 {
+    //NOTE:エンテティを参照したらリークするかもよ！！！
     public partial class EntityMove : Component
     {
 
@@ -875,11 +876,109 @@ namespace Charamaker3.CharaModel
     public partial class EntityMove : Component
     {
         List<float[]> speeds = new List<float[]>();
-        List<Entity> tags = new List<Entity>();
-        List<Entity> tagBases = new List<Entity>();
+        List<WeakReference<Entity>> tagsWeak = new List<WeakReference<Entity>>();
+        List<WeakReference<Entity>> tagBasesWeak = new List<WeakReference<Entity>>();
 
-        List<Joint> Jtags = new List<Joint>();
-        List<Joint> JtagBases = new List<Joint>();
+        bool GetTags(out List<Entity>tags, out List<Entity> tagBases) 
+        {
+            tags=new List<Entity>();
+            tagBases = new List<Entity>();
+            foreach (var a in tagsWeak) 
+            {
+                if (a == null)
+                {
+                    tags.Add(null);
+                }
+                else 
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tags.Add(e);
+                    }
+                    else 
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            foreach (var a in tagBasesWeak)
+            {
+                if (a == null)
+                {
+                    tagBases.Add(null);
+                }
+                else
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tagBases.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        List<WeakReference<Joint>> JtagsWeak = new List<WeakReference<Joint>>();
+        List<WeakReference<Joint>> JtagBasesWeak = new List<WeakReference<Joint>>();
+
+        bool GetTags(out List<Joint> tags, out List<Joint> tagBases)
+        {
+            tags = new List<Joint>();
+            tagBases = new List<Joint>();
+            foreach (var a in JtagsWeak)
+            {
+                if (a == null)
+                {
+                    tags.Add(null);
+                }
+                else
+                {
+                    Joint e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tags.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            foreach (var a in JtagBasesWeak)
+            {
+                if (a == null)
+                {
+                    tagBases.Add(null);
+                }
+                else
+                {
+                    Joint e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tagBases.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
         float[] basespeeds = new float[9];
 
@@ -1025,7 +1124,7 @@ namespace Charamaker3.CharaModel
             res += $" -> X:{basespeeds[_X]}:Y:{basespeeds[_Y]}:W:{basespeeds[_W]}:H:{basespeeds[_H]}:TX:{basespeeds[_TX]}:TY:{basespeeds[_TY]}:DEGREE:{basespeeds[_DEGREE]}:";
             return res;
         }
-        protected virtual void addDefference(float ratio)
+        protected virtual void addDefference(float ratio,List<Entity>tags, List<Entity> tagBases, List<Joint> Jtags, List<Joint> JtagBases)
         {
 
             if (degreeSpeedLimit >= 0)
@@ -1157,8 +1256,8 @@ namespace Charamaker3.CharaModel
         }
         protected override void onadd(float cl)
         {
-            tags.Clear();
-            tagBases.Clear();
+            tagsWeak.Clear();
+            tagBasesWeak.Clear();
             speeds.Clear();
 
             //characterから得るtag
@@ -1166,10 +1265,10 @@ namespace Charamaker3.CharaModel
             if (cs.Count == 0)
             {
 
-                tags.Add(e);
-                Jtags.Add(null);
-                tagBases.Add(e);
-                JtagBases.Add(null);
+                tagsWeak.Add(new WeakReference<Entity>(e));
+                JtagsWeak.Add(null);
+                tagBasesWeak.Add(new WeakReference<Entity>(e));
+                JtagBasesWeak.Add(null);
             }
             else
             {
@@ -1180,11 +1279,11 @@ namespace Charamaker3.CharaModel
                     {
                         foreach (var b in a.getTree(name))
                         {
-                            tags.Add(b);
+                            tagsWeak.Add(new WeakReference<Entity>(b));
                         }
                         foreach (var b in a.BaseCharacter.getTree(name))
                         {
-                            tagBases.Add(b);
+                            tagBasesWeak.Add(new WeakReference<Entity>(b));
                         }
                     }
                 }
@@ -1194,28 +1293,83 @@ namespace Charamaker3.CharaModel
                     {
                         foreach (var b in a.getTree(name))
                         {
-                            tags.Add(b);
-                            tagBases.Add(b);
+                            tagsWeak.Add(new WeakReference<Entity>(b));
+                            tagBasesWeak.Add(new WeakReference<Entity>(b));
                         }
                     }
                 }
+            }
+            List<Entity> tags;
+            List<Entity> tagBases;
+            GetTags(out tags, out tagBases);
+            if (cs.Count != 0)
+            {
                 //ジョイントも設定。ジョイントはエンテティと1対1対応していないので注意
                 for (int i = 0; i < tags.Count; i++)
                 {
-                    Jtags.Add(cs[0].getParentJoint(tags[i].name));
-                    JtagBases.Add(cs[0].BaseCharacter.getParentJoint(tagBases[i].name));
+                    JtagsWeak.Add(new WeakReference<Joint>(cs[0].getParentJoint(tags[i].name)));
+                    JtagBasesWeak.Add(new WeakReference<Joint>(cs[0].BaseCharacter.getParentJoint(tagBases[i].name)));
                 }
                 //一斉に指定して子供までついてきた場合、親のジョイントがかぶる場合がある。Rootは絶対にかぶらないけども、かぶったやつはnullにする。
-                for (int i = 0; i < tags.Count; i++)
+                for (int i = 0; i < JtagsWeak.Count; i++)
                 {
-                    if (Jtags[i] != null) for (int t = i + 1; t < tags.Count; t++)
+                    Joint a = null, b = null;
+                    if (JtagsWeak[i] != null)
+                    {
+                        JtagsWeak[i].TryGetTarget(out a);
+                    }
+                    if (a != null)
+                    {
+                        for (int t = i + 1; t < JtagsWeak.Count; t++)
                         {
-                            if (Jtags[i] == Jtags[t])
+                            if (JtagsWeak[t] != null)
                             {
-                                Jtags[t] = null;
+                                JtagsWeak[t].TryGetTarget(out b);
+                                if (JtagsWeak[i] == JtagsWeak[t])
+                                {
+                                    JtagsWeak[t] = null;
+                                }
                             }
                         }
+                    }
+                    else
+                    {
+                        JtagsWeak[i] = null;
+                    }
                 }
+                for (int i = 0; i < JtagBasesWeak.Count; i++)
+                {
+                    Joint a = null, b = null;
+                    if (JtagBasesWeak[i] != null)
+                    {
+                        JtagBasesWeak[i].TryGetTarget(out a);
+                    }
+                    if (a != null)
+                    {
+                        for (int t = i + 1; t < JtagBasesWeak.Count; t++)
+                        {
+                            if (JtagBasesWeak[t] != null)
+                            {
+                                JtagBasesWeak[t].TryGetTarget(out b);
+                                if (JtagBasesWeak[i] == JtagBasesWeak[t])
+                                {
+                                    JtagBasesWeak[t] = null;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        JtagBasesWeak[i] = null;
+                    }
+                }
+            }
+            List<Joint> Jtags;
+            List<Joint> JtagBases;
+            if (GetTags(out Jtags, out JtagBases) == false) 
+            {
+                tags.Clear();
+                tagBases.Clear();
             }
             for (int t = 0; t < tags.Count; t++)
             {
@@ -1584,7 +1738,7 @@ namespace Charamaker3.CharaModel
             }
             else if (instant)
             {
-                addDefference(1);
+                addDefference(1,tags,tagBases,Jtags,JtagBases);
             }
             /*else
             {
@@ -1595,11 +1749,25 @@ namespace Charamaker3.CharaModel
         }
         protected override void onupdate(float cl)
         {
+
+            List<Entity> tags=new List<Entity>();
+            List<Entity> tagBases = new List<Entity>();
+            List<Joint> Jtags = new List<Joint>();
+            List<Joint> JtagBases = new List<Joint>();
+
+            if (GetTags(out tags, out tagBases))
+            {
+                if (GetTags(out Jtags, out JtagBases)==false) 
+                {
+                    tags.Clear();
+                tagBases.Clear();
+                }
+            }
             if (cl > 0)
             {
                 if (degreeSpeedLimit >= 0) //無理やりの実装
                 {
-                    addDefference(cl);
+                    addDefference(cl, tags, tagBases, Jtags, JtagBases);
 
                 }
                 else if (!instant)
@@ -1609,7 +1777,7 @@ namespace Charamaker3.CharaModel
                         case ratioOption.Liner:
                             {
                                 float speed = 1 / time;
-                                addDefference(speed * cl);
+                                addDefference(speed * cl, tags, tagBases, Jtags, JtagBases);
                             }
                             break;
                         case ratioOption.Cos:
@@ -1618,7 +1786,7 @@ namespace Charamaker3.CharaModel
 
                                 float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180) ) * -0.5f;
                                
-                                addDefference(speed);
+                                addDefference(speed, tags, tagBases, Jtags, JtagBases);
                             }
                             break;
                         case ratioOption.Sin:
@@ -1627,7 +1795,7 @@ namespace Charamaker3.CharaModel
 
                                 float speed = (Mathf.sin(timer / time * 180) - Mathf.sin(pretimer / time * 180)) * -0.5f;
 
-                                addDefference(speed);
+                                addDefference(speed, tags, tagBases, Jtags, JtagBases);
                             }
                             break;
                         default:
@@ -1703,11 +1871,40 @@ namespace Charamaker3.CharaModel
 
     }
 
+    /// <summary>
+    /// 中心点を直接座標指定するムーブ
+    /// </summary>
     public class SetTXYMove :Component
     {
         string tag="";
         List<float[]> speeds = new List<float[]>();
-        List<Entity> tags = new List<Entity>();
+        List<WeakReference<Entity>> tagsWeak = new List<WeakReference<Entity>>();
+
+        bool GetTags(out List<Entity> tags)
+        {
+            tags = new List<Entity>();
+            foreach (var a in tagsWeak)
+            {
+                if (a == null)
+                {
+                    tags.Add(null);
+                }
+                else
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tags.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
         float[] basespeeds = new float[4];
 
@@ -1775,7 +1972,7 @@ namespace Charamaker3.CharaModel
 
         }
 
-        protected virtual void addDefference(float ratio)
+        protected virtual void addDefference(float ratio,List<Entity>tags)
         {
             for (int t = 0; t < tags.Count; t++)
             {
@@ -1787,13 +1984,13 @@ namespace Charamaker3.CharaModel
         }
         protected override void onadd(float cl)
         {
-            tags.Clear();
+            tagsWeak.Clear();
             speeds.Clear();
 
             //座標の参照
             Entity sansyo = null;
 
-            tags.Add(e);
+            tagsWeak.Add(new WeakReference<Entity>(e));
 
             //characterから得るtag
             var cs = e.getcompos<Character>();
@@ -1818,10 +2015,11 @@ namespace Charamaker3.CharaModel
                 speeds[0][0] = basespeeds[0] - fxy.x;
                 speeds[0][1] = basespeeds[1] - fxy.y;
             }
-
+            List<Entity>tags = new List<Entity>();
+            GetTags(out tags);
             if (instant)
             {
-                addDefference(1);
+                addDefference(1,tags);
             }
             /*else
             {
@@ -1836,12 +2034,14 @@ namespace Charamaker3.CharaModel
             {
                 if (!instant)
                 {
+                    List<Entity> tags = new List<Entity>();
+                    GetTags(out tags);
                     switch (RatioOption)
                     {
                         case ratioOption.Liner:
                             {
                                 float speed = 1 / time;
-                                addDefference(speed * cl);
+                                addDefference(speed * cl,tags);
                             }
                             break;
                         case ratioOption.Cos:
@@ -1850,7 +2050,7 @@ namespace Charamaker3.CharaModel
 
                                 float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180)) * -0.5f;
 
-                                addDefference(speed);
+                                addDefference(speed, tags);
                             }
                             break;
                         case ratioOption.Sin:
@@ -1859,7 +2059,7 @@ namespace Charamaker3.CharaModel
 
                                 float speed = (Mathf.sin(timer / time * 180) - Mathf.sin(pretimer / time * 180)) * -0.5f;
 
-                                addDefference(speed);
+                                addDefference(speed, tags);
                             }
                             break;
                         default:
@@ -1875,9 +2075,58 @@ namespace Charamaker3.CharaModel
     public class EntityMirror : Component
     {
 
-        List<Entity> tags = new List<Entity>();
         List<float[]> speeds = new List<float[]>();
-        List<Entity> tagBases = new List<Entity>();
+        List<WeakReference<Entity>> tagsWeak = new List<WeakReference<Entity>>();
+        List<WeakReference<Entity>> tagBasesWeak = new List<WeakReference<Entity>>();
+
+        bool GetTags(out List<Entity> tags, out List<Entity> tagBases)
+        {
+            tags = new List<Entity>();
+            tagBases = new List<Entity>();
+            foreach (var a in tagsWeak)
+            {
+                if (a == null)
+                {
+                    tags.Add(null);
+                }
+                else
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tags.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            foreach (var a in tagBasesWeak)
+            {
+                if (a == null)
+                {
+                    tagBases.Add(null);
+                }
+                else
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tagBases.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
 
         MirrorOption MO;
 
@@ -1949,7 +2198,7 @@ namespace Charamaker3.CharaModel
             degree = 0;
             base.resettimer();
         }
-        void enmirror(bool degree)
+        void enmirror(bool degree,List<Entity>tags,List<Entity>tagBases)
         {
             if (tags.Count <= 0) return;
             bool topmirrored = tags[0].mirror;
@@ -2021,15 +2270,15 @@ namespace Charamaker3.CharaModel
         }
         protected override void onadd(float cl)
         {
-            tags.Clear();
-            tagBases.Clear();
+            tagsWeak.Clear();
+            tagBasesWeak.Clear();
             speeds.Clear();
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
 
-                tags.Add(e);
-                tagBases.Add(e);
+                tagsWeak.Add(new WeakReference<Entity>(e));
+                tagBasesWeak.Add(new WeakReference<Entity>(e));
                 speeds.Add(new float[] { e.w, 0, e.tx, 0, 0, 0 });
             }
             else
@@ -2038,28 +2287,33 @@ namespace Charamaker3.CharaModel
                 {
                     foreach (var b in a.getTree(name))
                     {
-                        tags.Add(b);
+                        tagsWeak.Add(new WeakReference<Entity>(b));
                     }
                     foreach (var b in a.BaseCharacter.getTree(name))
                     {
-                        tagBases.Add(b);
+                        tagBasesWeak.Add(new WeakReference<Entity>(b));
                     }
-                    for (int i = 0; i < tagBases.Count; i++)
+                } 
+            }
+            List<Entity> tags,tagBases;
+            GetTags(out tags, out tagBases);
+            if(cs.Count != 0)
+            {
+                for (int i = 0; i < tagBases.Count; i++)
+                {
+                    if (i == 0 || goall == true)
                     {
-                        if (i == 0 || goall == true)
-                        {
-                            speeds.Add(new float[] { tags[i].w, 0, tags[i].tx, 0
+                        speeds.Add(new float[] { tags[i].w, 0, tags[i].tx, 0
                             ,
                          Mathf.st180(tagBases[i].degree - Mathf.st180(tags[i].degree - tagBases[i].degree)-tags[i].degree)
                         ,0});
-                        }
-                        else
-                        {
-                            speeds.Add(new float[] { 0, 0, 0, 0
+                    }
+                    else
+                    {
+                        speeds.Add(new float[] { 0, 0, 0, 0
                             ,0
                             ,0
                         });
-                        }
                     }
                 }
 
@@ -2067,7 +2321,7 @@ namespace Charamaker3.CharaModel
             if (instant && !mirrored)
             {
                 mirrored = true;
-                enmirror(true);
+                enmirror(true,tags,tagBases);
                 
                 var ratio = 1;
                 for (int i = 0; i < tagBases.Count; i++)
@@ -2086,10 +2340,13 @@ namespace Charamaker3.CharaModel
             base.onupdate(cl);
             if (instant==false)
             {
+
+                List<Entity> tags, tagBases;
+                GetTags(out tags, out tagBases);
                 if (!mirrored && timer > time / 2)
                 {
                     mirrored = true;
-                    enmirror(false);
+                    enmirror(false,tags,tagBases);
                 }
                 float ddegree = cl / time * 180;
                 float ratio = Mathf.abs(Mathf.cos(degree + ddegree)) - Mathf.abs(Mathf.cos(degree));
@@ -2129,8 +2386,65 @@ namespace Charamaker3.CharaModel
     public partial class DrawableMove : Component
     {
         List<List<float[]>> speeds = new List<List<float[]>>();
-        List<List<Drawable>> tags = new List<List<Drawable>>();
-        List<List<Drawable>> tagBases = new List<List<Drawable>>();
+        List<List<WeakReference<Drawable>>> tagsWeak = new List<List<WeakReference<Drawable>>>();
+        List<List<WeakReference<Drawable>>> tagBasesWeak = new List<List<WeakReference<Drawable>>>();
+
+        bool GetTags(out List<List<Drawable>> tags, out List<List<Drawable>> tagBases)
+        {
+            tags = new List<List<Drawable>>();
+            tagBases = new List<List<Drawable>>();
+            foreach (var a in tagsWeak)
+            {
+                tags.Add(new List<Drawable>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tags.Add(null);
+                    }
+                    else
+                    {
+                        Drawable e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            tags.Last().Add(e);
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            tagBases.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            foreach (var a in tagBasesWeak)
+            {
+                tagBases.Add(new List<Drawable>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tagBases.Add(null);
+                    }
+                    else
+                    {
+                        Drawable e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            tagBases.Last().Add(e);
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            tagBases.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         float[] basespeeds = new float[5];
         /// <summary>
         /// "\\"で、ベース。
@@ -2242,7 +2556,7 @@ namespace Charamaker3.CharaModel
                 $":TEXTURE:{texture}:";
             return res;
         }
-        protected virtual void addDefference(float ratio)
+        protected virtual void addDefference(float ratio,List<List<Drawable>>tags, List<List<Drawable>> tagBases)
         {
             for (int t = 0; t < tags.Count; t++)
             {
@@ -2257,7 +2571,7 @@ namespace Charamaker3.CharaModel
                 }
             }
         }
-        protected virtual void changes()
+        protected virtual void changes(List<List<Drawable>> tags, List<List<Drawable>> tagBases)
         {
             if (texture != "_")
             {
@@ -2297,8 +2611,8 @@ namespace Charamaker3.CharaModel
         }
         protected override void onadd(float cl)
         {
-            tags.Clear();
-            tagBases.Clear();
+            tagsWeak.Clear();
+            tagBasesWeak.Clear();
             speeds.Clear();
             zparts = null;
             float zpartsdz = 0;
@@ -2306,8 +2620,23 @@ namespace Charamaker3.CharaModel
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
-                tags.Add(e.getcompos<Drawable>());
-                tagBases.Add(e.getcompos<Drawable>());
+                {
+                    var lis = new List<WeakReference<Drawable>>();
+                    foreach (var a in e.getcompos<Drawable>())
+                    {
+                        lis.Add(new WeakReference<Drawable>(a));
+                    }
+                    tagsWeak.Add(lis);
+                }
+
+                {
+                    var lis = new List<WeakReference<Drawable>>();
+                    foreach (var a in e.getcompos<Drawable>())
+                    {
+                        lis.Add(new WeakReference<Drawable>(a));
+                    }
+                    tagBasesWeak.Add(lis);
+                }
             }
             else
             {
@@ -2315,18 +2644,23 @@ namespace Charamaker3.CharaModel
                 {
                     foreach (var b in a.getTree(name))
                     {
-                        var lis = b.getcompos<Drawable>();
-                        tags.Add(lis);
+                        var lis = new List<WeakReference<Drawable>>();
+                        foreach (var c in b.getcompos<Drawable>())
+                        {
+                            lis.Add(new WeakReference<Drawable>(c));
+                        }
+                        tagsWeak.Add(lis);
                     }
                     foreach (var b in a.BaseCharacter.getTree(name))
                     {
-                        var lis = b.getcompos<Drawable>();
-                        tagBases.Add(lis);
-                        foreach (var c in lis)
+                        var lis = new List<WeakReference<Drawable>>();
+                        foreach (var c in b.getcompos<Drawable>())
                         {
                             minz = Mathf.min(minz, c.z);
                             maxz = Mathf.max(maxz, c.z);
+                            lis.Add(new WeakReference<Drawable>(c));
                         }
+                        tagBasesWeak.Add(lis);
                     }
                 }
                 if (zname != "_")
@@ -2346,6 +2680,9 @@ namespace Charamaker3.CharaModel
 
                 }
             }
+            List<List<Drawable>> tags, tagBases;
+            GetTags(out tags, out tagBases);
+
             for (int t = 0; t < tags.Count; t++)
             {
                 speeds.Add(new List<float[]>());
@@ -2518,7 +2855,7 @@ namespace Charamaker3.CharaModel
             }
             if (instant)
             {
-                addDefference(1);
+                addDefference(1,tags,tagBases);
             }
             /* else
              {
@@ -2533,12 +2870,14 @@ namespace Charamaker3.CharaModel
             {
                 if (instant==false)
                 {
+                    List<List<Drawable>> tags, tagBases;
+                    GetTags(out tags, out tagBases);
                     switch (RatioOption)
                     {
                         case ratioOption.Liner:
                             {
                                 float speed = 1 / time;
-                                addDefference(speed * cl);
+                                addDefference(speed * cl,tags,tagBases);
                             }
                             break;
                         case ratioOption.Cos:
@@ -2546,7 +2885,7 @@ namespace Charamaker3.CharaModel
                                 float pretimer = timer - cl;
 
                                 float speed = (Mathf.cos(timer / time * 180) - Mathf.cos(pretimer / time * 180) ) * -0.5f;
-                                addDefference(speed);
+                                addDefference(speed, tags, tagBases);
                             }
                             break;
                         case ratioOption.Sin:
@@ -2554,7 +2893,7 @@ namespace Charamaker3.CharaModel
                                 float pretimer = timer - cl;
 
                                 float speed = (Mathf.sin(timer / time * 180) - Mathf.sin(pretimer / time * 180)) * -0.5f;
-                                addDefference(speed);
+                                addDefference(speed, tags, tagBases);
                             }
                             break;
                         default:
@@ -2567,7 +2906,9 @@ namespace Charamaker3.CharaModel
         }
         protected override void onremove(float cl)
         {
-            changes();
+            List<List<Drawable>> tags, tagBases;
+            GetTags(out tags, out tagBases);
+            changes(tags,tagBases);
             base.onremove(cl);
         }
 
@@ -2580,8 +2921,65 @@ namespace Charamaker3.CharaModel
     public partial class ZDeltaMove : Component
     {
         List<List<float[]>> speeds = new List<List<float[]>>();
-        List<List<Drawable>> tags = new List<List<Drawable>>();
-        List<List<Drawable>> tagBases = new List<List<Drawable>>();
+        List<List<WeakReference<Drawable>>> tagsWeak = new List<List<WeakReference<Drawable>>>();
+        List<List<WeakReference<Drawable>>> tagBasesWeak = new List<List<WeakReference<Drawable>>>();
+
+        bool GetTags(out List<List<Drawable>> tags, out List<List<Drawable>> tagBases)
+        {
+            tags = new List<List<Drawable>>();
+            tagBases = new List<List<Drawable>>();
+            foreach (var a in tagsWeak)
+            {
+                tags.Add(new List<Drawable>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tags.Add(null);
+                    }
+                    else
+                    {
+                        Drawable e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            tags.Last().Add(e);
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            tagBases.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            foreach (var a in tagBasesWeak)
+            {
+                tagBases.Add(new List<Drawable>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tagBases.Add(null);
+                    }
+                    else
+                    {
+                        Drawable e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            tagBases.Last().Add(e);
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            tagBases.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         float[] basespeeds = new float[2];
 
 
@@ -2662,7 +3060,7 @@ namespace Charamaker3.CharaModel
             res += $" -> ZDelta:{basespeeds[_ZDelta]}:ZRatio:{basespeeds[_ZRatio]}";
             return res;
         }
-        protected virtual void addDefference(float ratio)
+        protected virtual void addDefference(float ratio,List<List<Drawable>> tags, List<List<Drawable>> tagBases)
         {
             for (int t = 0; t < tags.Count; t++)
             {
@@ -2675,8 +3073,8 @@ namespace Charamaker3.CharaModel
         }
         protected override void onadd(float cl)
         {
-            tags.Clear();
-            tagBases.Clear();
+            tagsWeak.Clear();
+            tagBasesWeak.Clear();
             speeds.Clear();
             zparts = null;
             float zpartsdz = 0;
@@ -2684,9 +3082,23 @@ namespace Charamaker3.CharaModel
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
+                {
+                    var lis = new List<WeakReference<Drawable>>();
+                    foreach (var c in e.getcompos<Drawable>())
+                    {
+                        lis.Add(new WeakReference<Drawable>(c));
+                    }
+                    tagsWeak.Add(lis);
+                }
+                {
 
-                tags.Add(e.getcompos<Drawable>());
-                tagBases.Add(e.getcompos<Drawable>());
+                    var lis = new List<WeakReference<Drawable>>();
+                    foreach (var c in e.getcompos<Drawable>())
+                    {
+                        lis.Add(new WeakReference<Drawable>(c));
+                    }
+                    tagBasesWeak.Add(lis);
+                }
             }
             else
             {
@@ -2695,18 +3107,29 @@ namespace Charamaker3.CharaModel
                 {
                     foreach (var b in a.getTree(name))
                     {
-
-                        var lis = b.getcompos<Drawable>();
-                        tags.Add(lis);
+                        var lis = new List<WeakReference<Drawable>>();
+                        foreach (var c in b.getcompos<Drawable>())
+                        {
+                            lis.Add(new WeakReference<Drawable>(c));
+                        }
+                        tagsWeak.Add(lis);
                     }
                     foreach (var b in a.BaseCharacter.getTree(name))
                     {
-                        var lis = b.getcompos<Drawable>();
-                        tagBases.Add(lis);
+                        var lis = new List<WeakReference<Drawable>>();
+                        foreach (var c in b.getcompos<Drawable>())
+                        {
+                            lis.Add(new WeakReference<Drawable>(c));
+                        }
+                        tagBasesWeak.Add(lis);
                     }
                 }
               
             }
+
+            List<List<Drawable>> tags, tagBases;
+            GetTags(out tags, out tagBases);
+
             for (int t = 0; t < tags.Count; t++)
             {
                 speeds.Add(new List<float[]>());
@@ -2802,7 +3225,7 @@ namespace Charamaker3.CharaModel
             }
             if (instant)
             {
-                addDefference(1);
+                addDefference(1,tags,tagBases);
             }
             /* else
              {
@@ -2817,8 +3240,10 @@ namespace Charamaker3.CharaModel
             {
                 if (!instant)
                 {
+                    List<List<Drawable>> tags, tagBases;
+                    GetTags(out tags, out tagBases);
                     float speed = 1 / time;
-                    addDefference(speed * cl);
+                    addDefference(speed * cl,tags,tagBases);
                 }
             }
             base.onupdate(cl);
@@ -2833,8 +3258,57 @@ namespace Charamaker3.CharaModel
     public partial class ZRotateMove : Component
     {
         List<float[]> speeds = new List<float[]>();
-        List<Entity> tags = new List<Entity>();
-        List<Entity> tagbases = new List<Entity>();
+        List<WeakReference<Entity>> tagsWeak = new List<WeakReference<Entity>>();
+        List<WeakReference<Entity>> tagBasesWeak = new List<WeakReference<Entity>>();
+
+        bool GetTags(out List<Entity> tags, out List<Entity> tagBases)
+        {
+            tags = new List<Entity>();
+            tagBases = new List<Entity>();
+            foreach (var a in tagsWeak)
+            {
+                if (a == null)
+                {
+                    tags.Add(null);
+                }
+                else
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tags.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            foreach (var a in tagBasesWeak)
+            {
+                if (a == null)
+                {
+                    tagBases.Add(null);
+                }
+                else
+                {
+                    Entity e;
+                    if (a.TryGetTarget(out e))
+                    {
+                        tagBases.Add(e);
+                    }
+                    else
+                    {
+                        tags.Clear();
+                        tagBases.Clear();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
         float[] basespeeds = new float[12];
 
         public goOption GO = goOption.def;
@@ -2932,7 +3406,7 @@ namespace Charamaker3.CharaModel
                 $"";
             return res;
         }
-        protected virtual void ToValue(float time)
+        protected virtual void ToValue(float time,List<Entity>tags,List<Entity>tagBases)
         {
             for (int t = 0; t < tags.Count; t++)
             {
@@ -2954,15 +3428,16 @@ namespace Charamaker3.CharaModel
         }
         protected override void onadd(float cl)
         {
-            tags.Clear();
+            tagsWeak.Clear();
+            tagBasesWeak.Clear();
             speeds.Clear();
             //characterから得るtag
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
 
-                tags.Add(e);
-                tagbases.Add(e);
+                tagsWeak.Add(new WeakReference<Entity>(e));
+                tagBasesWeak.Add(new WeakReference<Entity>(e));
             }
             else
             {
@@ -2972,11 +3447,11 @@ namespace Charamaker3.CharaModel
                     {
                         foreach (var b in a.getTree(name))
                         {
-                            tags.Add(b);
+                            tagsWeak.Add(new WeakReference<Entity>(b));
                         }
                         foreach (var b in a.BaseCharacter.getTree(name))
                         {
-                            tagbases.Add(b);
+                            tagBasesWeak.Add(new WeakReference<Entity>(b));
                         }
                     }
                 }
@@ -2988,20 +3463,23 @@ namespace Charamaker3.CharaModel
                             var tag = a.getEntity(name);
                             if (tag != null)
                             {
-                                tags.Add(tag);
+                                tagsWeak.Add(new WeakReference<Entity>(tag));
                             }
                         }
                         {
                             var tag = a.BaseCharacter.getEntity(name);
                             if (tag != null)
                             {
-                                tagbases.Add(tag);
+                                tagBasesWeak.Add(new WeakReference<Entity>(tag));
                             }
                         }
                     }
                 }
 
             }
+            List<Entity> tags, tagBases;
+            GetTags(out tags, out tagBases);
+
             for (int t = 0; t < tags.Count; t++)
             {
                 speeds.Add(new float[12]);
@@ -3011,8 +3489,8 @@ namespace Charamaker3.CharaModel
                 }
                 if (Mathf.cos(speeds[t][_STX]) == 0)
                 {
-                    speeds[t][_SCX] = tagbases[t].w;
-                    speeds[t][_TXS] = tagbases[t].tx;
+                    speeds[t][_SCX] = tagBases[t].w;
+                    speeds[t][_TXS] = tagBases[t].tx;
 
 
                 }
@@ -3028,8 +3506,8 @@ namespace Charamaker3.CharaModel
                 speeds[t][_TXE] = speeds[t][_TXE] * (basespeeds[_SCX]);
                 if (Mathf.cos(speeds[t][_STY]) == 0)
                 {
-                    speeds[t][_SCY] = tagbases[t].h;
-                    speeds[t][_TYS] = tagbases[t].ty;
+                    speeds[t][_SCY] = tagBases[t].h;
+                    speeds[t][_TYS] = tagBases[t].ty;
                 }
                 else
                 {
@@ -3043,7 +3521,7 @@ namespace Charamaker3.CharaModel
             if (instant)
             {
 
-                this.ToValue(1);
+                this.ToValue(1,tags,tagBases);
             }
             /* else
              {
@@ -3058,7 +3536,9 @@ namespace Charamaker3.CharaModel
             {
                 if (!instant)
                 {
-                    this.ToValue(timer / time);
+                    List<Entity> tags, tagBases;
+                    GetTags(out tags, out tagBases);
+                    this.ToValue(timer / time,tags,tagBases);
                 }
             }
             base.onupdate(cl);
@@ -3085,7 +3565,37 @@ namespace Charamaker3.CharaModel
 
         List<List<float[]>> speeds = new List<List<float[]>>();
         List<List<float[]>> bspeeds = new List<List<float[]>>();
-        List<List<Text>> tags = new List<List<Text>>();
+
+        List<List<WeakReference<Text>>> tagsWeak = new List<List<WeakReference<Text>>>();
+        bool GetTags(out List<List<Text>> tags)
+        {
+            tags = new List<List<Text>>();
+            foreach (var a in tagsWeak)
+            {
+                tags.Add(new List<Text>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tags.Add(null);
+                    }
+                    else
+                    {
+                        Text e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            tags.Last().Add(e);
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         List<List<TextInformation>> TagTexts=new List<List<TextInformation>>();
         bool instant { get { return time <= 0; } }
 
@@ -3128,7 +3638,7 @@ namespace Charamaker3.CharaModel
 
         protected override void onadd(float cl)
         {
-            tags.Clear();
+            tagsWeak.Clear();
             speeds.Clear();
             bspeeds.Clear();
             TagTexts.Clear();
@@ -3136,8 +3646,12 @@ namespace Charamaker3.CharaModel
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
-
-                tags.Add(e.getcompos<Text>());
+                var lis = new List<WeakReference<Text>>();
+                foreach (var a in e.getcompos<Text>()) 
+                {
+                    lis.Add(new WeakReference<Text>(a));
+                }
+                tagsWeak.Add(lis);
             }
             else
             {
@@ -3145,12 +3659,17 @@ namespace Charamaker3.CharaModel
                 {
                     foreach (var b in a.getTree(name))
                     {
-
-                        var lis = b.getcompos<Text>();
-                        tags.Add(lis);
+                        var lis = new List<WeakReference<Text>>();
+                        foreach (var c in b.getcompos<Text>())
+                        {
+                            lis.Add(new WeakReference<Text>(c));
+                        }
+                        tagsWeak.Add(lis);
                     }
                 }
             }
+            List<List<Text>> tags;
+            GetTags(out tags);
             for (int t = 0; t < tags.Count; t++)
             {
                 speeds.Add(new List<float[]>());
@@ -3222,7 +3741,7 @@ namespace Charamaker3.CharaModel
             }
             if (instant)
             {
-                setTexts(1);
+                setTexts(1,tags);
             }
             /* else
              {
@@ -3238,13 +3757,15 @@ namespace Charamaker3.CharaModel
             {
                 if (!instant)
                 {
-                    this.setTexts(timer / time);
+                    List<List<Text>> tags;
+                    GetTags(out tags);
+                    this.setTexts(timer / time,tags);
                 }
             }
             base.onupdate(cl);
 
         }
-        void setTexts(float ratio) 
+        void setTexts(float ratio,List<List<Text>>tags)  
         {
             for (int t = 0; t < tags.Count; t++)
             {
@@ -3361,7 +3882,37 @@ namespace Charamaker3.CharaModel
         public float Px,Py;
         goOption Go;
 
-        List<List<Entity>> tags = new List<List<Entity>>();
+        List<List<WeakReference<Entity>>> tagsWeak = new List<List<WeakReference<Entity>>>();
+
+        bool GetTags(out List<List<Entity>> tags)
+        {
+            tags = new List<List<Entity>>();
+            foreach (var a in tagsWeak)
+            {
+                tags.Add(new List<Entity>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tags.Add(null);
+                    }
+                    else
+                    {
+                        Entity e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            tags.Last().Add(e);
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
         bool instant { get { return time <= 0; } }
 
         /// <summary>
@@ -3389,13 +3940,14 @@ namespace Charamaker3.CharaModel
 
         protected override void onadd(float cl)
         {
-            tags.Clear();
+            tagsWeak.Clear();
             //characterから得るtag
             var cs = e.getcompos<Character>();
             if (cs.Count == 0)
             {
-
-                tags.Add(new List<Entity> { e });
+                List<WeakReference<Entity>> lis=new List<WeakReference<Entity>>();
+                lis.Add(new WeakReference<Entity>(e));
+                tagsWeak.Add(lis);
             }
             else
             {
@@ -3405,21 +3957,29 @@ namespace Charamaker3.CharaModel
                     case goOption.goAll:
                         foreach (var a in cs)
                         {
-                            tags.Add(a.getTree(name));
+                            List<WeakReference<Entity>> lis = new List<WeakReference<Entity>>();
+                            foreach (var b in a.getTree(name))
+                            {
+                                lis.Add(new WeakReference<Entity>(b));
+                            }
+                            tagsWeak.Add(lis);
                         }
                         break;
                     case goOption.onlyRoot:
                         foreach (var a in cs)
                         {
-                            tags.Add(new List<Entity> { a.getEntity(name) });
+                            List<WeakReference<Entity>> lis = new List<WeakReference<Entity>>();
+                            lis.Add(new WeakReference<Entity>(a.getEntity(name)));
+                            tagsWeak.Add(lis);
                         }
                         break;
                 }
             }
-
+            List<List<Entity>> tags;
+            GetTags(out tags);
             if (instant)
             {
-                setHaikei();
+                setHaikei(tags);
             }
             /* else
              {
@@ -3432,11 +3992,13 @@ namespace Charamaker3.CharaModel
         {
             if (!instant)
             {
-                this.setHaikei();
+                List<List<Entity>> tags;
+                GetTags(out tags);
+                this.setHaikei(tags);
             }
             base.onremove(cl);
         }
-        void setHaikei() 
+        void setHaikei(List<List<Entity>>tags) 
         {
             var watchRect = World.getNamedEntity(WatchRect, world.Entities);
             if (watchRect.Count == 0) 

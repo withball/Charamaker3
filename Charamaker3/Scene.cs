@@ -145,7 +145,7 @@ namespace Charamaker3
 
                 Debug.WriteLine(World.Entities.Count + " asdasd a" +s);
             }*/
-            if (IsUpdate) 
+            if (IsUpdate==true) 
             {
                 World?.update(cl);
             }

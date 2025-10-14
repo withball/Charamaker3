@@ -738,6 +738,17 @@ namespace Charamaker3
         {
             return new CP<Cmp>(c);
         }
+
+
+        public static implicit operator Cmp(CP<Cmp> a)
+        {
+            return a.c;
+        }
+        public static implicit operator CP<Cmp>(Cmp a)
+        {
+            return new CP<Cmp>(a);
+        }
+
     }
 
     /// <summary>

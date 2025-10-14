@@ -708,7 +708,7 @@ namespace Charamaker
             FileMan.s_rootpath = temp;
             FP.SetDefault(FP.l);//ŒÄ‚Ño‚µŒ³‚ÌFP‚ğ“Ç‚İ‚Ş
             FileMan.LoadedDS.Clear();
-
+            FileMan.LoadedMotion.Clear();
             cam.d.setupTextureLoader();
         }
         private void ResetTextureB_Click(object sender, EventArgs e)

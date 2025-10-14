@@ -17,7 +17,30 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// 親Entity
         /// </summary>
-        public Entity parent;
+        public WeakReference<Entity> _parent;
+
+        public Entity parent
+        {
+            get
+            {
+                Entity res;
+                if (_parent == null)
+                {
+                    return null;
+                }
+                if (_parent.TryGetTarget(out res))
+                {
+                    return res;
+                }
+                return null;
+            }
+            set 
+            {
+             _parent = new WeakReference<Entity>(value);
+            }
+        }
+
+
         public List<Entity> childs = new List<Entity>();
         public Joint(string name, float px, float py, Entity parent, List<Entity> childs)
         {
@@ -247,7 +270,7 @@ namespace Charamaker3.CharaModel
         /// </summary>
         public List<Joint> _joints_ { get { return _joints; } }
 
-        Character _BaseCharacter =null;
+        Entity _BaseCharacter =null;
 
         
 
@@ -480,7 +503,7 @@ namespace Charamaker3.CharaModel
             res.linechange();
             if (_BaseCharacter != null) 
             {
-                res.packAdd("BaseCharacter",_BaseCharacter.e.ToSave());
+                res.packAdd("BaseCharacter",_BaseCharacter.ToSave());
             }
             return res;
         }
@@ -513,7 +536,7 @@ namespace Charamaker3.CharaModel
             {
                 var e = Entity.ToLoadEntity(basec);
 
-                _BaseCharacter = e.getcompos<Character>()[0];
+                _BaseCharacter = e;
                 doubleChildecheck();
             }
 
@@ -750,7 +773,7 @@ namespace Charamaker3.CharaModel
             var clone = e.clone();
             clone.name = e.name;
 
-            _BaseCharacter = clone.getcompos<Character>(this.name)[0];
+            _BaseCharacter = clone;
 
             e.name = nm;
             BaseCharacter.name = nm;
@@ -765,12 +788,12 @@ namespace Charamaker3.CharaModel
         {
             var nm = c.e.name;
             c.e.name = BaseCharacterEName;
-            _BaseCharacter =c;
+            _BaseCharacter = c.e;
             _BaseCharacter.name = nm;
 
             BaseCharacter._BaseCharacter = null;
         }
-        public Character BaseCharacter { get { if (_BaseCharacter == null) return this; return _BaseCharacter; } }
+        public Character BaseCharacter { get { if (_BaseCharacter == null) return this; return _BaseCharacter.getCharacter(); } }
 
        
 

@@ -298,6 +298,7 @@ namespace Charamaker3
         /// </summary>
         static public Dictionary<string,DataSaver> LoadedDS = new Dictionary<string, DataSaver>();
 
+        static public Dictionary<string, MotionSaver> LoadedMotion = new Dictionary<string, MotionSaver>();
 
 
         /// <summary>
@@ -364,6 +365,7 @@ namespace Charamaker3
             return d.getcompos<Character>()[0];
         }
 
+
         /// <summary>
         /// キャラクターをロードする
         /// </summary>
@@ -371,8 +373,23 @@ namespace Charamaker3
         /// <returns>もう一回ファイルをロードしなおす</returns>
         static public MotionSaver loadMotion(string path, bool reset = false)
         {
-            var d = loadDS(@"motion\" + path, reset, ".ctm",false);
-            var res = MotionSaver.ToLoad(d);
+            var d = loadDS(@"motion\" + path, reset, ".ctm", false);
+            MotionSaver res;
+            if (LoadedMotion.ContainsKey(path) == false || reset)
+            {
+                res = MotionSaver.ToLoad(d);
+                if (LoadedMotion.ContainsKey(path) == false)
+                {
+                    LoadedMotion.Add(path, res);
+                }
+                else
+                {
+                    LoadedMotion[path] = res;
+                }
+        
+            }
+            res = new MotionSaver(LoadedMotion[path].Script, (Motion)LoadedMotion[path].Motion.clone());
+
             return res;
         }
 

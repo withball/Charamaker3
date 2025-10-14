@@ -133,14 +133,15 @@ namespace Charamaker3
         {
             get
             {
-                if (!isBitmap) return null;
+                if (!_isBitmap) return null;
                 return (ID2D1BitmapRenderTarget)render.Render;
             }
         }
+        public bool IsBitmap { get { return _isBitmap; } }
         /// <summary>
         /// このカメラがビットマップか。
         /// </summary>
-        protected bool isBitmap;
+        protected bool _isBitmap;
         /// <summary>
         /// ディスプレイ
         /// </summary>
@@ -163,7 +164,7 @@ namespace Charamaker3
             cc.watchRect = this.watchRect!=null? this.watchRect.clone():null;
             cc.render = this.render;
 
-            cc.isBitmap = this.isBitmap;
+            cc._isBitmap = this._isBitmap;
             cc.d = this.d;
             cc.stopDraw = this.stopDraw;
             cc.HitboxVisible = this.HitboxVisible;
@@ -207,7 +208,7 @@ namespace Charamaker3
         {
             this.d = d;
             this.render = render;
-            isBitmap = Mathf.isSubClassOf(render.GetType(),typeof(C3BitmapRenderSet));
+            _isBitmap = Mathf.isSubClassOf(render.GetType(),typeof(C3BitmapRenderSet));
             this.watchRect = WatchRect;
 
         }
@@ -219,11 +220,17 @@ namespace Charamaker3
         virtual public void PreDraw(float cl,DisplaySemaphores semaphores)
         {
             if (stopDraw == true) { return; }
+            if (IsBitmap) 
+            {
+                if (col.opa < 0)
+                {
+                    return;
+                }
+            }
             List<Task>tasks = new List<Task>();
             //cl=0でも呼び出される
             if (watchRect.world != null)
             {
-
                 tasks.Add(Task.Run(() =>
                 {
                     foreach (var a in watchRect.world.Ddic.getresult())
@@ -234,9 +241,12 @@ namespace Charamaker3
                         }
 
                     }
-                }));
+                }
+                ));
             }
             foreach (var task in tasks) { task.Wait(); }
+            foreach (var task in tasks) { task.Dispose(); }
+            tasks.Clear();
         }
         public override void update(float cl)
         {
@@ -246,11 +256,15 @@ namespace Charamaker3
 
             if (stopDraw == true) { return; }
             //cl=0でも呼び出される
-            if (isBitmap == true)
+            if (_isBitmap == true)
             {
+                if (col.opa < 0) 
+                {
+                    return;
+                }
                 render.Render.BeginDraw();
             }
-            if (isBitmap == false)
+            if (_isBitmap == false)
             {
                 if (col.opa != 0)
                 {
@@ -276,10 +290,13 @@ namespace Charamaker3
                     tasks.Add(Task.Run(() =>
                     {
                         oks[ii] = lis[ii].CanDraw(this);
-                    }));
+                    }
+                    ));
                 }
 
                 foreach (var task in tasks) { task.Wait(); }
+                foreach (var task in tasks) { task.Dispose(); }
+                tasks.Clear();
 
                 for (int i = 0; i < lis.Count; i++)
                 {
@@ -321,7 +338,7 @@ namespace Charamaker3
                     }
                 }
             }
-            if (isBitmap)
+            if (_isBitmap)
             {
                 render.Render.EndDraw();
             }
@@ -571,7 +588,7 @@ namespace Charamaker3
         ~Camera()
         {
             //d.removeCamera(this);//いらないよね？
-            if (isBitmap==true)
+            if (_isBitmap==true)
             {
                 if (Mathf.isSubClassOf(render.GetType(), typeof(C3BitmapRenderSet)))
                 {
@@ -589,7 +606,7 @@ namespace Charamaker3
 
         override public void draw(Camera cam)
         {
-            if (isBitmap)
+            if (_isBitmap)
             {
                 BitmapInterpolationMode mode;
                 if (linear == true)
@@ -1026,14 +1043,18 @@ namespace Charamaker3
         /// <param name="AddCameras">追加で描画するカメラ 順番通りになる</param>
         public void draw(float cl = 1, List<CP<Camera>> AddCameras = null)
         {
+            ThreadNum = 0;
             PreDraw(cl,AddCameras);
             render.Render.BeginDraw();
+
             foreach (CP<Camera> a in new List<CP<Camera>>(cameras))
             {
-                if (a.c.watchRect.added)
+                if (a.c.watchRect.added && a.c.IsBitmap==false)
                 {
                     a.c.e.update(cl);
+                    ThreadNum += 1;
                 }
+
             }
             if (AddCameras != null)
             {
@@ -1042,14 +1063,14 @@ namespace Charamaker3
                     if (a.c.watchRect.added)
                     {
                         a.c.e.update(cl);
+                        ThreadNum += 1;
                     }
                 }
             }
             render.Render.EndDraw();
         }
 
-        
-
+        static public int ThreadNum = 0;
 
         //事前描画のセマフォア
         private DisplaySemaphores Semaphores =new DisplaySemaphores();
@@ -1373,13 +1394,15 @@ namespace Charamaker3
                             }
                         }
                     }
-                }));
+                }
+                ));
             }
             foreach (var a in hanteis) 
             {
                 a.Wait();
             }
-
+            foreach (var task in hanteis) { task.Dispose(); }
+            hanteis.Clear();
             
             Shapes.Rectangle res = null;
             foreach (var a in rects)
