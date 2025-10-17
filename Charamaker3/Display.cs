@@ -62,7 +62,7 @@ namespace Charamaker3
             this.ECrop2 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
             this.EBlend = new Vortice.Direct2D1.Effects.ColorMatrix(DeviceContext);
             this.ETrans = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
-            this.WriteFactory = DWrite.DWriteCreateFactory<IDWriteFactory>();
+            DWrite.DWriteCreateFactory<IDWriteFactory>(Vortice.DirectWrite.FactoryType.Shared,out this.WriteFactory);
         }
         /// <summary>
         /// レンダーまでは開放しない
@@ -98,7 +98,7 @@ namespace Charamaker3
 
             //DeviceContext.Fac
             Bitmap1 = this.DeviceContext.CreateBitmap(DeviceContext.PixelSize, IntPtr.Zero
-                    , 0, ref bitmapProperties);
+                    , 0, bitmapProperties);
 
            
         }
@@ -1302,7 +1302,7 @@ namespace Charamaker3
         public int TextRenderesRemoveNum { get { return textRenderersRemove.Count; } }
         internal TextRenderer makeTextRenderer(float w, float h)
         {
-            for (int i=textRenderersRemove.Count-1;i>=0;i--)
+            for (int i = textRenderersRemove.Count - 1; i >= 0; i--)
             {
                 textRenderers.Remove(textRenderersRemove[i]);
                 textRenderersRemove.RemoveAt(i);
@@ -1488,27 +1488,13 @@ namespace Charamaker3
             var trans=new Vortice.Direct2D1.Effects.AffineTransform2D(d2dContext);
             trans.SetInputEffect(0,blend, new SharpGen.Runtime.RawBool(true));
 
-           var colormatrix = new Matrix5x4();
-            colormatrix.M11 = color.r;
-            colormatrix.M12 = 0;
-            colormatrix.M13 = 0;
-            colormatrix.M14 = 0;
-            colormatrix.M21 = 0;
-            colormatrix.M22 = color.g;
-            colormatrix.M23 = 0;
-            colormatrix.M24 = 0;
-            colormatrix.M31 = 0;
-            colormatrix.M32 = 0;
-            colormatrix.M33 = color.b;
-            colormatrix.M34 = 0;
-            colormatrix.M41 = 0;
-            colormatrix.M42 = 0;
-            colormatrix.M43 = 0;
-            colormatrix.M44 = 1;
-            colormatrix.M51 = 0;
-            colormatrix.M52 = 0;
-            colormatrix.M53 = 0;
-            colormatrix.M54 = 0;
+            var colormatrix = new Matrix5x4(
+            color.r,0,0,0,
+            0,color.g,0,0,
+            0,0,color.b,0,
+            0,0,0,1,
+            0,0,0,0
+            );
 
             blend.Matrix = colormatrix;
 

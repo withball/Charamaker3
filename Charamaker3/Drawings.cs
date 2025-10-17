@@ -696,11 +696,11 @@ namespace Charamaker3
                 var leftup = camsoutai(cam, e.gettxy2(0, 0));
                 var leftdown = camsoutai(cam, e.gettxy2(0, 1));
                 var rightup = camsoutai(cam, e.gettxy2(1, wariai));
-                sink.BeginFigure(new PointF(leftup.x, leftup.y), FigureBegin.Filled);
+                sink.BeginFigure(new Vector2(leftup.x, leftup.y), FigureBegin.Filled);
 
-                sink.AddLine(new PointF(leftdown.x, leftdown.y));
-                sink.AddLine(new PointF(rightup.x, rightup.y));
-                sink.AddLine(new PointF(leftup.x, leftup.y));
+                sink.AddLine(new Vector2(leftdown.x, leftdown.y));
+                sink.AddLine(new Vector2(rightup.x, rightup.y));
+                sink.AddLine(new Vector2(leftup.x, leftup.y));
 
                 sink.EndFigure(FigureEnd.Closed);
 
@@ -708,6 +708,10 @@ namespace Charamaker3
 
                 render.FillGeometry(geometry, brh);
                 render.DrawGeometry(geometry, brh);
+
+
+                sink.Dispose();
+                geometry.Dispose();
             }
 
         }
@@ -919,29 +923,14 @@ namespace Charamaker3
                 var blend = cam.render.EBlend;
                 blend.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(false));
 
-                var colormatrix = new Matrix5x4();
-                {
-                    colormatrix.M11 = col.r;
-                    colormatrix.M12 = 0;
-                    colormatrix.M13 = 0;
-                    colormatrix.M14 = 0;
-                    colormatrix.M21 = 0;
-                    colormatrix.M22 = col.g;
-                    colormatrix.M23 = 0;
-                    colormatrix.M24 = 0;
-                    colormatrix.M31 = 0;
-                    colormatrix.M32 = 0;
-                    colormatrix.M33 = col.b;
-                    colormatrix.M34 = 0;
-                    colormatrix.M41 = 0;
-                    colormatrix.M42 = 0;
-                    colormatrix.M43 = 0;
-                    colormatrix.M44 = col.opa;
-                    colormatrix.M51 = 0;
-                    colormatrix.M52 = 0;
-                    colormatrix.M53 = 0;
-                    colormatrix.M54 = 0;
-                }
+                Matrix5x4 colormatrix = new Matrix5x4(
+                    col.r,0,0,0,
+                    0,col.g,0,0,
+                    0,0,col.b,0,
+                    0,0,0,col.opa,
+                    0,0,0,0
+                    );
+               
                 blend.Matrix = colormatrix;
 
                 var trans = cam.render.ETrans;
@@ -1705,43 +1694,46 @@ namespace Charamaker3
                 tf.size *=text.Analyzed[i].Size;
                 tf.ali = FontC.alignment.left;
                 tf.aliV = FontC.alignment.left;
-                IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, tf.ToFont(), rendZone.w, rendZone.h);
-
                 //文字の幅と高さ
-                float _right=0,_bottom=0;
+                float _right = 0, _bottom = 0;
+                using (IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, tf.ToFont(), rendZone.w, rendZone.h))
+                {
 
-                int maxline = 2;
-                if (tf.size > 0)
-                {
-                    maxline = (int)(rendZone.h / tf.size) * 2;
-                }
-                LineMetrics[] Lmets = new LineMetrics[maxline];
-                ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
-                int LCount;
-                int CCount;
-                var Lres = Layout.GetLineMetrics(Lmets, out LCount);
-                var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
+                    int maxline = 2;
+                    if (tf.size > 0)
+                    {
+                        maxline = (int)(rendZone.h / tf.size) * 2;
+                    }
+                    LineMetrics[] Lmets = new LineMetrics[maxline];
+                    ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
+                    int LCount;
+                    int CCount;
+                    var Lres = Layout.GetLineMetrics(Lmets, out LCount);
+                    var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
 
-                if (Lres.Success)
-                {
-                    //文字列の高さをさぐる
-                    _bottom = 0;
-                    for (int t = 0; t < LCount; ++t)
+                    if (Lres.Success)
                     {
-                        _bottom = Mathf.max(Lmets[t].Height,_bottom);
+                        //文字列の高さをさぐる
+                        _bottom = 0;
+                        for (int t = 0; t < LCount; ++t)
+                        {
+                            _bottom = Mathf.max(Lmets[t].Height, _bottom);
+                        }
                     }
-                }
-                if (Cres.Success)
-                {
-                    //文字列の幅をさぐる 
-                    _right = 0;
-                    for (int t = 0; t < CCount; ++t)
+                    if (Cres.Success)
                     {
-                        _right = Mathf.max(Cmets[t].Width,_right);
+                        //文字列の幅をさぐる 
+                        _right = 0;
+                        for (int t = 0; t < CCount; ++t)
+                        {
+                            _right = Mathf.max(Cmets[t].Width, _right);
+                        }
                     }
+                 
+                    Layout.Release();
+                    Layout.Dispose();
+                   
                 }
-                Layout.Dispose();
-              
 
                 maxBottom = Mathf.max(maxBottom, sumBottom + _bottom);
                 //sumBottom = Mathf.max(sumBottom, maxBottom - _bottom);
@@ -2197,10 +2189,7 @@ namespace Charamaker3
                 //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
                 var Clip = (RawRectF)rendZone;
 
-                Clip.Left -= 1;
-                Clip.Right += 1;
-                Clip.Top -= 1;
-                Clip.Bottom += 1;
+                Clip = new RawRectF(Clip.Left - 1, Clip.Top - 1, Clip.Right + 1, Clip.Bottom + 1);
 
 
                 semaphores.TextRender.Wait();
@@ -2500,7 +2489,7 @@ namespace Charamaker3
         /// テキスト描画のためのTrenderを作成する。
         /// </summary>
         /// <param name="dis">間違えないでね！</param>
-        internal void MakeTrender(Display dis) 
+        internal void MakeTrender(Display dis)
         {
             if (Trender == null)
             {
@@ -2512,8 +2501,8 @@ namespace Charamaker3
                 Trender.Release();
                 Trender = dis.makeTextRenderer(font.w, font.h);
             }
-           
-            Trender.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
+
+            Trender?.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
         }
 
         /// <summary>
@@ -2521,7 +2510,6 @@ namespace Charamaker3
         /// </summary>
         internal void SetRayout() 
         {
-
             Trender?.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
         }
 
@@ -2560,15 +2548,13 @@ namespace Charamaker3
                     break;
             }
             render.Transform = rectTrans(cam);
-            var rect = rectRectF(cam);
+            RawRectF rect = rectRectF(cam);
 
             var zure = new FXY(0, yZure);
             zure = camsoutai(cam, zure + cam.watchRect.gettxy(0, 0));
             zure.degree += e.degree;
-            rect.Left += zure.x;
-            rect.Right += zure.x;
-            rect.Top += zure.y;
-            rect.Bottom += zure.y;
+            rect = new RawRectF(rect.Left + zure.x, rect.Top + zure.y, rect.Right + zure.x, rect.Bottom + zure.y);
+
             {
                 BitmapInterpolationMode mode;
                 if (linear == true)

@@ -603,7 +603,7 @@ namespace Charamaker3
         /// </summary>
         public void Stop()
         {
-            if (source != null && source.IsDisposed == false)
+            if (source != null/* && source.IsDisposed == false*/)
             {
                 source.ExitLoop(0);
                 source.Stop();
@@ -635,7 +635,7 @@ namespace Charamaker3
 
             }
 
-            if (!source.IsDisposed)
+            if (source!= null/*&&!source.IsDisposed*/)
             {
                 wvf = null;
                 source.DestroyVoice();
