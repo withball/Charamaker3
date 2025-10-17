@@ -641,7 +641,21 @@ namespace Charamaker3.Utils
         /// </summary>
         public float SiroSiro = 4;
 
-        public Entity Target=null;
+        protected WeakReference<Entity> _Target=new WeakReference<Entity>(null);
+        public Entity Target { get
+            {
+                Entity res;
+                if (_Target.TryGetTarget(out res))
+                {
+                    return res;
+                }
+                return null;
+            }
+            set 
+            {
+                _Target.SetTarget(value);
+            }
+        }
 
         bool CanRend = true;
 

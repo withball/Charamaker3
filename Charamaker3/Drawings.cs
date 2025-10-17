@@ -1664,6 +1664,8 @@ namespace Charamaker3
         /// ラインの番号
         /// </summary>
         public int line;
+
+
         /// <summary>
         /// テキストを一文字ずつに分割する。
         /// </summary>
@@ -1696,43 +1698,45 @@ namespace Charamaker3
                 tf.aliV = FontC.alignment.left;
                 //文字の幅と高さ
                 float _right = 0, _bottom = 0;
-                using (IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, tf.ToFont(), rendZone.w, rendZone.h))
-                {
+                using (var font = tf.ToFont()) {
+                    using (IDWriteTextLayout Layout = render.WriteFactory.CreateTextLayout(add.c.CharText, font, rendZone.w, rendZone.h))
+                    {
 
-                    int maxline = 2;
-                    if (tf.size > 0)
-                    {
-                        maxline = (int)(rendZone.h / tf.size) * 2;
-                    }
-                    LineMetrics[] Lmets = new LineMetrics[maxline];
-                    ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
-                    int LCount;
-                    int CCount;
-                    var Lres = Layout.GetLineMetrics(Lmets, out LCount);
-                    var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
+                        int maxline = 2;
+                        if (tf.size > 0)
+                        {
+                            maxline = (int)(rendZone.h / tf.size) * 2;
+                        }
+                        LineMetrics[] Lmets = new LineMetrics[maxline];
+                        ClusterMetrics[] Cmets = new ClusterMetrics[maxline * 100];
+                        int LCount;
+                        int CCount;
+                        var Lres = Layout.GetLineMetrics(Lmets, out LCount);
+                        var Cres = Layout.GetClusterMetrics(Cmets, out CCount);
 
-                    if (Lres.Success)
-                    {
-                        //文字列の高さをさぐる
-                        _bottom = 0;
-                        for (int t = 0; t < LCount; ++t)
+                        if (Lres.Success)
                         {
-                            _bottom = Mathf.max(Lmets[t].Height, _bottom);
+                            //文字列の高さをさぐる
+                            _bottom = 0;
+                            for (int t = 0; t < LCount; ++t)
+                            {
+                                _bottom = Mathf.max(Lmets[t].Height, _bottom);
+                            }
                         }
-                    }
-                    if (Cres.Success)
-                    {
-                        //文字列の幅をさぐる 
-                        _right = 0;
-                        for (int t = 0; t < CCount; ++t)
+                        if (Cres.Success)
                         {
-                            _right = Mathf.max(Cmets[t].Width, _right);
+                            //文字列の幅をさぐる 
+                            _right = 0;
+                            for (int t = 0; t < CCount; ++t)
+                            {
+                                _right = Mathf.max(Cmets[t].Width, _right);
+                            }
                         }
-                    }
-                 
-                    Layout.Release();
-                    Layout.Dispose();
-                   
+
+                        Layout.Release();
+                        Layout.Dispose();
+
+                    } 
                 }
 
                 maxBottom = Mathf.max(maxBottom, sumBottom + _bottom);
@@ -1940,7 +1944,7 @@ namespace Charamaker3
         /// <summary>
         /// ちゃんとしたフォントに変える
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Disposeしてね！</returns>
         public IDWriteTextFormat ToFont()
         {
             var fa = Vortice.DirectWrite.DWrite.DWriteCreateFactory<IDWriteFactory>();
@@ -2302,11 +2306,14 @@ namespace Charamaker3
                                     break;
                             }
 
-
-                            using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
+                            using (var font = f.ToFont())
                             {
-                                drawed += b.c.CharText;
-                                render.BitmapRender.DrawText(b.c.CharText, f.ToFont(), drawRect, slb);
+                                using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
+                                {
+                                    drawed += b.c.CharText;
+
+                                    render.BitmapRender.DrawText(b.c.CharText, font, drawRect, slb);
+                                }
                             }
                             //  Debug.WriteLine(b.x+"::"+ b.y+" asd " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
                         }
