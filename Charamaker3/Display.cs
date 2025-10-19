@@ -212,22 +212,22 @@ namespace Charamaker3
             this.watchRect = WatchRect;
 
         }
-
-
         /// <summary>
         /// テキストなど事前描画が必要なやつを一気に処理する
         /// </summary>
-        virtual public void PreDraw(float cl,DisplaySemaphores semaphores)
+        public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
+            base.PreDraw(cam, semaphores);
+
             if (stopDraw == true) { return; }
-            if (IsBitmap) 
+            if (IsBitmap)
             {
                 if (col.opa < 0)
                 {
                     return;
                 }
             }
-            List<Task>tasks = new List<Task>();
+            List<Task> tasks = new List<Task>();
             //cl=0でも呼び出される
             if (watchRect.world != null)
             {
@@ -1007,7 +1007,7 @@ namespace Charamaker3
             res.add(back);
 
             //ついかしないとPreDrawができない　　
-            cameras.Add(res);
+            //cameras.Add(res);
             return res;
 
         }
@@ -1084,13 +1084,13 @@ namespace Charamaker3
             _TextRender.BitmapRender.BeginDraw();
             foreach (var a in new List<CP<Camera>>(cameras))
             {
-                a.c.PreDraw(cl,Semaphores);
+                a.c.PreDraw(a,Semaphores);
             }
             if (AddPredraws != null) 
             {
                 foreach (var a in AddPredraws) 
                 {
-                    a.c.PreDraw(cl, Semaphores);
+                    a.c.PreDraw(a, Semaphores);
                 }
             }
             _TextRender.BitmapRender.EndDraw();
@@ -1307,7 +1307,7 @@ namespace Charamaker3
                 textRenderers.Remove(textRenderersRemove[i]);
                 textRenderersRemove.RemoveAt(i);
             }
-            //  Debug.WriteLine("make TextRendere" + w + " :: " + h);
+            //Debug.WriteLine("make TextRendere" + w + " :: " + h);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
             h = Mathf.ceil(h);
