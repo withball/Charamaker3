@@ -1,4 +1,5 @@
 ﻿using Charamaker3.CharaModel;
+using Charamaker3.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,6 +120,8 @@ namespace Charamaker3
                     }
                     break;
             }
+
+            new LifeTimer(time,"",true).add(Camera.c.watchRect);
             this.IsUpdate = isUpdate;
             
             WatchRect.copy(Camera.c.watchRect);
@@ -184,9 +187,10 @@ namespace Charamaker3
         /// <summary>
         /// 自動で作られる一番安易なカメラ
         /// </summary>
-        public readonly Camera cam;
+        public readonly CP<Camera> _cam;
+        public Camera cam{ get { return _cam.c; } }
         /// <summary>
-        /// 次のシーン
+        /// 次のシーン。Endでnulにするので気を付けて。
         /// </summary>
         public Scene next;
 
@@ -194,6 +198,10 @@ namespace Charamaker3
         /// ワールド
         /// </summary>
         public World wol;
+
+
+        static int sceneindex = 0;
+        int index = 0;
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -204,9 +212,13 @@ namespace Charamaker3
             this.next = next;
             sc = s;
 
-            cam = sc.display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
+            _cam = sc.display.makeCamera(new ColorC(0, 0.8f, 0.9f, 1));
+            sc.display.removeCamera(cam);
 
             WorldReset();
+            index = sceneindex;
+            sceneindex = sceneindex + 1;
+            Debug.WriteLine(index + " Scene!!!Maked " + this.GetType().ToString());
         }
 
         /// <summary>
@@ -265,7 +277,7 @@ namespace Charamaker3
 
                 if (OnDraw)
                 {
-                    sc.display.draw(cl);
+                    sc.display.draw(cl,new List<CP<Camera>> { cam});
                     onAfterDrawUpadete();
 
                 }
@@ -298,11 +310,13 @@ namespace Charamaker3
             {
                 onEnd(cl);
                 next?.Start(cl);
+                next = null;
                 _started = false;
             }
             else 
             {
                 next?.Start(cl);
+                next = null;
             }
         }
 
@@ -339,9 +353,9 @@ namespace Charamaker3
                 sc.input.input.y += dp.y;
             }
         }
-        ~Scene() 
+        ~Scene()
         {
-           sc.display.removeCamera(cam);
+            Debug.WriteLine(index + " Scene!!!Destructed " + this.GetType().ToString());
         }
     }
 }

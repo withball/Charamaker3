@@ -296,6 +296,7 @@ namespace Charamaker3
 
                 foreach (var task in tasks) { task.Wait(); }
                 foreach (var task in tasks) { task.Dispose(); }
+
                 tasks.Clear();
 
                 for (int i = 0; i < lis.Count; i++)
@@ -971,7 +972,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="backcolor"></param>
         /// <returns></returns>
-        public Camera makeCamera(Entity Watchrect, ColorC backcolor)
+        private Camera makeCamera(Entity Watchrect, ColorC backcolor)
         {
             Entity back = Entity.make2(0, 0, render.Render.Size.Width, render.Render.Size.Height, name: CameraName);
             CP<Camera> res;
@@ -979,6 +980,7 @@ namespace Charamaker3
             res.add(back);
 
             cameras.Add(res);
+
             return res.c;
         }
 
