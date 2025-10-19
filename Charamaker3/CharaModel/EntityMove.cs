@@ -2454,7 +2454,6 @@ namespace Charamaker3.CharaModel
 
         goOption GO = goOption.def;
 
-        Drawable zparts;
         float minz, maxz;
 
         const int _Z = 0;
@@ -2614,7 +2613,7 @@ namespace Charamaker3.CharaModel
             tagsWeak.Clear();
             tagBasesWeak.Clear();
             speeds.Clear();
-            zparts = null;
+            Drawable zparts = null;
             float zpartsdz = 0;
             //characterから得るtag
             var cs = e.getcompos<Character>();
@@ -2818,7 +2817,7 @@ namespace Charamaker3.CharaModel
                                     default:
                                         if (speeds[0].Count > 0)
                                         {
-                                            speeds[t][i][j] = speeds[t][i][j];
+                                            speeds[t][i][j] = speeds[0][i][j];
                                         }
                                         else
                                         {
