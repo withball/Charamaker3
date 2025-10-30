@@ -230,6 +230,32 @@ namespace Charamaker3.CharaModel
             res.RP = rp;
             return res;
         }
+
+        /// <summary>
+        /// 角度を狙った方向にする(cos版)
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">=""</param>
+        /// <param name="degree">=0</param>
+        /// <param name="rp">=rotatePath.shorts ,plus,minus</param>
+        /// <param name="joint">ジョイント依存にする=true</param>
+        /// <returns>__MOVE__</returns>
+        static public EntityMove RotateToCos(float time, string name = "", float degree = 0, rotatePath rp = rotatePath.shorts
+            , bool joint = true)
+        {
+            var res = new EntityMove(time, 0, 0, 0, 0, 0, 0, degree, 0, 0, name);
+            if (joint)
+            {
+                res.RO = rotateOption.joint;
+            }
+            else
+            {
+                res.RO = rotateOption.world;
+            }
+            res.RP = rp;
+            res.RatioOption = ratioOption.Cos;
+            return res;
+        }
         /// <summary>
         /// 角度を狙った方向にする(速度上限付き)
         /// </summary>
@@ -524,6 +550,28 @@ namespace Charamaker3.CharaModel
             c.dz = -0.1f;
 
             return c;
+        }
+
+        /// <summary>
+        /// エンテティからMove系列をすべて削除する(Motiionはムリ)
+        /// </summary>
+        /// <param name="e"></param>
+        /// <returns></returns>
+        public static List<Component> RemoveMoves(Entity e)
+        {
+            var res= new List<Component>();
+            res.AddRange(e.getcompos<EntityMove>());
+            res.AddRange(e.getcompos<DrawableMove>());
+            res.AddRange(e.getcompos<EntityMirror>());
+            res.AddRange(e.getcompos<ZRotateMove>());
+            res.AddRange(e.getcompos<TextMove>());
+            res.AddRange(e.getcompos<ZDeltaMove>());
+            res.AddRange(e.getcompos<SetTXYMove>());
+            foreach (var a in res)
+            {
+                e.comporemove(a);
+            }
+            return res;
         }
     }
     public partial class DrawableMove : Component
@@ -1914,7 +1962,7 @@ namespace Charamaker3.CharaModel
         const int _TPY = 3;
         bool instant { get { return time <= 0; } }
 
-        ratioOption RatioOption = ratioOption.Liner;
+        public ratioOption RatioOption = ratioOption.Liner;
 
         public SetTXYMove(float time, string tag, float x, float y, float tpx=float.NaN, float tpy = float.NaN) : base(time) 
         {

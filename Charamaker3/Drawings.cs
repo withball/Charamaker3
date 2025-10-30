@@ -1372,9 +1372,12 @@ namespace Charamaker3
                             min = idxs[i];
                         }
                     }
-
+                    var preTtext = Ttext;
                     funcs[minidx].Invoke();
-                    go = true;
+                    if (preTtext != Ttext)
+                    {
+                        go = true;
+                    }
                 }
 
             }
