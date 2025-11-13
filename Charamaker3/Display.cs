@@ -649,6 +649,7 @@ namespace Charamaker3
                     {"yellow",System.Drawing.Color.Yellow },{"cyan",System.Drawing.Color.Cyan },{"purple",System.Drawing.Color.Purple },
                     {"aqua",System.Drawing.Color.Aqua },{"brown",System.Drawing.Color.Brown },{"crimson",System.Drawing.Color.Crimson },
                     {"pink",System.Drawing.Color.Pink },{"orange",System.Drawing.Color.Orange },{"indigo",System.Drawing.Color.Indigo }
+
                 ,{"trans",System.Drawing.Color.FromArgb(0,0,0,0) }
 
                 };

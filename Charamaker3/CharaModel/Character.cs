@@ -366,6 +366,52 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
+        /// Parent -> body 型のキャラクターを作る
+        /// </summary>
+        /// <param name="tex">元テクスチャー</param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="size">サイズ+テクスチャーの横幅に合わせる<br></br>-でたて幅に合わせる</param>
+        /// <param name="tpx">中心の割合</param>
+        /// <param name="tpy"></param>
+        /// <param name="z"></param>
+        /// <param name="corename"></param>
+        /// <returns></returns>
+        static public Entity MakeCharacter2(string tex, float x, float y, float size,
+            float tpx = 0.5f, float tpy = 0.5f, float z = 10000, string corename = "core")
+        {
+            var bmpWh = FileMan.GetTextureSize(tex);
+
+            float w, h;
+
+            if (size > 0)
+            {
+                w = size;
+                h = bmpWh.y * size / bmpWh.x;
+            }
+            else
+            {
+
+                w = bmpWh.x * -size / bmpWh.y;
+                h = -size;
+            }
+
+
+            var res = Entity.make(x, y, w, h, w * tpx, h * tpy, 0);
+
+            var core = Entity.make(x, y, w, h, w * tpx, h * tpy, 0, corename);
+
+            var c = new Character(new Joint("ParentJOI", tpx, tpy, null, new List<Entity> { core}));
+            
+            var t = new Texture(z, new ColorC(1, 1, 1, 1), new Dictionary<string, string> { { "def", tex } });
+            t.add(core);
+
+            c.add(res);
+
+            c.SetBaseCharacter();
+            return res;
+        }
+        /// <summary>
         /// キャラクターの普通のコンストラクタ。
         /// </summary>
         /// <param name="corejoint">核となるジョイント。parentは必要ない。</param>

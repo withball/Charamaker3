@@ -1067,7 +1067,10 @@ namespace Charamaker3.CharaModel
         public goOption GO = goOption.def;
 
         public ratioOption RatioOption = ratioOption.Liner;
-
+        /// <summary>
+        /// 世界に対する角度にするか
+        /// </summary>
+        public bool IsWorldDegree = false;
         public EntityMove() { }
         public EntityMove(float time, float dx = 0, float dy = 0, float dw = 0, float dh = 0, float dtx = 0, float dty = 0
             , float ddegree = 0, float ddx = 0, float ddy = 0, string name = "") : base(time, name)
@@ -1105,6 +1108,7 @@ namespace Charamaker3.CharaModel
             {
                 cc.basespeeds[i] = this.basespeeds[i];
             }
+            cc.IsWorldDegree = this.IsWorldDegree;
             cc.SO = this.SO;
             cc.RO = this.RO;
             cc.RP = this.RP;
@@ -1134,6 +1138,7 @@ namespace Charamaker3.CharaModel
             res.packAdd("RP", (int)RP);
             res.packAdd("degreeSpeedLimit", degreeSpeedLimit);
             res.packAdd("_DEGREE", basespeeds[_DEGREE]);
+            res.packAdd("IsWorldDegree", IsWorldDegree);
 
             res.linechange();
             res.packAdd("_DX", basespeeds[_DX]);
@@ -1159,6 +1164,7 @@ namespace Charamaker3.CharaModel
             RP = (rotatePath)d.unpackDataF("RP");
             degreeSpeedLimit = d.unpackDataF("degreeSpeedLimit");
             basespeeds[_DEGREE] = d.unpackDataF("_DEGREE");
+            IsWorldDegree = d.unpackDataB("IsWorldDegree", IsWorldDegree);
 
             basespeeds[_DX] = d.unpackDataF("_DX");
             basespeeds[_DY] = d.unpackDataF("_DY");
@@ -1181,23 +1187,48 @@ namespace Charamaker3.CharaModel
                 if (tags.Count > 0)
                 {
                     var baseDegree = basespeeds[_DEGREE];
+             
                     if (e.mirror)
                     {
-                        baseDegree = Mathf.st180(tagBases[0].degree - Mathf.st180(baseDegree - tagBases[0].degree));
+                        if (IsWorldDegree == false)
+                        {
+                            baseDegree = Mathf.st180(tagBases[0].degree - Mathf.st180(baseDegree - tagBases[0].degree));
+                        }
+                        else 
+                        {
+                            baseDegree = Mathf.st180(baseDegree + 180);
+                        }
                     }
                     float distance;
-                    if (RO == rotateOption.baseCharacter)
+                    if (IsWorldDegree == true) 
+                    {
+                        distance = Mathf.st180(baseDegree - tags[0].degree);
+                    }
+                    else if (RO == rotateOption.baseCharacter)
                     {
                         distance = Mathf.st180(tagBases[0].degree + baseDegree - tags[0].degree);
+
+                        if (IsWorldDegree && e.mirror)
+                        {
+                            distance = Mathf.st180(tagBases[0].degree - Mathf.st180(distance - tagBases[0].degree));
+                        }
                     }
                     else if (Jtags[0] != null)
                     {
                         distance = Mathf.st180(Jtags[0].parent.degree + baseDegree - tags[0].degree);
+
+                        if (IsWorldDegree && e.mirror)
+                        {
+                            distance = Mathf.st180(tagBases[0].degree - Mathf.st180(distance - tagBases[0].degree));
+                        }
                     }
                     else if (tags.Count > 0)//キャラクターを持ってるエンテティが対象だったら自動でワールド角度に
                     {
                         distance = Mathf.st180(baseDegree - tags[0].degree);
-
+                        if (IsWorldDegree && e.mirror)
+                        {
+                            distance = Mathf.st180(tagBases[0].degree - Mathf.st180(distance - tagBases[0].degree));
+                        }
                     }
                     else
                     {
@@ -1598,16 +1629,29 @@ namespace Charamaker3.CharaModel
                             else
                             {
                                 var baseDegree = basespeeds[i];
-                                if (e.mirror)
+                                if (e.mirror )
                                 {
-                                    baseDegree = Mathf.st180(tagBases[t].degree - Mathf.st180(baseDegree - tagBases[t].degree));
+                                    if (IsWorldDegree == false)
+                                    {
+                                        baseDegree = Mathf.st180(tagBases[t].degree - Mathf.st180(baseDegree - tagBases[t].degree));
+                                    }
+                                    else 
+                                    {
+                                        baseDegree = Mathf.st180(baseDegree + 180);
+                                    }
                                 }
                                 if (RO == rotateOption.joint)
                                 {
                                     if (Jtags[t] != null)
                                     {
-
-                                        speeds[t][i] = Mathf.st180(baseDegree + Jtags[t].parent.degree - tags[t].degree);
+                                        if (IsWorldDegree)
+                                        {
+                                            speeds[t][i] = Mathf.st180(baseDegree - tags[t].degree);
+                                        }
+                                        else 
+                                        {
+                                            speeds[t][i] = Mathf.st180(baseDegree + Jtags[t].parent.degree - tags[t].degree);
+                                        }
                                     }
                                     else//キャラクターの一番上なら自動でワールド角度に 
                                     {
