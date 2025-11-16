@@ -2192,6 +2192,7 @@ namespace Charamaker3
 
             if (NoChange == false)
             {
+                Display.ThreadNum +=1;
                 //Debug.WriteLine(Text + " Drawed!");
                 //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
                 var Clip = (RawRectF)rendZone;

@@ -241,8 +241,7 @@ namespace Charamaker3
                         }
 
                     }
-                }
-                ));
+               }));
             }
             foreach (var task in tasks) { task.Wait(); }
             foreach (var task in tasks) { task.Dispose(); }
@@ -290,8 +289,7 @@ namespace Charamaker3
                     tasks.Add(Task.Run(() =>
                     {
                         oks[ii] = lis[ii].CanDraw(this);
-                    }
-                    ));
+                    }));
                 }
 
                 foreach (var task in tasks) { task.Wait(); }
@@ -1046,6 +1044,9 @@ namespace Charamaker3
         /// <param name="AddCameras">追加で描画するカメラ 順番通りになる</param>
         public void draw(float cl = 1, List<CP<Camera>> AddCameras = null)
         {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+
             ThreadNum = 0;
             PreDraw(cl,AddCameras);
             render.Render.BeginDraw();
@@ -1055,7 +1056,6 @@ namespace Charamaker3
                 if (a.c.watchRect.added && a.c.IsBitmap==false)
                 {
                     a.c.e.update(cl);
-                    ThreadNum += 1;
                 }
 
             }
@@ -1066,11 +1066,13 @@ namespace Charamaker3
                     if (a.c.watchRect.added)
                     {
                         a.c.e.update(cl);
-                        ThreadNum += 1;
                     }
                 }
             }
             render.Render.EndDraw();
+            stopwatch.Stop();
+            Debug.WriteLine("DisplayDraw::time:: "+stopwatch.Elapsed.TotalMilliseconds);
+
         }
 
         static public int ThreadNum = 0;

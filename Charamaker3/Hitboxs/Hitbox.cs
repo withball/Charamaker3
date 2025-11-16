@@ -46,12 +46,58 @@ namespace Charamaker3.Hitboxs
         /// <summary>
         /// ぶつかったと判断されたやつ。Worldが勝手にいじる。
         /// </summary>
-        public List<Entity>Hitteds= new List<Entity>();
+        public List<WeakReference<Entity>>Hitteds= new List<WeakReference<Entity>>();
 
+        public void AddHitteds (Entity e)
+        {
+            Hitteds.Add(new WeakReference<Entity>(e));
+        }
+
+        public bool HittedsContains(Entity e) 
+        {
+            for(int i=Hitteds.Count-1;i>=0;--i)
+            {
+                var a = Hitteds[i];
+                Entity te;
+                if (a.TryGetTarget(out te))
+                {
+                    if (te == e)
+                    {
+                        return true;
+                    }
+                }
+                else 
+                {
+                Hitteds.RemoveAt(i);
+                }
+            }
+            return false;
+        }
+        public List<Entity> GetHitteds()
+        {
+            var res=new List<Entity>();
+            for (int i = Hitteds.Count - 1; i >= 0; --i)
+            {
+                var a = Hitteds[i];
+                Entity te;
+                if (a.TryGetTarget(out te))
+                {
+                    if (te == e)
+                    {
+                        res.Add(te);
+                    }
+                }
+                else
+                {
+                    Hitteds.RemoveAt(i);
+                }
+            }
+            return res;
+        }
         /// <summary>
         /// 一フレーム前のぶつかったと判断されたやつ。Worldが勝手にいじる。
         /// </summary>
-        public List<Entity> preHitteds = new List<Entity>();
+        public List<WeakReference<Entity>> preHitteds = new List<WeakReference<Entity>>();
         /// <summary>
         /// 普通のコンストラクタ
         /// </summary>
@@ -133,44 +179,68 @@ namespace Charamaker3.Hitboxs
         /// </summary>
         public void topre() 
         {
-            this.preHitteds = new List<Entity>(this.Hitteds);
+            this.preHitteds = new List<WeakReference<Entity>>(this.Hitteds);
         }
         /// <summary>
         /// ぶつかったエンテティを取得する。多分重い
         /// </summary>
         /// <param name="h">当たり方のタイプ</param>
         /// <returns></returns>
-        public List<Entity> getHitteds(HitType h) 
+        public List<Entity> GetHitteds(HitType h) 
         {
             List<Entity> res=new List<Entity>();
             switch (h)
             {
                 case HitType.enter:
-                    for (int i = 0; i < Hitteds.Count; i++)
+                    for (int i = Hitteds.Count-1; i >=0; --i)
                     {
                         if (preHitteds.Contains(Hitteds[i]) == false)
                         {
-                            res.Add(Hitteds[i]);
+                            Entity a;
+                            if (Hitteds[i].TryGetTarget(out a))
+                            {
+                                res.Add(a);
+                            }
+                            else 
+                            {
+                            Hitteds.RemoveAt(i);
+                            }
                         }
                     }
                     break;
                 case HitType.ing:
 
-                    for (int i = 0; i < Hitteds.Count; i++)
+                    for (int i = Hitteds.Count - 1; i >= 0; --i)
                     {
                         if (preHitteds.Contains(Hitteds[i]) == true)
                         {
-                            res.Add(Hitteds[i]);
+                            Entity a;
+                            if (Hitteds[i].TryGetTarget(out a))
+                            {
+                                res.Add(a);
+                            }
+                            else
+                            {
+                                Hitteds.RemoveAt(i);
+                            }
                         }
                     }
 
                     break;
                 case HitType.end:
-                    for (int i = 0; i < preHitteds.Count; i++)
+                    for (int i = preHitteds.Count - 1; i >= 0; --i)
                     {
                         if (Hitteds.Contains(preHitteds[i]) == false)
                         {
-                            res.Add(preHitteds[i]);
+                            Entity a;
+                            if (preHitteds[i].TryGetTarget(out a))
+                            {
+                                res.Add(a);
+                            }
+                            else
+                            {
+                                preHitteds.RemoveAt(i);
+                            }
                         }
                     }
                     break;
@@ -217,7 +287,7 @@ namespace Charamaker3.Hitboxs
           
             return res;
         }
-
+        static public int debugchekman=0;
         /// <summary>
         /// 当たり判定がぶつかるかどうか。一つでもHitboxがぶつかればOK
         /// </summary>
@@ -225,8 +295,10 @@ namespace Charamaker3.Hitboxs
         /// <returns></returns>
         public bool Hits(Entity e)
         {
-            foreach (var a in e.getcompos<Hitbox>()) 
+            debugchekman = 0;
+            foreach (var a in e.getcompos<Hitbox>())
             {
+                debugchekman++;
                 if (this.Hits(a)) 
                 {
                     return true;

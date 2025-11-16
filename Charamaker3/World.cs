@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -111,8 +112,11 @@ namespace Charamaker3
         /// フレームを更新する
         /// </summary>
         /// <param name="cl"></param>
-        virtual public void update(float cl) 
-        {
+        virtual public void update(float cl)
+        {  
+           // Stopwatch stopwatch = new Stopwatch();
+           // stopwatch.Start();
+            
             Edic.Clear();
             _Edic.Clear();
             Ddic.Clear();
@@ -126,13 +130,16 @@ namespace Charamaker3
             foreach (var a in _Edic) 
             {
                 a.Value.sort(false);
-                Edic.Add(a.Key, a.Value.getresult());
+               Edic.Add(a.Key, a.Value.getresult());
             }
             Ddic.sort(false);
             Hdic.sort(false);
             Pdic.sort(false);
 
-
+            //stopwatch.Stop();
+            //Debug.WriteLine("Worldupdate::time::A " + stopwatch.Elapsed.TotalMilliseconds);
+            //stopwatch.Reset();
+            //stopwatch.Start();
             foreach (var a in Hdic.getresult())
             {
                 a.SetHitboxPosition();
@@ -141,28 +148,38 @@ namespace Charamaker3
 
             calcHitbox();
             buturiall(cl);
-
+            
             calcHitbox();
-            foreach (var a in Hdic.getresult())
-            {
-                a.freeevent("a");
-            }
-
-            foreach (var a in Hdic.getresult())
+            var hitboxlis = Hdic.getresult();
+            foreach (var a in hitboxlis)
             {
                 a.SetPreboxPosition();
             }
 
+            //stopwatch.Stop();
+            //Debug.WriteLine("Worldupdate::time::B " + stopwatch.Elapsed.TotalMilliseconds);
+            //stopwatch.Reset();
+            //stopwatch.Start();
 
-            foreach (var a in getEdic()) 
+            var elis = getEdic();
+            foreach (var a in elis) 
             {
                 a.update(cl);
             }
-            foreach (var a in getEdic("HasCharacter")) 
+
+            //stopwatch.Stop();
+            //Debug.WriteLine("Worldupdate::time::C " + stopwatch.Elapsed.TotalMilliseconds);
+            //stopwatch.Reset();
+            //stopwatch.Start();
+
+            var charalis = getEdic("HasCharacter");
+            foreach (var a in charalis) 
             {
                 a.RefreshComponentsPosition();
             }
 
+            //stopwatch.Stop();
+            //Debug.WriteLine("Worldupdate::time::D "+stopwatch.Elapsed.TotalMilliseconds);
 
 
         }
@@ -200,9 +217,8 @@ namespace Charamaker3
                 var tasks = new List<Task>();
                 foreach (var a in Hdic.getresult())
                 {
-                    tasks.Add(
-                 Task.Run(() =>
-                 {
+                    tasks.Add(Task.Run(() =>
+                {
                      a.topre();
                  }));
                 }
@@ -221,33 +237,40 @@ namespace Charamaker3
             {
                 var tasks = new List<Task>();
                 var hitentityes = getEdic("HasHitbox");
-                foreach (var a in Hdic.getresult())
+                var lis = Hdic.getresult();
+                int couA = 0, couB = 0, couC = 0;
+                foreach (var a in lis)
                 {
-                    tasks.Add(
-                 Task.Run(() =>
-                 {
-                     a.Hitteds.Clear();
+                    couA += 1;
+                    tasks.Add(Task.Run(() => {
+                         a.Hitteds.Clear();
 
-                     foreach (var b in hitentityes)
-                     {
-                         if (a.e != b)
-                         {
-                             if (a.Filters(b))
+                         foreach (var b in hitentityes)
+                        {
+                            couB += 1;
+                            if (a.e != b)
                              {
-                                 if (a.Hits(b))
+                                 if (a.Filters(b))
                                  {
-                                     a.Hitteds.Add(b);
+                                     if (a.Hits(b))
+                                     {
+                                        a.AddHitteds(b);
+                                     }
+                                    couC += Hitbox.debugchekman;
                                  }
                              }
                          }
-                     }
-                 }));
+                     }));
                 }
                 foreach (var a in tasks)
                 {
                     a.Wait();
                 }
                 foreach (var task in tasks) { task.Dispose(); }
+                //Stopwatch stopwatch = new Stopwatch();
+                //stopwatch.Start();
+                //stopwatch.Stop();
+                //Debug.WriteLine("time:: "+stopwatch.Elapsed.TotalMilliseconds+" =>"+hitentityes.Count + " asda::ddd " + lis.Count+" sdak "+ couA+"asda "+couB+"asda "+couC);
             }
         }
 
@@ -349,7 +372,7 @@ namespace Charamaker3
                         {
                             foreach (var b in tshapes) 
                             {
-                                if (a.Hitteds.Contains(b.e) && b.Hitteds.Contains(a.e))
+                                if (a.HittedsContains(b.e) && b.HittedsContains(a.e))
                                 {
                                     //     Console.WriteLine("aslkgapo");
                                     PhysicsComp.zuren(ps[i], a, ps[t], b, true);

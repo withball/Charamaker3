@@ -737,7 +737,7 @@ namespace Charamaker3.Utils
 
             if (CanRend) 
             {
-                Text.SetRayout();
+               // Text.SetRayout();
             }
             if (t.Right != 0 && CanRend)
             {
@@ -854,9 +854,6 @@ namespace Charamaker3.Utils
 
         public override void update(float cl)
         {
-
-
-
             base.update(cl);
             SetSerifWaku(); SetSerifWaku();
         }

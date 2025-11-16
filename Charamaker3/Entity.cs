@@ -625,7 +625,7 @@ namespace Charamaker3
             var res = new List<Entity>();
             foreach (var a in getcompos<Hitboxs.Hitbox>())
             {
-                res.AddRange(a.Hitteds);
+                res.AddRange(a.GetHitteds());
             }
             return res;
         }
