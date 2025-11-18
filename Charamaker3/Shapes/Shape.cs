@@ -925,6 +925,25 @@ namespace Charamaker3.Shapes
             y = p.y;
         }
         /// <summary>
+        /// 図形をピクチャーに外接するようにセットする
+        /// </summary>
+        /// <param name="p"></param>
+        public void settoRect(Entity p)
+        {
+            var a = p.gettxy2(0, 0);
+            var b = p.gettxy2(0, 1);
+            var c = p.gettxy2(1, 1);
+            var d = p.gettxy2(1, 0);
+            degree = 0;
+            x = Mathf.min(a.x, b.x, c.x, d.x);
+            w = Mathf.max(a.x, b.x, c.x, d.x)-x;
+            
+            y = Mathf.min(a.y, b.y, c.y, d.y);
+            h = Mathf.max(a.y, b.y, c.y, d.y)-y;
+            
+
+        }
+        /// <summary>
         /// 中心の座標を変えずにサイズを拡大縮小する
         /// </summary>
         /// <param name="sc">スケール</param>

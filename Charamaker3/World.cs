@@ -226,7 +226,6 @@ namespace Charamaker3
                 {
                     a.Wait();
                 }
-                foreach (var task in tasks) { task.Dispose(); }
             }
         }
         /// <summary>
@@ -266,7 +265,6 @@ namespace Charamaker3
                 {
                     a.Wait();
                 }
-                foreach (var task in tasks) { task.Dispose(); }
                 //Stopwatch stopwatch = new Stopwatch();
                 //stopwatch.Start();
                 //stopwatch.Stop();

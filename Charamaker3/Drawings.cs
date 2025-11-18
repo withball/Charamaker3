@@ -399,14 +399,22 @@ namespace Charamaker3
         /// これをする前にCandrawで確かめておくこと！
         /// </summary>
         /// <param name="cam"></param>
-        public abstract void draw(Camera cam);
+        public abstract void draw(Camera cam, DisplaySemaphores semaphores);
 
         /// <summary>
-        /// これをする前にCandrawで確かめておくこと！
+        /// これをする前にCandrawで確かめておく?
         /// </summary>
         /// <param name="cam"></param>
         public virtual void PreDraw(Camera cam, DisplaySemaphores semaphores) { }
 
+        /// <summary>
+        /// 描画可能な条件
+        /// </summary>
+        /// <returns></returns>
+        virtual public bool CanPreDraw(Camera cam)
+        {
+            return true;
+        }
         protected bool onCamera(Camera cam)
         {
             if (e != null)
@@ -628,22 +636,25 @@ namespace Charamaker3
         public DRectangle() : base()
         {
         }
-        public override void draw(Camera cam)
+        public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
-            var render = cam.render.Render;
-
-            render.Transform = rectTrans(cam);
             var rect = rectRectF(cam);
+            var trans = rectTrans(cam);
 
+            semaphores.Draw.Wait();
+            var render = cam.render.Render;
             using (var brh = render.CreateSolidColorBrush(col))
             {
+
+                render.Transform = trans;
                 render.FillRectangle(rect, brh);
                 //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Right, rect.Top/2+rect.Bottom/2),brh,20);
                 //render.DrawLine(new PointF(rect.Left, rect.Bottom), new PointF(rect.Right, rect.Top / 2 + rect.Bottom / 2), brh, 20);
 
                 //render.DrawLine(new PointF(rect.Left, rect.Top), new PointF(rect.Left, rect.Bottom), brh, 20);
-            }
 
+            }
+            semaphores.Draw.Release();
         }
     }
 
@@ -679,14 +690,14 @@ namespace Charamaker3
             cc.wariai = this.wariai;
         }
 
-        public override void draw(Camera cam)
+        public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
             //TODO:メモリリークメモリリークとかしてたらごめん
-            var render = cam.render.Render;
 
-            render.Transform = Matrix3x2.CreateTranslation(0, 0);//rectTrans(cam);
             //var rect = rectRectF(cam);
 
+            semaphores.Draw.Wait();
+            var render = cam.render.Render;
             using (var brh = render.CreateSolidColorBrush(col))
             {
                 ID2D1PathGeometry geometry = render.Factory.CreatePathGeometry();
@@ -705,14 +716,17 @@ namespace Charamaker3
                 sink.EndFigure(FigureEnd.Closed);
 
                 sink.Close();
+                {
+                    render.Transform = Matrix3x2.CreateTranslation(0, 0);//rectTrans(cam);
 
-                render.FillGeometry(geometry, brh);
-                render.DrawGeometry(geometry, brh);
+                    render.FillGeometry(geometry, brh);
+                    render.DrawGeometry(geometry, brh);
 
-
+                }
                 sink.Dispose();
                 geometry.Dispose();
             }
+            semaphores.Draw.Release();
 
         }
     }
@@ -817,25 +831,32 @@ namespace Charamaker3
             return res;
         }
 
-
-        public override void draw(Camera cam)
+        ID2D1Bitmap D_bitmap;
+        bool D_kousokubyouga = false;
+        RawRectF D_rect;
+        Matrix3x2 D_trans;
+        RawRectF D_source;
+        public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
-            var render = cam.render.Render;
-
-
-            ID2D1Bitmap bitmap;
-            bitmap = cam.d.ldtex(nowtex);
-            if (bitmap == null)
+            base.PreDraw(cam, semaphores);
+            D_bitmap = cam.d.ldtex(nowtex);
+            if (D_bitmap == null)
             {
-                bitmap = cam.d.ldtex(FileMan.c_nothing);
+                D_bitmap = cam.d.ldtex(FileMan.c_nothing);
             }
+            D_kousokubyouga = this.col.r == 1 && this.col.g == 1 && this.col.b == 1;
 
+            D_rect = rectRectF(cam);
+            D_trans = rectTrans(cam);
+            D_source = new RawRectF(D_bitmap.Size.Width * CropL, D_bitmap.Size.Height * CropU
+                           , D_bitmap.Size.Width * CropR - 0.0f, D_bitmap.Size.Height * CropD - 0.0f);
+        }
 
+        public override void draw(Camera cam, DisplaySemaphores semaphores)
+        {
             //色ついてない場合高速描画
-            if (this.col.r == 1 && this.col.g == 1 && this.col.b == 1)
+            if (D_kousokubyouga)
             {
-                var rect = rectRectF(cam);
-                render.Transform = rectTrans(cam);
                 //var blended = cam.d.Blend(bitmap, this.col);
                 BitmapInterpolationMode mode;
                 if (linear == true)
@@ -846,15 +867,27 @@ namespace Charamaker3
                 {
                     mode = BitmapInterpolationMode.NearestNeighbor;
                 }
-                render.DrawBitmap(bitmap
-                       , rect
-                       , this.col.opa, mode
-                       , new RawRectF(bitmap.Size.Width * CropL, bitmap.Size.Height * CropU
-                       , bitmap.Size.Width * CropR - 0.0f, bitmap.Size.Height * CropD - 0.0f));//嘘->-0.5しないと1マスが2マスになって絶望したりする。
+                {
+                  
+
+                    semaphores.Draw.Wait();
+
+                    var render = cam.render.Render;
+                    render.Transform = D_trans;
+                    
+                    render.DrawBitmap(D_bitmap
+                           , D_rect
+                           , this.col.opa, mode
+                           , D_source);//嘘->-0.5しないと1マスが2マスになって絶望したりする。
+
+                    semaphores.Draw.Release();
+                }
             }
             else if (1 == 1)
             {
+                semaphores.Draw.Wait();
 
+                var render = cam.render.Render;
                 render.Transform = Matrix3x2.CreateScale(1, 1);
                 //_BlendRender.PushAxisAlignedClip(new Rectangle(0,0,bitmap.PixelSize.Width, bitmap.PixelSize.Height)
                 //    , AntialiasMode.PerPrimitive);
@@ -864,12 +897,11 @@ namespace Charamaker3
 
 
                 var crop0 = cam.render.ECrop0;
-                crop0.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(true));
+                crop0.SetInput(0, D_bitmap, new SharpGen.Runtime.RawBool(true));
                 crop0.BorderMode = BorderMode.Hard;
 
 
                 Rectangle sourceRect;
-
                 //ビットマップが小さすぎると計算誤差で死んでしまうので最低の幅を保証する。->ホント？
 
                 float hosyo = 10;
@@ -899,8 +931,8 @@ namespace Charamaker3
                 else*/
                 {
                     crop0.TransformMatrix = Matrix3x2.CreateScale(1, 1);
-                    sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, bitmap.Size.Height * CropU - 0.0f
-                  , bitmap.PixelSize.Width * CropR - bitmap.Size.Width * CropL, bitmap.PixelSize.Height * CropD - bitmap.Size.Height * CropU);
+                    sourceRect = new Rectangle(D_bitmap.Size.Width * CropL - 0.0f, D_bitmap.Size.Height * CropU - 0.0f
+                  , D_bitmap.PixelSize.Width * CropR - D_bitmap.Size.Width * CropL, D_bitmap.PixelSize.Height * CropD - D_bitmap.Size.Height * CropU);
                 }
 
                 var crop1 = cam.render.ECrop1;
@@ -921,7 +953,7 @@ namespace Charamaker3
                 /////////////////////////色
 
                 var blend = cam.render.EBlend;
-                blend.SetInput(0, bitmap, new SharpGen.Runtime.RawBool(false));
+                blend.SetInput(0, D_bitmap, new SharpGen.Runtime.RawBool(false));
 
                 Matrix5x4 colormatrix = new Matrix5x4(
                     col.r,0,0,0,
@@ -945,10 +977,10 @@ namespace Charamaker3
                 //d2dContext.Clear(new ColorC(0, 0, 0, 0));
                 //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
 
-                var rect = rectRectF(cam);
                 //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
                 cam.render.DeviceContext.DrawImage(trans, InterpolationMode.Linear, CompositeMode.SourceOver);
 
+                semaphores.Draw.Release();
 
             }
 
@@ -2319,7 +2351,7 @@ namespace Charamaker3
                                     render.BitmapRender.DrawText(b.c.CharText, font, drawRect, slb);
                                 }
                             }
-                            //  Debug.WriteLine(b.x+"::"+ b.y+" asd " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
+                             // Debug.WriteLine(b.x+"::"+ b.y+" ASDARAWTEXT " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
                         }
                     }
                 }
@@ -2524,20 +2556,24 @@ namespace Charamaker3
             Trender?.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
         }
 
+        RawRectF D_rect;
+        Matrix3x2 D_trans;
         public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
             MakeTrender(cam.d);
             base.PreDraw(cam, semaphores);
             Trender.Draw(text, font, col,semaphores);
+
+            D_rect = rectRectF(cam);
+            D_trans = rectTrans(cam);
         }
-        public override void draw(Camera cam)
+        public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
             if (Trender == null) 
             {
                 return;
             }
             Trender.OnDraw(text, font, col);
-            var render = cam.render.Render;
 
 
             float yZure = 0;
@@ -2558,13 +2594,12 @@ namespace Charamaker3
                 default:
                     break;
             }
-            render.Transform = rectTrans(cam);
-            RawRectF rect = rectRectF(cam);
+           
 
             var zure = new FXY(0, yZure);
             zure = camsoutai(cam, zure + cam.watchRect.gettxy(0, 0));
             zure.degree += e.degree;
-            rect = new RawRectF(rect.Left + zure.x, rect.Top + zure.y, rect.Right + zure.x, rect.Bottom + zure.y);
+            var rect = new RawRectF(D_rect.Left + zure.x, D_rect.Top + zure.y, D_rect.Right + zure.x, D_rect.Bottom + zure.y);
 
             {
                 BitmapInterpolationMode mode;
@@ -2584,10 +2619,18 @@ namespace Charamaker3
                 source.y += 1;
                 source.h -= 2;
                 */
-                render.DrawBitmap(Trender.render.BitmapRender.Bitmap
-                  , rect
-                  , this.col.opa, mode
-                    , source);
+                {
+                    var trans = D_trans;
+
+                    semaphores.Draw.Wait();
+                    var render = cam.render.Render;
+                    render.Transform = trans;
+                    render.DrawBitmap(Trender.render.BitmapRender.Bitmap
+                      , rect
+                      , this.col.opa, mode
+                        , source);
+                    semaphores.Draw.Release();
+                }
             }
             if (onWorld==false)
             {

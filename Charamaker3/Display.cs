@@ -212,6 +212,10 @@ namespace Charamaker3
             this.watchRect = WatchRect;
 
         }
+        public override bool CanPreDraw(Camera cam)
+        {
+            return base.CanPreDraw(cam)&& CanDraw(cam);
+        }
         /// <summary>
         /// テキストなど事前描画が必要なやつを一気に処理する
         /// </summary>
@@ -235,7 +239,7 @@ namespace Charamaker3
                 {
                     foreach (var a in watchRect.world.Ddic.getresult())
                     {
-                        if (a.CanDraw(this))
+                        if (a.CanPreDraw(this))
                         {
                             a.PreDraw(this, semaphores);
                         }
@@ -244,8 +248,89 @@ namespace Charamaker3
                }));
             }
             foreach (var task in tasks) { task.Wait(); }
-            foreach (var task in tasks) { task.Dispose(); }
             tasks.Clear();
+        }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="inList">Z小さい順</param>
+        /// <returns></returns>
+        public List<List<Drawable>> getDrawTree(List<Drawable> inList)
+        {
+            var res = new List<List<Drawable>>();
+            Rectangle r1 = new Rectangle(0);
+
+            if(inList.Count==0)return res;
+
+            res.Add(new List<Drawable>());
+            res.Last().Add(inList.Last());
+            inList.RemoveAt(inList.Count() - 1);
+            List<Task> tasks=new List<Task>();
+            while (inList.Count > 0)
+            {
+                var work = inList.Last();
+
+                r1.settoRect(work.e);
+                int setindex = -1;
+                for (int i = res.Count - 1; i >= 0; i--)
+                {
+                    int ii = i;
+                    tasks.Add(Task.Run(() =>
+                    {
+                        if (setindex < ii)
+                        {
+                            bool setted = false;
+                            foreach (var a in res[ii])
+                            {
+                                Rectangle r2 = new Rectangle(0);
+                                r2.settoRect(a.e);
+
+
+                                if (Display.onHani(r1,r2) == true)
+                                {
+                                    setted = true;
+                                    break;
+                                }
+
+                            }
+
+                            if (setted == true)
+                            {
+                                setindex = Math.Max(ii, setindex);
+                            }
+                        }
+                    }));
+                }
+                foreach (var a in tasks) 
+                {
+                    a.Wait();
+                }
+                tasks.Clear();
+                {
+                    if (setindex == -1)
+                    {
+                        res.First().Add(work);
+                    }
+                    else if (setindex + 1 >= res.Count)
+                    {
+                        res.Add(new List<Drawable>());
+                        res.Last().Add(work);
+                    }
+                    else
+                    {
+                        res[setindex + 1].Add(work);
+                    }
+                }
+                inList.RemoveAt(inList.Count() - 1);
+
+            }
+           // string debug = "";
+           // foreach (var a in res) 
+           // {
+           //     debug += a.Count+",";
+           // }
+           //Debug.WriteLine("DAZEEEEEEEEEEEEEE!"+debug);
+            return res;
         }
         public override void update(float cl)
         {
@@ -279,6 +364,7 @@ namespace Charamaker3
 
 
                 var lis = watchRect.world.Ddic.getresult();
+
                 var oks = new bool[lis.Count];
 
                 List<Task> tasks = new List<Task>();
@@ -293,49 +379,77 @@ namespace Charamaker3
                 }
 
                 foreach (var task in tasks) { task.Wait(); }
-                foreach (var task in tasks) { task.Dispose(); }
 
                 tasks.Clear();
 
-                for (int i = 0; i < lis.Count; i++)
+                for (int i = lis.Count-1; i >= 0; --i)
                 {
                     if (oks[i])
                     {
-                        lis[i].draw(this);
+                        //lis[i].draw(this);
                     }
-                }
-                render.Render.Transform = Matrix3x2.CreateRotation(0);
-                if (HitboxVisible)
-                {
-                    foreach (var e in watchRect.world.getEdic("HasHitbox"))
+                    else
                     {
-                        foreach (var b in e.getcompos<Hitboxs.Hitbox>())
-                        {
-                            if (b.Hitteds.Count == 0)
-                            {
-                                DrawHitbox(b.HitShape, new ColorC(0, 0, 0.5f, 0.5f));
-
-                                DrawHitbox(b.preHitShape, new ColorC(0, 0.5f, 0, 0.5f));
-                            }
-                            else
-                            {
-                                DrawHitbox(b.HitShape, new ColorC(0, 0, 1f, 0.5f));
-                                DrawHitbox(b.preHitShape, new ColorC(0, 1f, 0, 0.5f));
-                            }
-                            var text = "tag:";
-                            foreach (var a in b.tag)
-                            {
-                                text += a + ",";
-                            }
-                            text += " filter:";
-                            foreach (var a in b.tagfilter)
-                            {
-                                text += a + ",";
-                            }
-                            DrawText(b.HitShape, text, 16, new ColorC(0, 0, 0, 1));
-                        }
+                        lis.RemoveAt(i);
                     }
                 }
+
+
+               // var tree = getDrawTree(new List<Drawable>(lis));
+               // for (int treeIdx = tree.Count - 1; treeIdx >= 0; --treeIdx)
+                {
+
+                    //for (int t = 0; t < tree[treeIdx].Count; ++t)
+                    for (int i = 0; i < lis.Count; ++i)
+                    {
+                       // int tI = treeIdx;
+                       // int tt = t;
+                       // tasks.Add(Task.Run(()=>{
+                       //tree[tI][t].draw(this, this.d.Semaphores);
+                        lis[i].draw(this, this.d.Semaphores);
+
+                        if (HitboxVisible)
+                            {
+                                d.Semaphores.Draw.Wait();
+                                render.Render.Transform = Matrix3x2.CreateRotation(0);
+                                foreach (var e in watchRect.world.getEdic("HasHitbox"))
+                                {
+                                    foreach (var b in e.getcompos<Hitboxs.Hitbox>())
+                                    {
+                                        if (b.Hitteds.Count == 0)
+                                        {
+                                            DrawHitbox(b.HitShape, new ColorC(0, 0, 0.5f, 0.5f));
+
+                                            DrawHitbox(b.preHitShape, new ColorC(0, 0.5f, 0, 0.5f));
+                                        }
+                                        else
+                                        {
+                                            DrawHitbox(b.HitShape, new ColorC(0, 0, 1f, 0.5f));
+                                            DrawHitbox(b.preHitShape, new ColorC(0, 1f, 0, 0.5f));
+                                        }
+                                        var text = "tag:";
+                                        foreach (var a in b.tag)
+                                        {
+                                            text += a + ",";
+                                        }
+                                        text += " filter:";
+                                        foreach (var a in b.tagfilter)
+                                        {
+                                            text += a + ",";
+                                        }
+                                        DrawText(b.HitShape, text, 16, new ColorC(0, 0, 0, 1));
+                                    }
+                                }
+                                d.Semaphores.Draw.Release();
+                            }
+                        //}));
+                    }
+                    foreach (var task in tasks) { task.Wait(); }
+
+                    tasks.Clear();
+                }
+
+
             }
             if (_isBitmap)
             {
@@ -603,7 +717,7 @@ namespace Charamaker3
             return base.CanDraw(cam);
         }
 
-        override public void draw(Camera cam)
+        override public void draw(Camera cam,DisplaySemaphores semaphores)
         {
             if (_isBitmap)
             {
@@ -616,10 +730,15 @@ namespace Charamaker3
                 {
                     mode = BitmapInterpolationMode.NearestNeighbor;
                 }
+                {
+                    semaphores.Draw.Wait();
 
-                var render = cam.render;
-                render.Render.Transform = rectTrans(cam);
-                render.Render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, mode, source);
+                    var render = cam.render;
+                    render.Render.Transform = rectTrans(cam);
+                    render.Render.DrawBitmap(Brender.Bitmap, rectRectF(cam), col.opa, mode, source);
+
+                    semaphores.Draw.Release();
+                }
             }
         }
         
@@ -631,7 +750,8 @@ namespace Charamaker3
     }
     public class DisplaySemaphores
     {
-        public SemaphoreSlim TextRender=new SemaphoreSlim(1,1);
+        public SemaphoreSlim Draw = new SemaphoreSlim(1, 1);
+        public SemaphoreSlim TextRender = new SemaphoreSlim(1, 1);
     }
     public class Display
     {
@@ -1044,11 +1164,16 @@ namespace Charamaker3
         /// <param name="AddCameras">追加で描画するカメラ 順番通りになる</param>
         public void draw(float cl = 1, List<CP<Camera>> AddCameras = null)
         {
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-
+            //Stopwatch stopwatch = new Stopwatch();
+            //stopwatch.Start();
+            
             ThreadNum = 0;
             PreDraw(cl,AddCameras);
+            //stopwatch.Stop();
+            //Debug.WriteLine("DisplayDraw::timeA:: " + stopwatch.Elapsed.TotalMilliseconds);
+            //stopwatch.Reset();
+            //stopwatch.Start();
+
             render.Render.BeginDraw();
 
             foreach (CP<Camera> a in new List<CP<Camera>>(cameras))
@@ -1059,6 +1184,10 @@ namespace Charamaker3
                 }
 
             }
+            //stopwatch.Stop();
+            //Debug.WriteLine("DisplayDraw::timeB:: " + stopwatch.Elapsed.TotalMilliseconds);
+            //stopwatch.Reset();
+            //stopwatch.Start();
             if (AddCameras != null)
             {
                 foreach (CP<Camera> a in AddCameras)
@@ -1070,30 +1199,30 @@ namespace Charamaker3
                 }
             }
             render.Render.EndDraw();
-            stopwatch.Stop();
-            Debug.WriteLine("DisplayDraw::time:: "+stopwatch.Elapsed.TotalMilliseconds);
+            //stopwatch.Stop();
+            //Debug.WriteLine("DisplayDraw::timeC:: "+stopwatch.Elapsed.TotalMilliseconds);
 
         }
 
         static public int ThreadNum = 0;
 
         //事前描画のセマフォア
-        private DisplaySemaphores Semaphores =new DisplaySemaphores();
+        internal DisplaySemaphores Semaphores =new DisplaySemaphores();
 
         /// <summary>
         /// テキストのやつなど、事前に描画が必要なやつなどをまとめて処理する
         /// </summary>
         /// <param name="cl"></param>
-        protected void PreDraw(float cl, List<CP<Camera>> AddPredraws=null)
+        protected void PreDraw(float cl, List<CP<Camera>> AddPredraws = null)
         {
             _TextRender.BitmapRender.BeginDraw();
             foreach (var a in new List<CP<Camera>>(cameras))
             {
-                a.c.PreDraw(a,Semaphores);
+                a.c.PreDraw(a, Semaphores);
             }
-            if (AddPredraws != null) 
+            if (AddPredraws != null)
             {
-                foreach (var a in AddPredraws) 
+                foreach (var a in AddPredraws)
                 {
                     a.c.PreDraw(a, Semaphores);
                 }
@@ -1250,13 +1379,13 @@ namespace Charamaker3
         }
 
         /// <summary>
-        /// 高速正確四角形の当たり判定
+        /// 高速正確四角形の当たり判定(degree0の四角)
         /// </summary>
         /// <param name="r"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        static bool onHani(Rectangle r, float x, float y)
+        public static bool onHani(Rectangle r, float x, float y)
         {
             if ((r.x <= x && x <= r.x + r.w)
                 && (r.y <= y && y <= r.y + r.h))
@@ -1266,13 +1395,13 @@ namespace Charamaker3
             return false;
         }
         /// <summary>
-        /// 高速正確四角形の当たり判定
+        /// 高速正確四角形の当たり判定(degree0の四角)
         /// </summary>
         /// <param name="r"></param>
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        static bool onHani(Rectangle r, float x, float y, float x2, float y2)
+        public static bool onHani(Rectangle r, float x, float y, float x2, float y2)
         {
             if (onHani(r, x, y)) return true;
             if (onHani(r, x2, y2)) return true;
@@ -1285,11 +1414,11 @@ namespace Charamaker3
             return false;
         }
         /// <summary>
-        /// 高速正確四角形の当たり判定
+        /// 高速正確四角形の当たり判定(degree0の四角)
         /// </summary>
         /// <param name="r"></param>
         /// <returns></returns>
-        static bool onHani(Rectangle r, Rectangle r2)
+        public static bool onHani(Rectangle r, Rectangle r2)
         {
             if (onHani(r, r2.x       , r2.y       , r2.x + r2.w, r2.y)) return true;
             if (onHani(r, r2.x + r2.w, r2.y       , r2.x + r2.w, r2.y + r2.h)) return true;
@@ -1406,7 +1535,6 @@ namespace Charamaker3
             {
                 a.Wait();
             }
-            foreach (var task in hanteis) { task.Dispose(); }
             hanteis.Clear();
             
             Shapes.Rectangle res = null;
