@@ -48,12 +48,12 @@ namespace Charamaker3.Hitboxs
         /// </summary>
         public List<WeakReference<Entity>>Hitteds= new List<WeakReference<Entity>>();
 
-        public void AddHitteds (Entity e)
+        public void AddHitteds (Entity inE)
         {
-            Hitteds.Add(new WeakReference<Entity>(e));
+            Hitteds.Add(new WeakReference<Entity>(inE));
         }
 
-        public bool HittedsContains(Entity e) 
+        public bool HittedsContains(Entity inE) 
         {
             for(int i=Hitteds.Count-1;i>=0;--i)
             {
@@ -61,7 +61,7 @@ namespace Charamaker3.Hitboxs
                 Entity te;
                 if (a.TryGetTarget(out te))
                 {
-                    if (te == e)
+                    if (te == inE)
                     {
                         return true;
                     }
@@ -82,10 +82,7 @@ namespace Charamaker3.Hitboxs
                 Entity te;
                 if (a.TryGetTarget(out te))
                 {
-                    if (te == e)
-                    {
-                        res.Add(te);
-                    }
+                    res.Add(te);
                 }
                 else
                 {
