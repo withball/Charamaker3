@@ -325,7 +325,7 @@ namespace Charamaker
 
         }
 
-        List<Character> narabeCharas = new List<Character>();
+        List<Entity> narabeCharas = new List<Entity>();
         List<Entity>narabeTexts= new List<Entity>();
 
         private void narabeB_Click(object sender, EventArgs e)
@@ -334,7 +334,7 @@ namespace Charamaker
             {
                 foreach (var a in narabeCharas) 
                 {
-                    a.e.remove();
+                    a.remove();
                 }
                 narabeCharas.Clear();
 
@@ -354,27 +354,30 @@ namespace Charamaker
                      
                         if (cm.sel.c != null && cm.sel.c.e != null)
                         {
-                            var chara = cm.sel.c.e.clone();
-                            EntityMove.EResetMove().addAndRemove(chara, 100);
-                            DrawableMove.DResetMove().addAndRemove(chara, 100);
-                            narabeCharas.Add(chara.getCharacter());
-                            var m = FileMan.loadMotion(filesM[i].Split(@".\motion\")[1], true);
-                            if (m != null && m.Motion != null && m.Script != null && m.Script != "")
+                            for (int t = 0; t < 3; ++t)
                             {
-                                m.Motion.add(chara);
+                                var chara = cm.sel.c.e.clone();
+                                EntityMove.EResetMove().addAndRemove(chara, 100);
+                                DrawableMove.DResetMove().addAndRemove(chara, 100);
+                                narabeCharas.Add(chara);
+                                var m = FileMan.loadMotion(filesM[i].Split(@".\motion\")[1], true);
+                                if (m != null && m.Motion != null && m.Script != null && m.Script != "")
+                                {
+                                    m.Motion.add(chara);
+                                }
+                                chara.name = filesM[i].Split(@".\motion\")[1];
+
+
+                                float haba = chara.w * ((float)cm.PointB.Value / cm.PointB.Maximum * 4f + 1);
+                                chara.add(cm.w);
+                                int num = (int)Mathf.max(cm.cam.watchRect.w / (haba), 1);
+                                chara.settxy(cm.cam.watchRect.gettxy2(-0.5f, -0.5f) - cm.cam.watchRect.gettxy2(-0.0f, -0.0f), -haba * (i % (num) + 0.5f), -chara.h * 1.5f * (i / (num) + 0.1f));
+                                var text = Entity.make2(chara.gettxy2().x, chara.gettxy2(float.NaN, 1).y, haba, haba, 0.5f, 0);
+
+                                new Text(99999, new ColorC(0, 0, 0, 1), chara.name, new FontC(haba / 10, haba, haba, alignment: FontC.alignment.center)).add(text);
+                                text.add(cm.w);
+                                narabeTexts.Add(text);
                             }
-                            chara.name = filesM[i].Split(@".\motion\")[1];
-
-
-                            float haba = chara.w * ((float)cm.PointB.Value/ cm.PointB.Maximum * 4f+1);
-                            chara.add(cm.w);
-                            int num = (int)Mathf.max(cm.cam.watchRect.w / (haba),1);
-                            chara.settxy(cm.cam.watchRect.gettxy2(-0.5f, -0.5f) - cm.cam.watchRect.gettxy2(-0.0f, -0.0f), - haba * (i % (num)+0.5f), - chara.h * 1.5f * (i / (num)+0.1f));
-                            var text=Entity.make2(chara.gettxy2().x, chara.gettxy2(float.NaN, 1).y, haba, haba, 0.5f, 0);
-
-                            new Text(99999, new ColorC(0, 0, 0, 1), chara.name, new FontC(haba/10, haba, haba, alignment: FontC.alignment.center)).add(text);
-                            text.add(cm.w);
-                            narabeTexts.Add(text);
                         }
                     }
                 }

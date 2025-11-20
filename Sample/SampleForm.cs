@@ -12,23 +12,23 @@ namespace Sample
         System.Drawing.Size BaseSize = new Size(1600, 900);
         Display display;
         KeyMouse km = new KeyMouse();
-        NameInput input ;
+        NameInput input;
         SceneContainer SC;
         public SampleForm()
         {
             InitializeComponent();
 
             ClientSize = BaseSize;
-            display = new Display(this,1);
+            display = new Display(this, 1);
 
 
-            FP.l.seting(textsn: new List<string> {  });
+            FP.l.seting(textsn: new List<string> { });
 
             FileMan.SetDefaultDisplay(display);
             FileMan.SoundSetUP();
 
             input = new NameInput(km);
-            SC = new SceneContainer(display,input);
+            SC = new SceneContainer(display, input);
             new SampleScene(SC).Start();
 
 
@@ -73,6 +73,11 @@ namespace Sample
         private void MouseUped(object sender, MouseEventArgs e)
         {
             km.up(new IButton(e.Button));
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+
         }
     }
 

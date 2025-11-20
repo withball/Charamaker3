@@ -28,29 +28,30 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
-            this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.SuspendLayout();
+            components = new System.ComponentModel.Container();
+            timer1 = new System.Windows.Forms.Timer(components);
+            SuspendLayout();
             // 
             // timer1
             // 
-            this.timer1.Enabled = true;
-            this.timer1.Interval = 16;
-            this.timer1.Tick += new System.EventHandler(this.ticked);
+            timer1.Enabled = true;
+            timer1.Interval = 16;
+            timer1.Tick += ticked;
             // 
-            // Form1
+            // SampleForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 25F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1578, 844);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.Load += new System.EventHandler(this.Form1_Load);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeyDowned);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.KeyUped);
-            this.MouseDown += new System.Windows.Forms.MouseEventHandler(this.MouseDowned);
-            this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.MouseUped);
-            this.ResumeLayout(false);
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            ClientSize = new Size(1105, 506);
+            Margin = new Padding(2, 2, 2, 2);
+            Name = "SampleForm";
+            Text = "Form1";
+            Load += Form1_Load;
+            KeyDown += KeyDowned;
+            KeyUp += KeyUped;
+            MouseDown += MouseDowned;
+            MouseUp += MouseUped;
+            ResumeLayout(false);
 
         }
 

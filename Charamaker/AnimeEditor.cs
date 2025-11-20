@@ -406,11 +406,11 @@ namespace Charamaker
     {
         AnimeBlockManager man = null;
         List<AnimBlock> AddedBlocks = new List<AnimBlock>();
-        List<Character> BlockCharas = new List<Character>();
-        List<Character> UIs = new List<Character>();
-        Character TimeLine = null;
-        Character StartLine = null;
-        Character EndLine = null;
+        List<Entity> BlockCharas = new List<Entity>();
+        List<Entity> UIs = new List<Entity>();
+        Entity TimeLine = null;
+        Entity StartLine = null;
+        Entity EndLine = null;
 
         Rectangle zone = new Rectangle(0, 0, 1, 1);
         float MaxTime = 0;
@@ -426,14 +426,14 @@ namespace Charamaker
                 AddedBlocks.Clear();
                 foreach (var a in BlockCharas)
                 {
-                    a.e.remove();
+                    a.remove();
                 }
                 BlockCharas.Clear();
                 if (TimeLine != null)
                 {
-                    TimeLine.e.remove();
-                    StartLine.e.remove();
-                    EndLine.e.remove();
+                    TimeLine.remove();
+                    StartLine.remove();
+                    EndLine.remove();
                 }
             }
         }
@@ -460,103 +460,103 @@ namespace Charamaker
 
             foreach (var a in BlockCharas)
             {
-                a.e.x *= zone.w;
-                a.e.y *= zone.w;
-                a.e.x += zone.x;
-                a.e.y += zone.gettxy(0, zone.h).y;
-                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(a.e, 100); 
-                DrawableMove.ZDeltaChange(10, "", cou * 10 + Z, -Z * 0.1f).addAndRemove(a.e, 100);
+                a.x *= zone.w;
+                a.y *= zone.w;
+                a.x += zone.x;
+                a.y += zone.gettxy(0, zone.h).y;
+                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(a, 100); 
+                DrawableMove.ZDeltaChange(10, "", cou * 10 + Z, -Z * 0.1f).addAndRemove(a, 100);
 
                 cou++;
-                a.e.add(w);
+                a.add(w);
 
             }
             {
-                TimeLine = Character.MakeCharacter("bluebit", 0, 0, 1, 1, 1, 1).getCharacter();
-                EntityMove.ScaleChange(10, "", 0.005f, Height * (Maxtumi + 3)).addAndRemove(TimeLine.e, 100);
-                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(TimeLine.e, 100);
+                TimeLine = Character.MakeCharacter("bluebit", 0, 0, 1, 1, 1, 1);
+                EntityMove.ScaleChange(10, "", 0.005f, Height * (Maxtumi + 3)).addAndRemove(TimeLine, 100);
+                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(TimeLine, 100);
 
 
                 int moji = 5;
                 var Text = Entity.make(0, 0, Height * moji, Height, Height * moji * 0.5f, Height * 1f, 0, "text");
-                TimeLine.addJoint(new Joint("TextJoi", 0.5f, 0.0f, TimeLine.e, new List<Entity> { Text }));
+                TimeLine.getCharacter().addJoint(new Joint("TextJoi", 0.5f, 0.0f, TimeLine, new List<Entity> { Text }));
 
                 new Text(1, new ColorC(0, 0, 0, 1), "0", new FontC(32, 32 * moji, 32, alignment: FontC.alignment.center)).add(Text);
                 new Texture(0.0f, new ColorC(1, 1, 1, 0.5f), new Dictionary<string, string> { { "def", "bluebit" } }).add(Text);
 
-                TimeLine.SetBaseCharacter();
+                TimeLine.getCharacter().SetBaseCharacter();
 
 
-                TimeLine.e.settxy(0, 0, 0, 0);
+                TimeLine.settxy(0, 0, 0, 0);
 
-                TimeLine.e.x *= zone.w;
-                TimeLine.e.y *= zone.w;
-                TimeLine.e.x += zone.x;
-                TimeLine.e.y += zone.gettxy(0, zone.h).y;
+                TimeLine.x *= zone.w;
+                TimeLine.y *= zone.w;
+                TimeLine.x += zone.x;
+                TimeLine.y += zone.gettxy(0, zone.h).y;
 
-                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(TimeLine.e, 100);
-                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10 + Z, Z).addAndRemove(TimeLine.e, 100);
+                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(TimeLine, 100);
+                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10 + Z, Z).addAndRemove(TimeLine, 100);
 
 
-                TimeLine.e.add(w);
+                TimeLine.add(w);
             }
             {
-                StartLine = Character.MakeCharacter("greenbit", 0, 0, 1, 1, 1, 1).getCharacter();
-                EntityMove.ScaleChange(10, "", 0.005f, Height * (Maxtumi + 3)).addAndRemove(StartLine.e, 100);
-                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(StartLine.e, 100);
+                StartLine = Character.MakeCharacter("greenbit", 0, 0, 1, 1, 1, 1);
+                EntityMove.ScaleChange(10, "", 0.005f, Height * (Maxtumi + 3)).addAndRemove(StartLine, 100);
+                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(StartLine, 100);
 
 
                 int moji = 5;
                 var Text = Entity.make(0, 0, Height * moji, Height, Height * moji * 0.5f, Height * 1f, 0, "text");
-                StartLine.addJoint(new Joint("TextJoi", 0.5f, 0.0f, StartLine.e, new List<Entity> { Text }));
+                StartLine.getCharacter().addJoint(new Joint("TextJoi", 0.5f, 0.0f, StartLine, new List<Entity> { Text }));
 
                 new Text(1, new ColorC(0, 0, 0, 1), man.StartTime.ToString(), new FontC(32, 32 * moji, 32, alignment: FontC.alignment.center)).add(Text);
                 new Texture(0.0f, new ColorC(1, 1, 1, 0.5f), new Dictionary<string, string> { { "def", "greenbit" } }).add(Text);
 
-                StartLine.SetBaseCharacter();
+                StartLine.getCharacter().SetBaseCharacter();
 
 
-                StartLine.e.settxy(man.StartTime / man.MaxTime, 0, 0, 0);
+                StartLine.settxy(man.StartTime / man.MaxTime, 0, 0, 0);
 
-                StartLine.e.x *= zone.w;
-                StartLine.e.y *= zone.w;
-                StartLine.e.x += zone.x;
-                StartLine.e.y += zone.gettxy(0, zone.h).y;
+                StartLine.x *= zone.w;
+                StartLine.y *= zone.w;
+                StartLine.x += zone.x;
+                StartLine.y += zone.gettxy(0, zone.h).y;
 
-                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(StartLine.e, 100);
-                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10 + Z, Z).addAndRemove(StartLine.e, 100);
+                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(StartLine, 100);
+                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10 + Z, Z).addAndRemove(StartLine, 100);
 
 
-                StartLine.e.add(w);
+                StartLine.add(w);
             }
             {
-                EndLine = Character.MakeCharacter("yellowbit", 0, 0, 1, 0, 1, 1).getCharacter();
-                EntityMove.ScaleChange(10, "", 0.005f, Height * (Maxtumi + 3)).addAndRemove(EndLine.e, 100);
-                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(EndLine.e, 100);
+                EndLine = Character.MakeCharacter("yellowbit", 0, 0, 1, 0, 1, 1);
+                EntityMove.ScaleChange(10, "", 0.005f, Height * (Maxtumi + 3)).addAndRemove(EndLine, 100);
+                DrawableMove.BaseColorChange(10, "", 0.5f).addAndRemove(EndLine, 100);
 
 
                 int moji = 5;
                 var Text = Entity.make(0, 0, Height * moji, Height, Height * moji * 0.5f, Height * 1f, 0, "text");
-                EndLine.addJoint(new Joint("TextJoi", 0.5f, 0.0f, EndLine.e, new List<Entity> { Text }));
+                EndLine.getCharacter().addJoint(new Joint("TextJoi", 0.5f, 0.0f, EndLine, new List<Entity> { Text }));
 
                 new Text(1, new ColorC(0, 0, 0, 1), man.EndTime.ToString(), new FontC(32, 32 * moji, 32, alignment: FontC.alignment.center)).add(Text);
                 new Texture(0.0f, new ColorC(1, 1, 1, 0.5f), new Dictionary<string, string> { { "def", "yellowbit" } }).add(Text);
 
-                EndLine.SetBaseCharacter();
+                EndLine.getCharacter().SetBaseCharacter();
 
 
-                EndLine.e.settxy(man.EndTime / man.MaxTime, 0, 0, 0);
+                EndLine.settxy(man.EndTime / man.MaxTime, 0, 0, 0);
 
-                EndLine.e.x *= zone.w;
-                EndLine.e.y *= zone.w;
-                EndLine.e.x += zone.x;
-                EndLine.e.y += zone.gettxy(0, zone.h).y;
+                EndLine.x *= zone.w;
+                EndLine.y *= zone.w;
+                EndLine.x += zone.x;
+                EndLine.y += zone.gettxy(0, zone.h).y;
 
-                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(EndLine.e, 100);
-                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10 + Z, Z).addAndRemove(EndLine.e, 100);
+                EntityMove.ScaleChange(10, "", r.w, r.w).addAndRemove(EndLine, 100);
+                DrawableMove.ZDeltaChange(10, "", BlockCharas.Count * 10 + Z, Z).addAndRemove(EndLine, 100);
 
 
-                EndLine.e.add(w);
+                EndLine.add(w);
             }
 
 
@@ -570,14 +570,14 @@ namespace Charamaker
                 {
                     foreach (var a in BlockCharas)
                     {
-                        DrawableMove.BaseColorChange(10, "", 0).addAndRemove(a.e, 100);
+                        DrawableMove.BaseColorChange(10, "", 0).addAndRemove(a, 100);
                     }
                 }
                 else
                 {
                     foreach (var a in BlockCharas)
                     {
-                        DrawableMove.BaseColorChange(10, "", 1).addAndRemove(a.e, 100);
+                        DrawableMove.BaseColorChange(10, "", 1).addAndRemove(a, 100);
                     }
                 }
             }
@@ -611,9 +611,9 @@ namespace Charamaker
                 
             if (TimeLine!=null)
             {
-                TimeLine.e.x = time/MaxTime*zone.w;
-                TimeLine.e.x += zone.x;
-                TimeLine.getEntity("text").getDrawable<Text>().text.TextSource = time.ToString();
+                TimeLine.x = time/MaxTime*zone.w;
+                TimeLine.x += zone.x;
+                TimeLine.getCharacter().getEntity("text").getDrawable<Text>().text.TextSource = time.ToString();
             }
         }
 
@@ -650,7 +650,7 @@ namespace Charamaker
                 {
                     foreach (var a in BlockCharas)
                     {
-                        var BP2 = new Rectangle(a.e.x, a.e.y, a.e.w+0.05f, a.e.h);
+                        var BP2 = new Rectangle(a.x, a.y, a.w+0.05f, a.h);
                         if (BP.atarun(BP2))
                         {
                             tumicou++;
@@ -666,7 +666,7 @@ namespace Charamaker
                 {
                     DrawableMove.BaseColorChange(10, "", 0).addAndRemove(c.e, 100);
                 }
-                BlockCharas.Add(c);
+                BlockCharas.Add(c.e);
                 return true;
             }
             return false;

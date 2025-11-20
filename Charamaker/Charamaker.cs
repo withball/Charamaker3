@@ -9,6 +9,7 @@ namespace Charamaker
 
     public partial class Charamaker : Form
     {
+        System.Diagnostics.Stopwatch stopwatch=new System.Diagnostics.Stopwatch();
         public Display display;
         public World w = new World();
         public World w2 = new World();
@@ -22,6 +23,9 @@ namespace Charamaker
         DataSaver save;
 
         public CP<Camera> cam2;
+
+        IntervalClocker intervalClocker;
+
         public void OffControls()
         {
             this.DSB.Hide();
@@ -60,7 +64,7 @@ namespace Charamaker
         public Charamaker()
         {
             InitializeComponent();
-
+            intervalClocker = new IntervalClocker(timer1.Interval);
             {
                 save = DataSaver.loadFromPath(@"CharamakerSave", false);
                 LastLoad = save.unpackDataS("LastLoad", @"yoshino");
@@ -184,6 +188,8 @@ namespace Charamaker
         }
         private void ticked(object sender, EventArgs e)
         {
+            intervalClocker.Stop();
+            float cl = intervalClocker.CL;
             // w = new World();
 
             {
@@ -192,7 +198,7 @@ namespace Charamaker
                 {
                     selectchara += sel.c.e.name;
                 }
-                this.Text = selectchara + " " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum;
+                this.Text = selectchara + " " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum+ " cl:"+intervalClocker.CL+$"({intervalClocker.NowFps})";
             }
             km.setpointer(this);
 
@@ -201,7 +207,7 @@ namespace Charamaker
             }
 
 
-            float cl = SpeedBar.Value / (float)SpeedBar.Maximum;
+            cl *= SpeedBar.Value / (float)SpeedBar.Maximum;
 
             w.update(cl);
             w2.update(cl);
@@ -312,7 +318,7 @@ namespace Charamaker
             {
                 BaseC.e.settxy(sel.c.e.gettxy(), BaseC.e.w * 3, -BaseC.e.h * -3);
             }
-
+           
         }
         void selectCharacter()
         {

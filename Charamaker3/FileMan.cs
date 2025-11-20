@@ -1334,5 +1334,71 @@ namespace Charamaker3
         }
 
     }
+    /// <summary>
+    /// Tickの間隔でCLを決定する
+    /// </summary>
+     public class IntervalClocker
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="targetSpf">miliseconds</param>
+        public IntervalClocker(double targetSpf)
+        {
+            spf = targetSpf;
+        }
+        double spf = 16;
+        System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
+        const int max = 30;
 
+        double nowSpf;
+        double nowClock = 0;
+        public void Stop()
+        {
+            miliseconds.Add(timer.ElapsedMilliseconds);
+            while (miliseconds.Count > max)
+            {
+                miliseconds.RemoveAt(0);
+            }
+            nowSpf = 0;
+            double sum = 0;
+            for (int i = 1; i <= miliseconds.Count; ++i)
+            {
+                double wari = (double)i / i;//(double)miliseconds.Count;
+                nowSpf += miliseconds[i-1] * wari;
+                sum += wari;
+            }
+            if (nowSpf > 0) { nowSpf /= sum; }
+
+            //最大値は1秒分のフレーム
+            nowClock = Math.Min(Math.Max(nowSpf / spf, 1 / spf), spf / 4); ;
+            timer.Restart();
+        }
+        List<double> miliseconds = new List<double>();
+        public float CL
+        {
+            get
+            {
+
+                return (float)nowClock;
+            }
+        }
+        public float NowSpf
+        {
+            get
+            {
+
+                return (float)(nowClock/nowSpf);
+            }
+        }
+
+        public float NowFps
+        {
+            get
+            {
+
+                return (float)(1000 *nowClock/(nowSpf));
+            }
+        }
+    }
 }
