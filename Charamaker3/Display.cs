@@ -77,6 +77,14 @@ namespace Charamaker3
             DeviceContext?.Release();
 
         }
+        public static bool operator ==(C3RenderSet a, C3RenderSet b)
+        {
+            return a.Render == b.Render;
+        }
+        public static bool operator !=(C3RenderSet a, C3RenderSet b)
+        {
+            return a.Render != b.Render;
+        }
     }
 
     /// <summary>
@@ -1237,22 +1245,19 @@ namespace Charamaker3
         {
             var Size = render.Render.PixelSize;
             //サイズの違いでバグる可能性あり！！！丸めてどうにかしたが、画質の値によっては今後もやばいぞ！
-            foreach (var a in cameras)
+
+            if (cam.render == render)
             {
-                if (a.c.render == render)
-                {
-                    a.c.render = _SCSRender;
-                }
+                cam.render = _SCSRender;
             }
+            
+            
             _SCSRender.Render.BeginDraw();
-            draw(0);
+            draw(0,new List<CP<Camera>> { new CP<Camera>(cam) });
             _SCSRender.Render.EndDraw();
-            foreach (var a in cameras)
+            if (cam.render == _SCSRender)
             {
-                if (a.c.render == _SCSRender)
-                {
-                    a.c.render = render;
-                }
+                cam.render = render;
             }
             screenShot(_SCSRender,render);
 //            screenShot(_TextRender,render);

@@ -1343,19 +1343,21 @@ namespace Charamaker3
         /// 
         /// </summary>
         /// <param name="targetSpf">miliseconds</param>
-        public IntervalClocker(double targetSpf)
+        public IntervalClocker(double targetSpf,int FrameMax = 60)
         {
+            this.max = FrameMax; 
             spf = targetSpf;
         }
         double spf = 16;
         System.Diagnostics.Stopwatch timer = new System.Diagnostics.Stopwatch();
-        const int max = 30;
+        int max = 60;
 
         double nowSpf;
         double nowClock = 0;
         public void Stop()
         {
-            miliseconds.Add(timer.ElapsedMilliseconds);
+            //最大は1/4秒。
+            miliseconds.Add(Math.Min(timer.ElapsedMilliseconds,250));
             while (miliseconds.Count > max)
             {
                 miliseconds.RemoveAt(0);
@@ -1364,14 +1366,14 @@ namespace Charamaker3
             double sum = 0;
             for (int i = 1; i <= miliseconds.Count; ++i)
             {
-                double wari = (double)i / i;//(double)miliseconds.Count;
+                double wari = (double)miliseconds.Count;
                 nowSpf += miliseconds[i-1] * wari;
                 sum += wari;
             }
             if (nowSpf > 0) { nowSpf /= sum; }
 
             //最大値は1秒分のフレーム
-            nowClock = Math.Min(Math.Max(nowSpf / spf, 1 / spf), spf / 4); ;
+            nowClock = Math.Min(Math.Max(nowSpf / spf, 1 / spf), spf/4); ;
             timer.Restart();
         }
         List<double> miliseconds = new List<double>();

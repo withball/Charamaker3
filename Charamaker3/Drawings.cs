@@ -854,6 +854,7 @@ namespace Charamaker3
 
         public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
+            if (D_bitmap == null) return;
             //色ついてない場合高速描画
             if (D_kousokubyouga)
             {
