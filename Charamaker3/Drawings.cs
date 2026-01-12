@@ -946,7 +946,7 @@ namespace Charamaker3
         {
             if (D_bitmap == null) return;
             //色ついてない場合高速描画
-           // if (D_kousokubyouga)
+            if (D_kousokubyouga)
             {
                 //var blended = cam.d.Blend(bitmap, this.col);
                 BitmapInterpolationMode mode;
@@ -974,7 +974,7 @@ namespace Charamaker3
                     semaphores.Draw.Release();
                 }
             }
-            //else if (1 == 1)
+            else if (1 == 1)
             {
                 semaphores.Draw.Wait();
 
