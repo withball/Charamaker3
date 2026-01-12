@@ -187,8 +187,7 @@ namespace Charamaker3.CharaModel
         /// <param name="zbai">zを全部倍にしたり</param>
         /// <param name="opacity"></param>
         /// <param name="linear">描画方法 -1で変更なし1でtrue</param>
-        /// <param name="backblur">キャラの後ろをぼかす量 0でしない</param>
-        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai, float opacity = 1,int linear=-1,float backblur=1)
+        static public void SetupCharacter(Entity e,string name,float scale, float dz,float zbai, float opacity = 1,int linear=-1)
         {
             if (name != null)
             {
@@ -226,10 +225,6 @@ namespace Charamaker3.CharaModel
                                 {
                                     b.linear = linear==1;
                                 }
-                                if (backblur > 0) 
-                                {
-                                    b.blur = new BlurC(backblur, true);
-                                }
                             }
                         }
 
@@ -251,10 +246,6 @@ namespace Charamaker3.CharaModel
                             if (linear >= 0)
                             {
                                 b.linear = linear == 1;
-                            }
-                            if (backblur > 0)
-                            {
-                                b.blur = new BlurC(backblur, true);
                             }
                         }
                     }
