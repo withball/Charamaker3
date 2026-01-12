@@ -770,12 +770,19 @@ namespace Charamaker3
         {
             base.copy(c);
             var cc = (SoundComponent)c;
-            cc.fadein=this.fadein;
-            cc.fadeout=this.fadeout;
-            cc.loop= this.loop;
+            cc.fadein = this.fadein;
+            cc.fadeout = this.fadeout;
+            cc.loop = this.loop;
             cc.playThenEnd = this.playThenEnd;
             cc.SE = this.SE;
-            cc._sound = this.SE.playoto(this.sound.path,this.sound.defvolume);
+            if (this.sound != null)
+            {
+                cc._sound = this.SE.playoto(this.sound.path, this.sound.defvolume);
+            }
+            else
+            {
+                cc._sound = null;
+            }
             cc.volume = this.volume;
         }
         

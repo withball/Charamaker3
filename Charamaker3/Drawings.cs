@@ -253,7 +253,7 @@ namespace Charamaker3
                 Bo = true;
             }
 
-            return Br == true && Bg == true && Bb == true && Bo ==true ;
+            return Br == true && Bg == true && Bb == true && Bo == true;
         }
         public static bool operator !=(ColorC a, ColorC b)
         {
@@ -284,9 +284,8 @@ namespace Charamaker3
             }
 
 
-            return Br==false || Bg==false || Bb==false || Bo==false;
+            return Br == false || Bg == false || Bb == false || Bo == false;
         }
-
         public DataSaver ToSave()
         {
             var d = new DataSaver();
@@ -304,6 +303,89 @@ namespace Charamaker3
             opa = d.unpackDataF("opa");
         }
     }
+    public class BlurC
+    {
+        public enum BlurOptimization : int
+        {
+            /// <summary>
+            /// スピード
+            /// </summary>
+            Speed =0,
+            /// <summary>
+            /// バランス
+            /// </summary>
+            Balance = 1,
+            /// <summary>
+            /// クオリティ
+            /// </summary>
+            Quality = 2
+        }
+
+
+        /// <summary>
+        /// 標準偏差
+        /// </summary>
+        public float Standard = 0;
+        /// <summary>
+        /// ぼかしの強さ
+        /// </summary>
+        public BlurOptimization Optimization = BlurOptimization.Speed;
+        /// <summary>
+        /// HardBorderを使うか
+        /// </summary>
+        public bool HardBorder = false;
+
+        public BlurC(float standard, BlurOptimization optimization=BlurOptimization.Speed, bool isHardborder=false)
+        {
+            Standard = standard;
+            Optimization = optimization;
+            HardBorder = isHardborder;
+        }
+        public BlurC(BlurC c)
+        {
+            this.Standard = c.Standard;
+            this.Optimization = c.Optimization;
+            this.HardBorder = c.HardBorder;
+        }
+        public static bool operator ==(BlurC a, BlurC b)
+        {
+            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
+            {
+                return ReferenceEquals(a, b) == true;
+            }
+
+            bool Br = a.Standard == b.Standard;
+            if (float.IsNaN(a.Standard) && float.IsNaN(b.Standard))
+            {
+                Br = true;
+            }
+            bool Bg = a.Optimization == b.Optimization;
+
+            bool Bb = a.HardBorder == b.HardBorder;
+
+            return Br == true && Bg == true && Bb == true;
+        }
+        public static bool operator !=(BlurC a, BlurC b)
+        {
+            return !(a == b);
+        }
+
+        public DataSaver ToSave()
+        {
+            var d = new DataSaver();
+            d.packAdd("Standard", Standard);
+            d.packAdd("Optimization", Optimization);
+            d.packAdd("HardBorder", HardBorder);
+            return d;
+        }
+        public void ToLoad(DataSaver d)
+        {
+            Standard = d.unpackDataF("Standard", Standard);
+            Optimization = d.unpackDataE("Optimization", Optimization);
+            HardBorder = d.unpackDataB("HardBorder", HardBorder);
+        }
+    }
+    
     public abstract class Drawable : Component
     {
         /// <summary>
@@ -314,6 +396,10 @@ namespace Charamaker3
         /// 描画の順番
         /// </summary>
         public float z;
+        /// <summary>
+        /// ガウスぼかしの具合
+        /// </summary>
+        public BlurC blur = new BlurC(0,0,false);
 
 
         /// <summary>
@@ -353,6 +439,7 @@ namespace Charamaker3
             cc.linear = this.linear;
 
             cc.col = new ColorC(this.col);
+            cc.blur = new BlurC(this.blur);
         }
         public override DataSaver ToSave()
         {
@@ -369,6 +456,8 @@ namespace Charamaker3
             res.packAdd("g", this.col.g);
             res.packAdd("b", this.col.b);
             res.packAdd("opa", this.col.opa);
+            res.linechange();
+            res.packAdd("blur", this.blur.ToSave());
             return res;
         }
         protected override void ToLoad(DataSaver d)
@@ -383,6 +472,7 @@ namespace Charamaker3
             this.col.g = d.unpackDataF("g");
             this.col.b = d.unpackDataF("b");
             this.col.opa = d.unpackDataF("opa");
+            this.blur.ToLoad(d.unpackDataD("blur"));
         }
 
         /// <summary>
@@ -844,7 +934,7 @@ namespace Charamaker3
             {
                 D_bitmap = cam.d.ldtex(FileMan.c_nothing);
             }
-            D_kousokubyouga = this.col.r == 1 && this.col.g == 1 && this.col.b == 1;
+            D_kousokubyouga = this.col.r == 1 && this.col.g == 1 && this.col.b == 1 && blur.Standard==0;
 
             D_rect = rectRectF(cam);
             D_trans = rectTrans(cam);
@@ -856,7 +946,7 @@ namespace Charamaker3
         {
             if (D_bitmap == null) return;
             //色ついてない場合高速描画
-            if (D_kousokubyouga)
+           // if (D_kousokubyouga)
             {
                 //var blended = cam.d.Blend(bitmap, this.col);
                 BitmapInterpolationMode mode;
@@ -884,7 +974,7 @@ namespace Charamaker3
                     semaphores.Draw.Release();
                 }
             }
-            else if (1 == 1)
+            //else if (1 == 1)
             {
                 semaphores.Draw.Wait();
 
@@ -895,80 +985,58 @@ namespace Charamaker3
 
 
                 /////////////////////////////クロップ
-
-
-                var crop0 = cam.render.ECrop0;
-                crop0.SetInput(0, D_bitmap, new SharpGen.Runtime.RawBool(true));
-                crop0.BorderMode = BorderMode.Hard;
-
-
                 Rectangle sourceRect;
-                //ビットマップが小さすぎると計算誤差で死んでしまうので最低の幅を保証する。->ホント？
+                sourceRect = new Rectangle(D_bitmap.Size.Width * CropL - 0.0f, D_bitmap.Size.Height * CropU - 0.0f
+                , D_bitmap.PixelSize.Width * CropR - D_bitmap.Size.Width * CropL, D_bitmap.PixelSize.Height * CropD - D_bitmap.Size.Height * CropU);
+                {
+                    var crop0 = cam.render.ECrop0;
+                    crop0.SetInput(0, D_bitmap, new SharpGen.Runtime.RawBool(true));
+                    crop0.BorderMode = BorderMode.Hard;
 
-                float hosyo = 10;
-                /*
-                if (bitmap.PixelSize.Width < hosyo && bitmap.PixelSize.Height < hosyo)
-                {
-                    crop0.TransformMatrix = Matrix3x2.CreateScale(hosyo / bitmap.PixelSize.Width
-                        , hosyo / bitmap.PixelSize.Height);
-                    sourceRect = new Rectangle(hosyo * CropL - 0.0f, hosyo * CropU - 0.0f
-                  , hosyo * CropR - hosyo * CropL, hosyo * CropD - hosyo * CropU);
-
-                }
-                else if (bitmap.PixelSize.Width < hosyo)
-                {
-                    crop0.TransformMatrix = Matrix3x2.CreateScale(hosyo / bitmap.PixelSize.Width
-                       , 1);
-                    sourceRect = new Rectangle(hosyo * CropL - 0.0f, bitmap.Size.Height * CropU - 0.0f
-                  , hosyo * CropR - hosyo * CropL, bitmap.PixelSize.Height * CropD - bitmap.Size.Height * CropU);
-                }
-                else if (bitmap.PixelSize.Height < hosyo)
-                {
-                    crop0.TransformMatrix = Matrix3x2.CreateScale(1
-                           , hosyo / bitmap.PixelSize.Height);
-                    sourceRect = new Rectangle(bitmap.Size.Width * CropL - 0.0f, hosyo * CropU - 0.0f
-                  , bitmap.PixelSize.Width * CropR - bitmap.Size.Width * CropL, hosyo * CropD - hosyo * CropU);
-                }
-                else*/
-                {
                     crop0.TransformMatrix = Matrix3x2.CreateScale(1, 1);
-                    sourceRect = new Rectangle(D_bitmap.Size.Width * CropL - 0.0f, D_bitmap.Size.Height * CropU - 0.0f
-                  , D_bitmap.PixelSize.Width * CropR - D_bitmap.Size.Width * CropL, D_bitmap.PixelSize.Height * CropD - D_bitmap.Size.Height * CropU);
+                    crop0.InterPolationMode = AffineTransform2DInterpolationMode.NearestNeighbor;
+
+                    var crop1 = cam.render.ECrop1;
+                    crop1.SetInputEffect(0, crop0, new SharpGen.Runtime.RawBool(false));
+                    crop1.BorderMode = BorderMode.Hard;
+
+                    crop1.Rectangle = new Vector4(sourceRect.x, sourceRect.y, sourceRect.x + sourceRect.w, sourceRect.y + sourceRect.h);
+
+                    var crop2 = cam.render.ECrop2;
+                    crop0.InterPolationMode = AffineTransform2DInterpolationMode.NearestNeighbor;
+                    crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
+
+                    crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
+                    //crop.Rectangle = new Vector4(0, 0, 5, 5);
                 }
-
-                var crop1 = cam.render.ECrop1;
-                crop1.SetInputEffect(0, crop0, new SharpGen.Runtime.RawBool(false));
-                crop1.BorderMode = BorderMode.Hard;
-
-
-
-
-                crop1.Rectangle = new Vector4(sourceRect.x, sourceRect.y, sourceRect.x + sourceRect.w, sourceRect.y + sourceRect.h);
-
-                var crop2 = cam.render.ECrop2;
-                crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
-
-                crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
-                //crop.Rectangle = new Vector4(0, 0, 5, 5);
-
-                /////////////////////////色
-
-                var blend = cam.render.EBlend;
-                blend.SetInput(0, D_bitmap, new SharpGen.Runtime.RawBool(false));
-
-                Matrix5x4 colormatrix = new Matrix5x4(
-                    col.r,0,0,0,
-                    0,col.g,0,0,
-                    0,0,col.b,0,
-                    0,0,0,col.opa,
-                    0,0,0,0
-                    );
-               
-                blend.Matrix = colormatrix;
 
                 var trans = cam.render.ETrans;
-                trans.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
+                trans.InterPolationMode= AffineTransform2DInterpolationMode.NearestNeighbor;
+                /////////////////////////色
+                {
+                    var blend = cam.render.EBlend;
+                    blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
+                   
+                    Matrix5x4 colormatrix = new Matrix5x4(
+                        col.r, 0, 0, 0,
+                        0, col.g, 0, 0,
+                        0, 0, col.b, 0,
+                        0, 0, 0, col.opa,
+                        0, 0, 0, 0
+                        );
 
+                    blend.Matrix = colormatrix;
+
+
+                    Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
+                    blur.SetInputEffect(0,blend, new SharpGen.Runtime.RawBool(false));
+
+                    blur.StandardDeviation = this.blur.Standard;
+                    blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
+                    blur.BorderMode = this.blur.HardBorder?BorderMode.Hard:BorderMode.Soft;
+
+                    trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+                }
                 var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h);
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;
@@ -977,9 +1045,10 @@ namespace Charamaker3
 
                 //d2dContext.Clear(new ColorC(0, 0, 0, 0));
                 //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
-
+                var mode = this.linear ? InterpolationMode.Linear : InterpolationMode.NearestNeighbor;
                 //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
-                cam.render.DeviceContext.DrawImage(trans, InterpolationMode.Linear, CompositeMode.SourceOver);
+                cam.render.DeviceContext.DrawImage(trans, mode
+                    , CompositeMode.SourceOver);
 
                 semaphores.Draw.Release();
 

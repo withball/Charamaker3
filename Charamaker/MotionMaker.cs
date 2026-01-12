@@ -245,7 +245,7 @@ namespace Charamaker
         private void TRB_Click(object sender, EventArgs e)
         {
             var m = new Motion();
-            m.addmove(DrawableMove.DResetMove(0, "", true, false, true, false));
+            m.addmove(DrawableMove.DResetMove(0, "", true, true, true, false));
             if (cm.sel.c != null && cm.sel.c.e != null)
             {
                 m.addAndRemove(cm.sel.c.e, 100);
@@ -354,7 +354,7 @@ namespace Charamaker
                      
                         if (cm.sel.c != null && cm.sel.c.e != null)
                         {
-                            for (int t = 0; t < 3; ++t)
+                            //for (int t = 0; t < 3; ++t)
                             {
                                 var chara = cm.sel.c.e.clone();
                                 EntityMove.EResetMove().addAndRemove(chara, 100);

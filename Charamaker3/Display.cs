@@ -47,6 +47,7 @@ namespace Charamaker3
         public Vortice.Direct2D1.Effects.Crop ECrop1 = null;
         public Vortice.Direct2D1.Effects.AffineTransform2D ECrop2 = null;
         public Vortice.Direct2D1.Effects.ColorMatrix EBlend = null;
+        public Vortice.Direct2D1.Effects.GaussianBlur EBlur = null;
         public Vortice.Direct2D1.Effects.AffineTransform2D ETrans = null;
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Charamaker3
             this.ECrop1 = new Vortice.Direct2D1.Effects.Crop(DeviceContext);
             this.ECrop2 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
             this.EBlend = new Vortice.Direct2D1.Effects.ColorMatrix(DeviceContext);
+            this.EBlur = new Vortice.Direct2D1.Effects.GaussianBlur(DeviceContext);
             this.ETrans = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
             DWrite.DWriteCreateFactory<IDWriteFactory>(Vortice.DirectWrite.FactoryType.Shared,out this.WriteFactory);
         }
@@ -73,6 +75,7 @@ namespace Charamaker3
             ECrop1?.Release();
             ECrop2?.Release();
             EBlend?.Release();
+            EBlur?.Release();
             ETrans?.Release();
             DeviceContext?.Release();
 

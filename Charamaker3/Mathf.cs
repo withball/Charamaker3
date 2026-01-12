@@ -693,4 +693,111 @@ namespace Charamaker3
             Reset();
         }
     }
+    /// <summary>
+    /// 単振動により値が変化するfloat多重振り子的なこともできますわよ
+    /// </summary>
+    public class FloatMill
+    {
+        //基本の値
+        float Basic=0;
+        //変化する値
+        float Dist=0;
+        List<float> Mill = new List<float>();
+        float Speed;
+        /// <summary>
+        /// カラコン
+        /// </summary>
+        public FloatMill()
+        {
+        }
+        /// <summary>
+        /// カラコン
+        /// </summary>
+        public FloatMill(DataSaver d)
+        {
+            ToLoad(d);
+        }
+        public FloatMill(float basic, float dist, float sp, int milldepth = 2)
+        {
+            this.Basic = basic;
+            this.Dist = dist;
+            for (int i = 0; i < milldepth; i++) Mill.Add(0);
+            this.Speed = sp;
+        }
+        public void reset(bool random = true)
+        {
+            for (int i = 0; i < Mill.Count; i++)
+            {
+                if (random) { Mill[i] = FileMan.whrandhani(180); }
+                else { Mill[i] = 0; }
+            }
+        }
+        public FloatMill(float val)
+        {
+            this.Basic = 0;
+            this.Dist = 0;
+            Mill.Add(0);
+            this.Speed = 0;
+        }
+        public void update(float cl)
+        {
+            Mill[0] += Speed * cl;
+            for (int i = 1; i < Mill.Count; i++)
+            {
+                Mill[i] += Mill[i - 1] * Speed;
+            }
+            for (int i = 0; i < Mill.Count; i++)
+            {
+                Mill[i] = Mathf.atan(Mathf.sin(Mill[i]), Mathf.cos(Mill[i]));
+            }
+        }
+        public float value { get 
+            {
+                if (Mill.Count == 0) 
+                {
+                    return Basic;
+                }
+                return Basic + Dist * (float)Mathf.cos(Mill.Last());
+            } }
+        public float normal { get { return Basic; } }
+        public float wid { get { return Dist; } }
+        public static implicit operator float(FloatMill val)
+        {
+            return val.value;
+        }
+
+        public void paste(FloatMill c) 
+        {
+            c.Basic = this.Basic;
+            c.Dist = this.Dist;
+            c.Speed = this.Speed;
+            c.Mill.Clear();
+
+            foreach (var a in this.Mill) 
+            {
+                c.Mill.Add(a);  
+            }
+        }
+
+        public DataSaver ToSave() 
+        {
+            var d = new DataSaver();
+            d.packAdd("Basic",Basic);
+            d.packAdd("Dist", Dist);
+            d.packAdd("Speed", Speed);
+            d.packAdd("MillDepth", Mill.Count);
+            return d;
+        }
+        public void ToLoad(DataSaver d) 
+        {
+            this.Basic = d.unpackDataF("Basic",Basic);
+            this.Dist = d.unpackDataF("Dist", Dist);
+            this.Speed = d.unpackDataF("Speed", Speed);
+            Mill.Clear();
+            for (int i = 0; i < d.unpackDataF("MillDepth", Mill.Count); ++i) 
+            {
+                Mill.Add(0);
+            }
+        }
+    }
 }
