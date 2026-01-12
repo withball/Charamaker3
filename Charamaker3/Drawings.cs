@@ -945,19 +945,28 @@ namespace Charamaker3
         public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
             if (D_bitmap == null) return;
+
+            BitmapInterpolationMode mode;
+            AffineTransform2DInterpolationMode mode2;
+            InterpolationMode mode3;
+            if (linear == true)
+            {
+                mode = BitmapInterpolationMode.Linear;
+                mode2 = AffineTransform2DInterpolationMode.Linear;
+                mode3 = InterpolationMode.Linear ;
+            }
+            else
+            {
+                mode = BitmapInterpolationMode.NearestNeighbor;
+                mode2 = AffineTransform2DInterpolationMode.NearestNeighbor;
+                mode3 = InterpolationMode.NearestNeighbor;
+            }
+
             //色ついてない場合高速描画
             if (D_kousokubyouga)
             {
                 //var blended = cam.d.Blend(bitmap, this.col);
-                BitmapInterpolationMode mode;
-                if (linear == true)
-                {
-                    mode = BitmapInterpolationMode.Linear;
-                }
-                else
-                {
-                    mode = BitmapInterpolationMode.NearestNeighbor;
-                }
+                
                 {
                   
 
@@ -994,7 +1003,7 @@ namespace Charamaker3
                     crop0.BorderMode = BorderMode.Hard;
 
                     crop0.TransformMatrix = Matrix3x2.CreateScale(1, 1);
-                    crop0.InterPolationMode = AffineTransform2DInterpolationMode.NearestNeighbor;
+                    crop0.InterPolationMode = mode2;
 
                     var crop1 = cam.render.ECrop1;
                     crop1.SetInputEffect(0, crop0, new SharpGen.Runtime.RawBool(false));
@@ -1003,7 +1012,7 @@ namespace Charamaker3
                     crop1.Rectangle = new Vector4(sourceRect.x, sourceRect.y, sourceRect.x + sourceRect.w, sourceRect.y + sourceRect.h);
 
                     var crop2 = cam.render.ECrop2;
-                    crop0.InterPolationMode = AffineTransform2DInterpolationMode.NearestNeighbor;
+                    crop0.InterPolationMode = mode2;
                     crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
 
                     crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
@@ -1011,7 +1020,7 @@ namespace Charamaker3
                 }
 
                 var trans = cam.render.ETrans;
-                trans.InterPolationMode= AffineTransform2DInterpolationMode.NearestNeighbor;
+                trans.InterPolationMode= mode2;
                 /////////////////////////色
                 {
                     var blend = cam.render.EBlend;
@@ -1045,9 +1054,8 @@ namespace Charamaker3
 
                 //d2dContext.Clear(new ColorC(0, 0, 0, 0));
                 //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
-                var mode = this.linear ? InterpolationMode.Linear : InterpolationMode.NearestNeighbor;
                 //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
-                cam.render.DeviceContext.DrawImage(trans, mode
+                cam.render.DeviceContext.DrawImage(trans, mode3
                     , CompositeMode.SourceOver);
 
                 semaphores.Draw.Release();
