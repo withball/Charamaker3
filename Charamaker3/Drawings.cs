@@ -2141,6 +2141,7 @@ namespace Charamaker3
     class TextRenderer
     {
         internal C3BitmapRenderSet render;
+        internal C3BitmapRenderSet renderBack;
 
         /// <summary>
         /// Rectangleだが、回転は無視される。
@@ -2160,10 +2161,11 @@ namespace Charamaker3
         /// <param name="parent"></param>
         /// <param name="render"></param>
         /// <param name="drawto">回転は無しね</param>
-        public TextRenderer(Display parent, C3BitmapRenderSet render, Shapes.Rectangle drawto)
+        public TextRenderer(Display parent, C3BitmapRenderSet render, C3BitmapRenderSet renderBack, Shapes.Rectangle drawto)
         {
             this.parent = parent;
             this.render = render;
+            this.renderBack = renderBack;
             rendZone = drawto;
      
         }
@@ -2315,12 +2317,17 @@ namespace Charamaker3
                 render.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
                 render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
 
+                renderBack.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
+                renderBack.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
+
                 float R = 1, G = 0.98f, B = 0.97f;
                 {
 
                     //render.Clear(new ColorC(FileMan.whrandhani(R), FileMan.whrandhani(G), FileMan.whrandhani(B)
                     //    , 0.5f));
                     render.BitmapRender.Clear(new ColorC(R, G, B, 0));
+
+                    renderBack.BitmapRender.Clear(new ColorC(R, G, B, 0));
                 }
                 //文字描画君
                 void DrawText(List<List<TextLayout>> ATexts,Rectangle drawR, FontC drawFont,bool back)
@@ -2422,11 +2429,23 @@ namespace Charamaker3
 
                             using (var font = f.ToFont())
                             {
-                                using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
+                                if (back == true)
                                 {
-                                    drawed += b.c.CharText;
+                                    using (var slb = renderBack.BitmapRender.CreateSolidColorBrush(col))
+                                    {
+                                        drawed += b.c.CharText;
 
-                                    render.BitmapRender.DrawText(b.c.CharText, font, drawRect, slb);
+                                        renderBack.BitmapRender.DrawText(b.c.CharText, font, drawRect, slb);
+                                    }
+                                }
+                                else 
+                                {
+                                    using (var slb = render.BitmapRender.CreateSolidColorBrush(col))
+                                    {
+                                        drawed += b.c.CharText;
+
+                                        render.BitmapRender.DrawText(b.c.CharText, font, drawRect, slb);
+                                    }
                                 }
                             }
                              // Debug.WriteLine(b.x+"::"+ b.y+" ASDARAWTEXT " + drawRect.x + "::" + drawRect.y + "[" + drawRect.w + "::" + drawRect.h + "]");
@@ -2441,13 +2460,14 @@ namespace Charamaker3
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
                     var lis = new List<FXY>();
+                    lis.Add(new FXY(0, 0));
                     lis.Add(new FXY(1, 0));
                     lis.Add(new FXY(-1, 0));
                     lis.Add(new FXY(0, 1));
                     lis.Add(new FXY(0, -1));
                     for (int i = 0; i < lis.Count; i++)
                     {
-                        var analyze=TextLayout.AnalyzeText(Text, render, F, rendZone);
+                        var analyze=TextLayout.AnalyzeText(Text, renderBack, F, rendZone);
                         foreach (var a in analyze) 
                         {
                             foreach (var b in a)
@@ -2466,6 +2486,7 @@ namespace Charamaker3
 
                DrawText(AnalysedTexts, rendZone, F,false);
                 render.BitmapRender.PopAxisAlignedClip();
+                renderBack.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
 
                 /*
@@ -2636,6 +2657,7 @@ namespace Charamaker3
 
         RawRectF D_rect;
         Matrix3x2 D_trans;
+        bool kousokuDraw = false;
         public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
             MakeTrender(cam.d);
@@ -2644,6 +2666,7 @@ namespace Charamaker3
 
             D_rect = rectRectF(cam);
             D_trans = rectTrans(cam);
+            kousokuDraw = blur.Standard == 0;
         }
         public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
@@ -2679,17 +2702,109 @@ namespace Charamaker3
             zure.degree += e.degree;
             var rect = new RawRectF(D_rect.Left + zure.x, D_rect.Top + zure.y, D_rect.Right + zure.x, D_rect.Bottom + zure.y);
 
+
+            BitmapInterpolationMode mode;
+            AffineTransform2DInterpolationMode mode2;
+            InterpolationMode mode3;
+            if (linear == true)
             {
-                BitmapInterpolationMode mode;
-                if (linear == true)
+                mode = BitmapInterpolationMode.Linear;
+                mode2 = AffineTransform2DInterpolationMode.Linear;
+                mode3 = InterpolationMode.Linear;
+            }
+            else
+            {
+                mode = BitmapInterpolationMode.NearestNeighbor;
+                mode2 = AffineTransform2DInterpolationMode.NearestNeighbor;
+                mode3 = InterpolationMode.NearestNeighbor;
+            }
+
+            if (kousokuDraw == false)
+            {
+                semaphores.Draw.Wait();
+
+                var render = cam.render.Render;
+                render.Transform = Matrix3x2.CreateScale(1, 1);
+                //_BlendRender.PushAxisAlignedClip(new Rectangle(0,0,bitmap.PixelSize.Width, bitmap.PixelSize.Height)
+                //    , AntialiasMode.PerPrimitive);
+
+
+                /////////////////////////////クロップ
+                Rectangle sourceRect = new Rectangle();
+                Trender.rendZone.copy(sourceRect);
                 {
-                    mode = BitmapInterpolationMode.Linear;
-                }
-                else
-                {
-                    mode = BitmapInterpolationMode.NearestNeighbor;
+                    var crop0 = cam.render.ECrop0;
+                    crop0.SetInput(0, Trender.renderBack.BitmapRender.Bitmap, new SharpGen.Runtime.RawBool(true));
+                    crop0.BorderMode = BorderMode.Hard;
+
+                    crop0.TransformMatrix = Matrix3x2.CreateScale(1, 1);
+                    crop0.InterPolationMode = mode2;
+
+                    var crop1 = cam.render.ECrop1;
+                    crop1.SetInputEffect(0, crop0, new SharpGen.Runtime.RawBool(false));
+                    crop1.BorderMode = BorderMode.Hard;
+
+                    crop1.Rectangle = new Vector4(sourceRect.x, sourceRect.y, sourceRect.x + sourceRect.w, sourceRect.y + sourceRect.h);
+
+                    var crop2 = cam.render.ECrop2;
+                    crop0.InterPolationMode = mode2;
+                    crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
+
+                    crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
+                    //crop.Rectangle = new Vector4(0, 0, 5, 5);
                 }
 
+                var trans = cam.render.ETrans;
+                trans.InterPolationMode = mode2;
+                /////////////////////////ぼかし
+                {
+                    Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
+                    blur.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
+
+                    blur.StandardDeviation = this.blur.Standard;
+                    blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
+                    blur.BorderMode = this.blur.HardBorder ? BorderMode.Hard : BorderMode.Soft;
+
+                    trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+                }
+                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h);
+                //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
+                trans.TransformMatrix = transmatrix;
+                //_BlendRender.BeginDraw();
+
+
+                //d2dContext.Clear(new ColorC(0, 0, 0, 0));
+                //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
+                //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
+                cam.render.DeviceContext.DrawImage(trans, mode3
+                    , CompositeMode.SourceOver);
+
+                semaphores.Draw.Release();
+            }
+            else 
+            {
+                var source = new Rectangle();
+                Trender.rendZone.copy(source);
+                /*source.x += 1;
+                source.w -= 2;
+                source.y += 1;
+                source.h -= 2;
+                */
+                {
+                    var trans = D_trans;
+
+                    semaphores.Draw.Wait();
+                    var render = cam.render.Render;
+                    render.Transform = trans;
+                    render.DrawBitmap(Trender.renderBack.BitmapRender.Bitmap
+                      , rect
+                      , this.col.opa, mode
+                        , source);
+                    semaphores.Draw.Release();
+                }
+            }
+            //両方描画する
+            {
                 var source = new Rectangle();
                 Trender.rendZone.copy(source);
                 /*source.x += 1;
@@ -2710,6 +2825,10 @@ namespace Charamaker3
                     semaphores.Draw.Release();
                 }
             }
+            
+            {
+              
+            }
             if (onWorld==false)
             {
 
@@ -2717,6 +2836,7 @@ namespace Charamaker3
                 _Trender = null;
             }
         }
+        
         public override void removetoworld(float cl = 0)
         {
             base.removetoworld(cl);

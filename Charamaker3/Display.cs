@@ -1009,6 +1009,11 @@ namespace Charamaker3
         C3BitmapRenderSet _TextRender;
 
         /// <summary>
+        /// Textの背景の一次的な描画に使うレンダーに使うレンダー      
+        /// </summary>
+        C3BitmapRenderSet _TextRenderBack;
+
+        /// <summary>
         /// 画像のブレンドに一次的に使うレンダーに使うレンダー      
         /// </summary>
         C3BitmapRenderSet _BlendRender;
@@ -1039,15 +1044,26 @@ namespace Charamaker3
                 , CompatibleRenderTargetOptions.GdiCompatible));
 
             var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution)*3, (int)((wi + hei) * resolution)*3);
-            _TextRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
-                , fom
-                , CompatibleRenderTargetOptions.GdiCompatible));
+            {
+                _TextRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+                    , fom
+                    , CompatibleRenderTargetOptions.GdiCompatible));
 
-            _TextRender.BitmapRender.BeginDraw();
+                _TextRender.BitmapRender.BeginDraw();
 
-            _TextRender.BitmapRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
-            _TextRender.BitmapRender.EndDraw();
+                _TextRender.BitmapRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
+                _TextRender.BitmapRender.EndDraw();
+            }
+            {
+                _TextRenderBack = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
+                    , fom
+                    , CompatibleRenderTargetOptions.GdiCompatible));
 
+                _TextRenderBack.BitmapRender.BeginDraw();
+
+                _TextRenderBack.BitmapRender.Clear(new ColorC(1, 0, 0, 1));//異常チェック用に赤に塗っとく
+                _TextRenderBack.BitmapRender.EndDraw();
+            }
             _BlendRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible));
@@ -1227,6 +1243,7 @@ namespace Charamaker3
         protected void PreDraw(float cl, List<CP<Camera>> AddPredraws = null)
         {
             _TextRender.BitmapRender.BeginDraw();
+            _TextRenderBack.BitmapRender.BeginDraw();
             foreach (var a in new List<CP<Camera>>(cameras))
             {
                 a.c.PreDraw(a, Semaphores);
@@ -1239,6 +1256,7 @@ namespace Charamaker3
                 }
             }
             _TextRender.BitmapRender.EndDraw();
+            _TextRenderBack.BitmapRender.EndDraw();
         }
         /// <summary>
         /// このカメラのスクショをとる
@@ -1570,7 +1588,7 @@ namespace Charamaker3
                 res = new Shapes.Rectangle(Mathf.max(fxy.x - w, 0), Mathf.max(fxy.y - h, 0)
                     , w, h);
             }
-            var returns = new TextRenderer(this, _TextRender, res);
+            var returns = new TextRenderer(this, _TextRender,_TextRenderBack, res);
             //右下順に並べる
             var ss = new supersort<TextRenderer>();
             ss.add(returns, returns.rendZone.x + returns.rendZone.y);
