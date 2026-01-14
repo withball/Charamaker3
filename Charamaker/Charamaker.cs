@@ -198,7 +198,11 @@ namespace Charamaker
                 {
                     selectchara += sel.c.e.name;
                 }
-                this.Text = selectchara + " " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " + display.TextRenderesRemoveNum+ " cl:"+intervalClocker.CL+$"({intervalClocker.NowFps})";
+                System.Diagnostics.Process proc = System.Diagnostics.Process.GetCurrentProcess();
+                proc.Refresh();
+                this.Text = selectchara + " " + cam.watchRect.gettxy() + " a " + display.TextRenderesNum + " to " 
+                    + display.TextRenderesRemoveNum+ $"memory:{proc.WorkingSet64:N0}[]{proc.VirtualMemorySize64:N0}"
+                    + " cl:" + intervalClocker.CL + $"({intervalClocker.NowFps})";
             }
             km.setpointer(this);
 

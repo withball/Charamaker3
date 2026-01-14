@@ -610,7 +610,7 @@ namespace Charamaker3
         /// </summary>
         /// <param name="cam"></param>
         /// <returns></returns>
-        protected Matrix3x2 rectTransMax(Camera cam, float bitmapW, float bitmapH)
+        protected Matrix3x2 rectTransMax(Camera cam, float bitmapW, float bitmapH,float xzure,float yzure)
         {
 
             if (bitmapW <= 0 || bitmapH <= 0)
@@ -619,12 +619,13 @@ namespace Charamaker3
             }
             var watch = cam.watchRect;
 
+            FXY zure =new FXY(xzure, yzure);
             //  左上
-            var upleft = camsoutai(cam, e.gettxy2(0, 0));
-            var upright = camsoutai(cam, e.gettxy2(1, 0));
+            var upleft = camsoutai(cam, e.gettxy2(0, 0))+zure;
+            var upright = camsoutai(cam, e.gettxy2(1, 0)) + zure;
             //右下
-            var leftdown = camsoutai(cam, e.gettxy2(0, 1));
-            var rightdown = camsoutai(cam, e.gettxy2(1, 1));
+            var leftdown = camsoutai(cam, e.gettxy2(0, 1)) + zure;
+            var rightdown = camsoutai(cam, e.gettxy2(1, 1)) + zure;
 
             float w = (upright - upleft).length;
             float h = (upright - rightdown).length;
@@ -1046,7 +1047,7 @@ namespace Charamaker3
 
                     trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
                 }
-                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h);
+                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,0,0);
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;
                 //_BlendRender.BeginDraw();
@@ -2758,8 +2759,22 @@ namespace Charamaker3
                 trans.InterPolationMode = mode2;
                 /////////////////////////ぼかし
                 {
+
+                    var blend = cam.render.EBlend;
+                    blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
+
+                    Matrix5x4 colormatrix = new Matrix5x4(
+                        1, 0, 0, 0,
+                        0, 1, 0, 0,
+                        0, 0, 1, 0,
+                        0, 0, 0, col.opa,
+                        0, 0, 0, 0
+                        );
+
+                    blend.Matrix = colormatrix;
+
                     Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
-                    blur.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
+                    blur.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
 
                     blur.StandardDeviation = this.blur.Standard;
                     blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
@@ -2767,7 +2782,8 @@ namespace Charamaker3
 
                     trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
                 }
-                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h);
+                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,zure.x,zure.y);
+                
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;
                 //_BlendRender.BeginDraw();
