@@ -210,6 +210,7 @@ namespace Charamaker
                 sel?.setPoints(SLP, TXYP, (float)PointB.Value / 100f);
             }
 
+            anmE?.update(cl);
 
             cl *= SpeedBar.Value / (float)SpeedBar.Maximum;
 
@@ -712,14 +713,21 @@ namespace Charamaker
         /// </summary>
         public void ResetLoadDatas()
         {
+            ResetTextDatas();
+            FileMan.LoadedDS.Clear();
+            FileMan.LoadedMotion.Clear();
+            cam.d.setupTextureLoader();
+        }
+        /// <summary>
+        /// いろいろデータをリセットする
+        /// </summary>
+        public void ResetTextDatas()
+        {
             var temp = FileMan.s_rootpath;
             FileMan.s_rootpath = "./";
             FP.l.seting(textsn: new List<string> { @"texts\text.txt" });
             FileMan.s_rootpath = temp;
             FP.SetDefault(FP.l);//呼び出し元のFPを読み込む
-            FileMan.LoadedDS.Clear();
-            FileMan.LoadedMotion.Clear();
-            cam.d.setupTextureLoader();
         }
         private void ResetTextureB_Click(object sender, EventArgs e)
         {

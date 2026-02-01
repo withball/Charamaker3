@@ -1122,7 +1122,7 @@ namespace Charamaker3
         /// <summary>
         /// モーションが空か
         /// </summary>
-        public bool empty { get { return cs.Count==0; } }
+        public bool IsEmpty { get { return cs.Count==0; } }
         /// <summary>
         /// 途中時間で終わらないComponentがあるとおかしくなるかもしれないけど。
         /// </summary>

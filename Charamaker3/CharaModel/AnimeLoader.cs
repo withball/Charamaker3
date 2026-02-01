@@ -1050,10 +1050,17 @@ namespace Charamaker3.CharaModel
         /// <param name="path"></param>
         /// <param name="name"></param>
         /// <param name="scale">=1</param>
+        /// <param name="isLinear">リニア補完か=false</param>
         /// <returns>__ANIM__</returns>
-        static public SummonCharacter SummonCharacter(float lifetime, string path, string name, float scale = 1)
+        static public SummonCharacter SummonCharacter(float lifetime, string path, string name, float scale = 1, bool isLinear = false)
         {
-            return new SummonCharacter(path, scale, name, 0, path + name + "summon", lifetime);
+            var sum = new SummonCharacter(path, scale, name, 0, path + name + "summon", lifetime);
+            if(isLinear==true)
+            sum.onSummon += (aa, bb) => 
+            {
+                Character.SetupCharacter(bb,bb.name,1,0,1,1,1);
+            };
+            return sum;
         }
         /// <summary>
         /// モーションをパスから追加する。

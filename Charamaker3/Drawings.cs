@@ -1847,8 +1847,8 @@ namespace Charamaker3
                             }
                         }
 
-                        Layout.Release();
-                        Layout.Dispose();
+                        Layout?.Release();
+                        //Layout?.Dispose();
 
                     } 
                 }

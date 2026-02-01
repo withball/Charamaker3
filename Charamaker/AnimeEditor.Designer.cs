@@ -28,20 +28,19 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             loadBox = new TextBox();
             timeLabel = new Label();
             SpeedUd = new NumericUpDown();
             PlayB = new Button();
             TimeBar = new TrackBar();
             MessageBox = new TextBox();
-            timer1 = new System.Windows.Forms.Timer(components);
             CheckB = new Button();
             PlayTimeLabel = new Label();
             StartUD = new NumericUpDown();
             EndUD = new NumericUpDown();
             ResetDataB = new Button();
             blockB = new Button();
+            ResetTectB = new Button();
             ((System.ComponentModel.ISupportInitialize)SpeedUd).BeginInit();
             ((System.ComponentModel.ISupportInitialize)TimeBar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartUD).BeginInit();
@@ -75,7 +74,7 @@
             SpeedUd.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
             SpeedUd.Location = new Point(569, 56);
             SpeedUd.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
-            SpeedUd.Minimum = new decimal(new int[] { 1, 0, 0, 65536 });
+            SpeedUd.Minimum = new decimal(new int[] { 10, 0, 0, int.MinValue });
             SpeedUd.Name = "SpeedUd";
             SpeedUd.Size = new Size(120, 29);
             SpeedUd.TabIndex = 2;
@@ -110,12 +109,6 @@
             MessageBox.ScrollBars = ScrollBars.Both;
             MessageBox.Size = new Size(776, 276);
             MessageBox.TabIndex = 5;
-            // 
-            // timer1
-            // 
-            timer1.Enabled = true;
-            timer1.Interval = 16;
-            timer1.Tick += tiked;
             // 
             // CheckB
             // 
@@ -167,7 +160,7 @@
             ResetDataB.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             ResetDataB.Location = new Point(472, 50);
             ResetDataB.Name = "ResetDataB";
-            ResetDataB.Size = new Size(75, 35);
+            ResetDataB.Size = new Size(71, 27);
             ResetDataB.TabIndex = 10;
             ResetDataB.Text = "Reset";
             ResetDataB.UseVisualStyleBackColor = true;
@@ -184,11 +177,23 @@
             blockB.UseVisualStyleBackColor = true;
             blockB.Click += blockB_Click;
             // 
+            // ResetTectB
+            // 
+            ResetTectB.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            ResetTectB.Location = new Point(489, 87);
+            ResetTectB.Name = "ResetTectB";
+            ResetTectB.Size = new Size(71, 27);
+            ResetTectB.TabIndex = 12;
+            ResetTectB.Text = "TReset";
+            ResetTectB.UseVisualStyleBackColor = true;
+            ResetTectB.Click += ResetTectB_Click;
+            // 
             // AnimeEditor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(ResetTectB);
             Controls.Add(blockB);
             Controls.Add(ResetDataB);
             Controls.Add(EndUD);
@@ -222,12 +227,12 @@
         private Button PlayB;
         private TrackBar TimeBar;
         private TextBox MessageBox;
-        private System.Windows.Forms.Timer timer1;
         private Button CheckB;
         private Label PlayTimeLabel;
         private NumericUpDown StartUD;
         private NumericUpDown EndUD;
         private Button ResetDataB;
         private Button blockB;
+        private Button ResetTectB;
     }
 }

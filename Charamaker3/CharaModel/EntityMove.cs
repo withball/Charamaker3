@@ -501,7 +501,7 @@ namespace Charamaker3.CharaModel
             var serif=Charamaker3.Utils.Serif.MakeSerif(e, t);//
             serif.name = name;
             serif.WakuHaba = textSize / 16;
-            serif.SiroSiro = textSize / 16;
+            serif.SiroSiro = textSize / 6;
             DrawableMove.SetText(Time , "Text",Text).add(serif);
             
             var c = new SummonSerif(Tag,serif,0, Time + Jizoku);
@@ -538,7 +538,7 @@ namespace Charamaker3.CharaModel
             var serif = Charamaker3.Utils.Serif.MakeSerif(e, t);//
             serif.name= name;
             serif.WakuHaba = textSize / 16;
-            serif.SiroSiro = textSize / 16;
+            serif.SiroSiro = textSize / 6;
 
 
             DrawableMove.SetText(Time, "Text", Text,true).add(serif);
@@ -2909,7 +2909,7 @@ namespace Charamaker3.CharaModel
                                     default:
                                         if (speeds[0].Count > 0)
                                         {
-                                            speeds[t][i][j] = speeds[0][i][j];
+                                            speeds[t][i][j] = speeds[0][0][j];
                                         }
                                         else
                                         {

@@ -11,7 +11,10 @@ namespace Charamaker3
     {
         static public void WriteLine(string w)
         {
-            System.Diagnostics.Debug.WriteLine(w);
+            Task.Run(() =>
+            {
+                System.Diagnostics.Debug.WriteLine(w);
+            });
         }
 
         static public void Error(string w)

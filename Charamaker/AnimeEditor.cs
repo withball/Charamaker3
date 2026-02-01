@@ -199,29 +199,42 @@ namespace Charamaker
         {
             w.AfterDrawUpdate();
         }
-        private void tiked(object sender, EventArgs e)
+        public void update(float cl)
         {
             {
                 LoadAnime(this.loadBox.Text);
             }
             if (started)
             {
-                float cl = ((float)SpeedUd.Value);
-                w.update(cl);
-
-                BlockManager.update(w.staticEntity, cl);
-                PlayTimeLabel.Text = BlockManager.Time + " / " + maxtime;
-
-                PlayTimeLabel.Text += " is playing";
-                TimeBar.Value = (int)Mathf.min((float)(BlockManager.Time) * 2, (float)TimeBar.Maximum);
-
-                if (BlockManager.Time > (float)EndUD.Value)
+                cl *= ((float)SpeedUd.Value);
+                if (cl >= 0)
                 {
-                    anmDChanged();
-                    float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
+                    w.update(cl);
 
-                    w.update(TrueStart);
-                    BlockManager.update(w.staticEntity, TrueStart);
+                    BlockManager.update(w.staticEntity, cl);
+                    PlayTimeLabel.Text = BlockManager.Time + " / " + maxtime;
+
+                    PlayTimeLabel.Text += " is playing";
+                    TimeBar.Value = (int)Mathf.min((float)(BlockManager.Time) * 2, (float)TimeBar.Maximum);
+
+                    if (charamaker.AnimStartTime < charamaker.AnimEndTime && BlockManager.Time > charamaker.AnimEndTime)
+                    {
+                        anmDChanged();
+                        float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
+
+                        w.update(TrueStart);
+                        BlockManager.update(w.staticEntity, TrueStart);
+                        w.update(0);
+                        FileMan.SE.stopAll();
+                    }
+                }
+                else
+                {
+                    float Time = BlockManager.Time + cl;
+                    anmDChanged();
+
+                    w.update(Time);
+                    BlockManager.update(w.staticEntity, Time);
                     w.update(0);
                     FileMan.SE.stopAll();
                 }
@@ -396,7 +409,12 @@ namespace Charamaker
         }
         private void blockB_Click(object sender, EventArgs e)
         {
-            Tumiki.isShowTummiki= !Tumiki.isShowTummiki;
+            Tumiki.isShowTummiki = !Tumiki.isShowTummiki;
+        }
+
+        private void ResetTectB_Click(object sender, EventArgs e)
+        {
+            charamaker.ResetTextDatas();
         }
     }
     /// <summary>
