@@ -1281,7 +1281,7 @@ namespace Charamaker3
                 cam.render = render;
             }
             screenShot(_SCSRender,render);
-//            screenShot(_TextRender,render);
+            //screenShot(_TextRender,render);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);
         }
@@ -1481,7 +1481,7 @@ namespace Charamaker3
                 float maxx = 0, maxy = 0;
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, np.x, np.y
+                    if (onHani(b.rendZone, np.x, np.y-1f
                         , np.x - _TextRender.BitmapRender.Size.Width, np.y))
                     {
                         maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w, 0).x, maxx);
@@ -1489,17 +1489,17 @@ namespace Charamaker3
                 }
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, np.x, np.y
-                        , np.x, np.y - _TextRender.BitmapRender.Size.Height))
+                    if (onHani(b.rendZone, np.x-1f, np.y
+                        , np.x , np.y - _TextRender.BitmapRender.Size.Height))
                     {
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
                     }
                 }
-                if (np.x - maxx > 0 && np.y - maxy > 0)
+                if (np.x - maxx >= w && np.y - maxy >= h)
                 {
                     var rect = new Shapes.Rectangle(maxx, maxy, np.x - maxx, np.y - maxy);
-
                     rects.Add(rect);
+
                 }
             }
 
@@ -1578,6 +1578,7 @@ namespace Charamaker3
                     }
                 }
             }
+            rects.Clear();
             //何もなかったら無理やり左上の点を取る。
             if (res == null)
             {
@@ -1609,15 +1610,16 @@ namespace Charamaker3
         }
         internal void Drawed(TextRenderer D)
         {
-
             var lis = new List<TextRenderer>(textRenderers);
             foreach (var a in lis)
             {
                 if (a != D)
                 {
-                    if(onHani(D.rendZone,a.rendZone))
+                    var dR = (Rectangle)D.rendZone.clone();
+                    var aR = (Rectangle)a.rendZone.clone();
+                    
+                    if (onHani(dR,aR))
                     {
-
                         a.Changed();
                         
                     }
