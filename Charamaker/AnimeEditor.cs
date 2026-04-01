@@ -44,7 +44,7 @@ namespace Charamaker
             loadBox.Text = charamaker.LoadAnim;
             LoadAnime(loadBox.Text);
 
-
+            ShadowUp_ValueChanged(null,null);
         }
         void newWorld()
         {
@@ -220,7 +220,7 @@ namespace Charamaker
                     if (charamaker.AnimStartTime < charamaker.AnimEndTime && BlockManager.Time > charamaker.AnimEndTime)
                     {
                         anmDChanged();
-                        float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
+                        float TrueStart = (int)StartUD.Value;
 
                         w.update(TrueStart);
                         BlockManager.update(w.staticEntity, TrueStart);
@@ -320,6 +320,7 @@ namespace Charamaker
             {
                 PlayB.Text = "Stop";
                 {
+
                     anmDChanged();
 
                     float TrueStart = Mathf.max(StartTimer, (float)StartUD.Value);
@@ -332,7 +333,10 @@ namespace Charamaker
             }
             else
             {
-                TimeBar.Value = (int)(StartTimer);
+                TimeBar.Value = (int)Mathf.clamp(BlockManager.Time, (float)TimeBar.Minimum,(float)TimeBar.Maximum);
+                StartTimer = TimeBar.Value;
+                //TimeBar.Value = (int)(StartTimer);
+
                 PlayB.Text = "Start";
                 started = false;
             }
@@ -415,6 +419,11 @@ namespace Charamaker
         private void ResetTectB_Click(object sender, EventArgs e)
         {
             charamaker.ResetTextDatas();
+        }
+
+        private void ShadowUp_ValueChanged(object sender, EventArgs e)
+        {
+            AnimeBlockManager.Shadow = (int)ShadowUpDown.Value;
         }
     }
     /// <summary>

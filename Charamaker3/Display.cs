@@ -260,6 +260,7 @@ namespace Charamaker3
             }
             foreach (var task in tasks) { task.Wait(); }
             tasks.Clear();
+
         }
         /// <summary>
         /// 
@@ -1257,6 +1258,13 @@ namespace Charamaker3
             }
             _TextRender.BitmapRender.EndDraw();
             _TextRenderBack.BitmapRender.EndDraw();
+
+            //ここで占有地を解放
+            for (int i = textRenderersRemove.Count - 1; i >= 0; i--)
+            {
+                textRenderers.Remove(textRenderersRemove[i]);
+                textRenderersRemove.RemoveAt(i);
+            }
         }
         /// <summary>
         /// このカメラのスクショをとる
@@ -1281,7 +1289,7 @@ namespace Charamaker3
                 cam.render = render;
             }
             screenShot(_SCSRender,render);
-            //screenShot(_TextRender,render);
+            screenShot(_TextRender,render);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);
         }
@@ -1462,12 +1470,7 @@ namespace Charamaker3
         public int TextRenderesRemoveNum { get { return textRenderersRemove.Count; } }
         internal TextRenderer makeTextRenderer(float w, float h)
         {
-            for (int i = textRenderersRemove.Count - 1; i >= 0; i--)
-            {
-                textRenderers.Remove(textRenderersRemove[i]);
-                textRenderersRemove.RemoveAt(i);
-            }
-            //Debug.WriteLine("make TextRendere" + w + " :: " + h);
+           //Debug.WriteLine("make TextRendere" + w + " :: " + h +" rends = "+ textRenderers.Count);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
             h = Mathf.ceil(h);
@@ -1475,7 +1478,7 @@ namespace Charamaker3
             var hanteis = new List<Task>();
 
             List<Shapes.Rectangle> rects = new List<Shapes.Rectangle>();
-
+            SemaphoreSlim semapho = new SemaphoreSlim(1,1);
             void addrect(FXY np) 
             {
                 float maxx = 0, maxy = 0;
@@ -1495,15 +1498,17 @@ namespace Charamaker3
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
                     }
                 }
-                if (np.x - maxx >= w && np.y - maxy >= h)
+                if ((np.x - maxx) > w && (np.y - maxy) > h)
                 {
                     var rect = new Shapes.Rectangle(maxx, maxy, np.x - maxx, np.y - maxy);
+                    semapho.Wait();
                     rects.Add(rect);
+                    semapho.Release();
 
                 }
             }
 
-            hanteis.Add(Task.Run(() => { addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1)); }));
+            addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1));
 
             for ( int t=0;t< textRenderers.Count;t++)
             {
@@ -1564,14 +1569,26 @@ namespace Charamaker3
             hanteis.Clear();
             
             Shapes.Rectangle res = null;
+            //右下度で制限。
+            float rightleft = 0;
+            foreach (var a in rects)
+            {
+                if (a != null)
+                {
+                    if (a.w > w && a.h > h)
+                    {
+                        rightleft = Mathf.max(a.x + a.y + a.w + a.h, rightleft);
+                    }
+                }
+            }
             foreach (var a in rects)
             {
                 if (a != null)
                 {
                     //なるべく面積の大きいやつを選ぶ
-                    if (res == null || res.menseki < a.menseki)
+                    if (res == null || (res.menseki < a.menseki && (a.x + a.y + a.w + a.h) >rightleft*0.75f))
                     {
-                        if (a.w >= w && a.h >= h)
+                        if (a.w > w && a.h > h)
                         {
                             res = a;
                         }

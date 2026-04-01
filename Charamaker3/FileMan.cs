@@ -362,7 +362,7 @@ namespace Charamaker3
         static public Character ldCharacter(string path, bool reset = false)
         {
             var d = loadCharacter(path,reset);
-            return d.getcompos<Character>()[0];
+            return d.getCharacter();
         }
 
 

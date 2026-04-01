@@ -41,10 +41,12 @@
             ResetDataB = new Button();
             blockB = new Button();
             ResetTectB = new Button();
+            ShadowUpDown = new NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)SpeedUd).BeginInit();
             ((System.ComponentModel.ISupportInitialize)TimeBar).BeginInit();
             ((System.ComponentModel.ISupportInitialize)StartUD).BeginInit();
             ((System.ComponentModel.ISupportInitialize)EndUD).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ShadowUpDown).BeginInit();
             SuspendLayout();
             // 
             // loadBox
@@ -72,7 +74,7 @@
             SpeedUd.DecimalPlaces = 1;
             SpeedUd.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             SpeedUd.Increment = new decimal(new int[] { 1, 0, 0, 65536 });
-            SpeedUd.Location = new Point(569, 56);
+            SpeedUd.Location = new Point(569, 48);
             SpeedUd.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
             SpeedUd.Minimum = new decimal(new int[] { 10, 0, 0, int.MinValue });
             SpeedUd.Name = "SpeedUd";
@@ -188,11 +190,25 @@
             ResetTectB.UseVisualStyleBackColor = true;
             ResetTectB.Click += ResetTectB_Click;
             // 
+            // ShadowUpDown
+            // 
+            ShadowUpDown.DecimalPlaces = 1;
+            ShadowUpDown.Font = new Font("Yu Gothic UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            ShadowUpDown.Increment = new decimal(new int[] { 50, 0, 0, 0 });
+            ShadowUpDown.Location = new Point(566, 80);
+            ShadowUpDown.Maximum = new decimal(new int[] { 300, 0, 0, 0 });
+            ShadowUpDown.Name = "ShadowUpDown";
+            ShadowUpDown.Size = new Size(120, 29);
+            ShadowUpDown.TabIndex = 13;
+            ShadowUpDown.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            ShadowUpDown.ValueChanged += ShadowUp_ValueChanged;
+            // 
             // AnimeEditor
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(ShadowUpDown);
             Controls.Add(ResetTectB);
             Controls.Add(blockB);
             Controls.Add(ResetDataB);
@@ -215,6 +231,7 @@
             ((System.ComponentModel.ISupportInitialize)TimeBar).EndInit();
             ((System.ComponentModel.ISupportInitialize)StartUD).EndInit();
             ((System.ComponentModel.ISupportInitialize)EndUD).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ShadowUpDown).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -234,5 +251,6 @@
         private Button ResetDataB;
         private Button blockB;
         private Button ResetTectB;
+        private NumericUpDown ShadowUpDown;
     }
 }

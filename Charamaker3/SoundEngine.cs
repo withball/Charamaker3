@@ -784,6 +784,7 @@ namespace Charamaker3
                 cc._sound = null;
             }
             cc.volume = this.volume;
+            cc.prePlayed = this.prePlayed;
         }
         
         /// <summary>
@@ -855,9 +856,12 @@ namespace Charamaker3
 
         public void Play()
         {
-            sound?.Start();
-            prePlayed = true;
-            resettimer();
+            if (prePlayed == false)
+            {
+                sound?.Start();
+                prePlayed = true;
+                resettimer();
+            }
         }
         public override void resettimer()
         {

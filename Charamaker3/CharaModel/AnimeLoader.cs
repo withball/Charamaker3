@@ -1062,6 +1062,7 @@ namespace Charamaker3.CharaModel
             };
             return sum;
         }
+        public static int Shadow = 0;
         /// <summary>
         /// モーションをパスから追加する。
         /// </summary>
@@ -1078,6 +1079,25 @@ namespace Charamaker3.CharaModel
                 matome.addmove(m, true);
             }
             matome.speed = speed;
+            if (Shadow>0)
+            {
+                matome.added += (aa, bb) =>
+                {
+
+                    var eff = matome.e.clone();
+                    foreach (var a in eff.getcompos<Motion>())
+                    {
+                        eff.comporemove(a);
+                    }
+                    eff.add(matome.e.world);
+
+
+                    new LifeTimer(Shadow).add(eff, bb);
+                    DrawableMove.ZChange(10, "", 10000).addAndRemove(eff, 1000);
+                    DrawableMove.BaseColorChange(10, "", 0.9f, 0, 0, 0).addAndRemove(eff, 1000);
+                    DrawableMove.BaseColorChange(Shadow, "", 0).add(eff, bb);
+                };
+            }
             return matome;
         }
 
