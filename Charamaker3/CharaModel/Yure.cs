@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Charamaker3.Hitboxs;
 
 namespace Charamaker3.CharaModel

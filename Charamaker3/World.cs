@@ -214,18 +214,27 @@ namespace Charamaker3
         protected void toPreHitbox()
         {
             {
-                var tasks = new List<Task>();
-                foreach (var a in Hdic.getresult())
+                //var tasks = new List<Task>();
+                var lis = Hdic.getresult();
+                int preI = 0;
+                int Range = Math.Max(lis.Count / 100, 1);
+                for (int i = Range; i < lis.Count + Range; i += Range)
                 {
-                    tasks.Add(Task.Run(() =>
-                {
-                     a.topre();
-                 }));
+                    int ii = Math.Min(i, lis.Count);
+                    int preII = preI; 
+                    //tasks.Add(Task.Run(() =>
+                    {
+                        for (int t = preII; t < ii; ++t)
+                        {
+                            lis[t].topre();
+                        }
+                    }
+                    //));
+
+                    preI = i;
                 }
-                foreach (var a in tasks)
-                {
-                    a.Wait();
-                }
+                //foreach (var a in tasks){a.Wait();}
+                //tasks.Clear();
             }
         }
         /// <summary>
@@ -238,33 +247,45 @@ namespace Charamaker3
                 var hitentityes = getEdic("HasHitbox");
                 var lis = Hdic.getresult();
                 int couA = 0, couB = 0, couC = 0;
-                foreach (var a in lis)
-                {
-                    couA += 1;
-                    tasks.Add(Task.Run(() => {
-                         a.Hitteds.Clear();
 
-                         foreach (var b in hitentityes)
-                        {
-                            couB += 1;
-                            if (a.e != b)
-                             {
-                                 if (a.Filters(b))
-                                 {
-                                     if (a.Hits(b))
-                                     {
-                                        a.AddHitteds(b);
-                                     }
-                                    couC += Hitbox.debugchekman;
-                                 }
-                             }
-                         }
-                     }));
-                }
-                foreach (var a in tasks)
+                int preI = 0;
+                int Range = Math.Max(lis.Count / 100, 1);
+                for (int i = Range; i < lis.Count + Range; i += Range)
                 {
-                    a.Wait();
+                    int ii = Math.Min(i, lis.Count);
+                    int preII = preI;
+
+                    couA += 1;
+                    tasks.Add(Task.Run(() =>
+                    {
+                        for(int t=preII;t<ii;++t)
+                        {
+                            var a = lis[t];
+                            a.Hitteds.Clear();
+
+                            foreach (var b in hitentityes)
+                            {
+                                couB += 1;
+                                if (a.e != b)
+                                {
+                                    if (a.Filters(b))
+                                    {
+                                        if (a.Hits(b))
+                                        {
+                                            a.AddHitteds(b);
+                                        }
+                                        couC += Hitbox.debugchekman;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    ));
+                    preI = i;
                 }
+                foreach (var a in tasks){ a.Wait(); }
+                tasks.Clear();
+                
                 //Stopwatch stopwatch = new Stopwatch();
                 //stopwatch.Start();
                 //stopwatch.Stop();

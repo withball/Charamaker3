@@ -483,6 +483,18 @@ namespace Charamaker3
         {
             return col.opa > 0 && onCamera(cam);
         }
+        /// <summary>
+        /// 描画可能な条件。軽い
+        /// </summary>
+        /// <returns></returns>
+        /// <param name="cam"></param>
+        /// <param name="camRect">中身空でいいのでインスタンス</param>
+        /// <param name="drawRect">中身空でいいのでインスタンス</param>
+        /// <returns></returns>
+        virtual public bool CanDraw2(Camera cam,Shapes.Rectangle camRect, Shapes.Rectangle drawRect)
+        {
+            return col.opa > 0 && onCamera2(cam,camRect,drawRect);
+        }
 
 
         /// <summary>
@@ -507,15 +519,24 @@ namespace Charamaker3
         }
         protected bool onCamera(Camera cam)
         {
+            return onCamera2(cam,new Shapes.Rectangle(0), new Shapes.Rectangle(0));
+        }
+        /// <summary>
+        /// 軽いonCamera。インスタンスを作成しないので早い
+        /// </summary>
+        /// <param name="cam"></param>
+        /// <param name="camRect"></param>
+        /// <param name="drawRect"></param>
+        /// <returns></returns>
+        protected bool onCamera2(Camera cam,Shapes.Rectangle camRect, Shapes.Rectangle drawRect)
+        {
             if (e != null)
             {
-                var s = new Shapes.Rectangle(0);
-                s.setto(cam.watchRect);
+                camRect.setto(cam.watchRect);
 
 
-                var s2 = new Shapes.Rectangle(0);
-                s2.setto(this.e);
-                return s.atarun(s2);
+                drawRect.setto(this.e);
+                return camRect.atarun(drawRect);
             }
             return false;
         }

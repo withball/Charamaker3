@@ -227,6 +227,7 @@ namespace Charamaker3
         {
             return base.CanPreDraw(cam)&& CanDraw(cam);
         }
+
         /// <summary>
         /// テキストなど事前描画が必要なやつを一気に処理する
         /// </summary>
@@ -246,8 +247,8 @@ namespace Charamaker3
             //cl=0でも呼び出される
             if (watchRect.world != null)
             {
-                tasks.Add(Task.Run(() =>
-                {
+                //tasks.Add(Task.Run(() =>
+                //{
                     foreach (var a in watchRect.world.Ddic.getresult())
                     {
                         if (a.CanPreDraw(this))
@@ -256,7 +257,7 @@ namespace Charamaker3
                         }
 
                     }
-               }));
+               //}));
             }
             foreach (var task in tasks) { task.Wait(); }
             tasks.Clear();
@@ -381,13 +382,23 @@ namespace Charamaker3
 
                 List<Task> tasks = new List<Task>();
 
-                for (int i = 0; i < lis.Count; i++)//描画判定を先に済ませる
+                int preI = 0;
+                int range = Math.Max(lis.Count / 5,1);
+                for (int i = range; i < lis.Count+range; i+=range)//描画判定を先に済ませる
                 {
-                    int ii = i;
+                    int preII = preI;
+                    int ii = Math.Min(i,lis.Count);
                     tasks.Add(Task.Run(() =>
                     {
-                        oks[ii] = lis[ii].CanDraw(this);
-                    }));
+                        var camrect=new Shapes.Rectangle(0);
+                        var drawrect = new Shapes.Rectangle(0);
+                        for (int t = preII; t < ii ; t++)
+                        {
+                            oks[t] = lis[t].CanDraw2(this,camrect,drawrect);
+                        }
+                    }
+                    ));
+                    preI = i;
                 }
 
                 foreach (var task in tasks) { task.Wait(); }
@@ -1510,57 +1521,66 @@ namespace Charamaker3
 
             addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1));
 
-            for ( int t=0;t< textRenderers.Count;t++)
+            int preT = 0;
+            int Range = Math.Max(textRenderers.Count / 10,1);
+            for ( int t=Range;t< textRenderers.Count+Range;t+=Range)
             {
-                var a=textRenderers[t];
+                int tt = Math.Min(t, textRenderers.Count);
+                int preTT = preT;
+
                 hanteis.Add(Task.Run(() =>
                 {
-                    FXY left=null,up=null;
-                    //上に追加
+                    for (int ttt = preTT; ttt < tt; ++ttt)
                     {
-                        var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
-                        if (np.x > 0 && np.y > 0)
+                        var a = textRenderers[ttt];
+                        FXY left = null, up = null;
+                        //上に追加
                         {
-                            bool ok = true;
-                            for (int i = 0; i < textRenderers.Count; i++)
+                            var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
+                            if (np.x > 0 && np.y > 0)
                             {
-                                var b = textRenderers[i];
-                                if (onHani(b.rendZone, np.x, np.y))
+                                bool ok = true;
+                                for (int i = 0; i < textRenderers.Count; i++)
                                 {
-                                    ok = false;
-                                    break;
+                                    var b = textRenderers[i];
+                                    if (onHani(b.rendZone, np.x, np.y))
+                                    {
+                                        ok = false;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (ok )
-                            {
-                                addrect(np);
+                                if (ok)
+                                {
+                                    addrect(np);
+                                }
                             }
                         }
-                    }
-                    //左に追加
-                    {
-                        var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
-                        if (np.x > 0 && np.y > 0)
+                        //左に追加
                         {
-                            bool ok = true;
+                            var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
+                            if (np.x > 0 && np.y > 0)
+                            {
+                                bool ok = true;
 
-                            for (int i = 0; i < textRenderers.Count; i++)
-                            {
-                                var b = textRenderers[i];
-                                if (onHani(b.rendZone, np.x, np.y))
+                                for (int i = 0; i < textRenderers.Count; i++)
                                 {
-                                    ok = false;
-                                    break;
+                                    var b = textRenderers[i];
+                                    if (onHani(b.rendZone, np.x, np.y))
+                                    {
+                                        ok = false;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (ok)
-                            {
-                                addrect(np);
+                                if (ok)
+                                {
+                                    addrect(np);
+                                }
                             }
                         }
                     }
                 }
                 ));
+                preT = t;
             }
             foreach (var a in hanteis) 
             {

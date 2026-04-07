@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Vortice.XAudio2;
 using Vortice.Multimedia;
 using static Charamaker3.FileMan;
@@ -828,10 +827,14 @@ namespace Charamaker3
             Play();
             //Debug.WriteLine(sound.path + " Sound Component Started");
         }
+        public bool isStopOnRemove = true;
         public override void removetoworld(float cl = 0)
         {
             base.removetoworld(cl);
-            Stop(true);
+            if (isStopOnRemove == true)
+            {
+                Stop(true);
+            }
             //Debug.WriteLine(sound.path + " Sound SToped");
         }
         protected override void onupdate(float cl)
