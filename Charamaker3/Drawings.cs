@@ -515,7 +515,7 @@ namespace Charamaker3
         /// <returns></returns>
         virtual public bool CanPreDraw(Camera cam)
         {
-            return true;
+            return col.opa>0;
         }
         protected bool onCamera(Camera cam)
         {
@@ -2570,6 +2570,7 @@ namespace Charamaker3
     public class Text : Drawable
     {
         public TextInformation text = new TextInformation();
+        public TextInformation pretext = new TextInformation();
         public FontC font = new FontC();
         private TextRenderer _Trender = null;
 
@@ -2591,7 +2592,8 @@ namespace Charamaker3
         {
             base.copy(c);
             var cc = (Text)c;
-            cc.text = this.text;
+            cc.text = this.text.clone();
+            cc.pretext = this.pretext.clone();
             cc.font = new FontC();
             this.font.copy(cc.font);
         }
@@ -2665,8 +2667,14 @@ namespace Charamaker3
                 Trender.Release();
                 Trender = dis.makeTextRenderer(font.w, font.h);
             }
-
-            Trender?.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
+            if (Trender != null)
+            {
+                if (pretext != text)
+                {
+                    Trender.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
+                    pretext = text.clone();
+                }
+            }
         }
 
         /// <summary>
@@ -2674,8 +2682,16 @@ namespace Charamaker3
         /// </summary>
         internal void SetRayout() 
         {
-            Trender?.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
+            if (Trender != null)
+            {
+                if (pretext != text)
+                {
+                    Trender.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
+                    pretext = text.clone();
+                }
+            }
         }
+        
 
         RawRectF D_rect;
         Matrix3x2 D_trans;
