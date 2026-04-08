@@ -22,6 +22,10 @@ namespace Charamaker3.Hitboxs
     public class Hitbox:Component
     {
         /// <summary>
+        /// ヒット計算をストップするフラグ
+        /// </summary>
+        public bool isStopCalcHit = false;
+        /// <summary>
         /// ヒットする図形。SetHitboxPosition()でセットする
         /// </summary>
         public Shape HitShape;
@@ -123,6 +127,7 @@ namespace Charamaker3.Hitboxs
         {
             base.copy(c);
             var cc = (Hitbox)c;
+            cc.isStopCalcHit = this.isStopCalcHit;
             cc.tag = new List<int>(this.tag);
             cc.tagfilter = new List<int>(this.tagfilter);
 
@@ -132,6 +137,8 @@ namespace Charamaker3.Hitboxs
         public override DataSaver ToSave()
         {
             var res= base.ToSave();
+            res.linechange();
+            res.packAdd("isStopCalcHit", isStopCalcHit);
             res.linechange();
             var hitD = HitShape.ToSave();
             hitD.indent();
@@ -157,6 +164,7 @@ namespace Charamaker3.Hitboxs
         protected override void ToLoad(DataSaver d)
         {
             base.ToLoad(d);
+            this.isStopCalcHit=d.unpackDataB("isStopCalcHit", isStopCalcHit);
             HitShape = Shape.ToLoadShape(d.unpackDataD("HitShape"));
             tag.Clear();
             var tagD = d.unpackDataD("tag");
@@ -279,6 +287,10 @@ namespace Charamaker3.Hitboxs
         /// <returns></returns>
         public bool Hits(Hitbox h) 
         {
+            if (this.isStopCalcHit == true || h.isStopCalcHit == true) 
+            {
+                return false;
+            }
             var res = this.HitShape.atarun2(this.preHitShape, h.HitShape, h.preHitShape);
             //var res2 = this.HitShape.atarun( h.HitShape);
           
