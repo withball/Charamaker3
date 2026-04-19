@@ -207,6 +207,76 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
+        /// 大きさを変更するムーブ(Cos)
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">=""</param>
+        /// <param name="scw">=Nan</param>
+        /// <param name="scy">=Nan</param>
+        /// <param name="sctx">wに対するtx変化=NAn</param>
+        /// <param name="scty">hに対するty変化=Nan</param>
+        /// <param name="basescale">ベースに対する変化にするか=true</param>
+        /// <param name="onlyroot">根のスケールだけ変更=false</param>
+        /// <returns>__MOVE__</returns>
+        static public EntityMove ScaleChangecos(float time, string name = "", float scw = float.NaN, float scy = float.NaN
+            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false)
+        {
+            var res = new EntityMove(time, 0, 0, scw, scy, sctx, scty, 0, float.NaN, float.NaN, name);
+            if (basescale)
+            {
+                res.SO = scaleOption.basescale;
+            }
+            else
+            {
+                res.SO = scaleOption.scale;
+            }
+            if (onlyroot)
+            {
+                res.GO = goOption.onlyRoot;
+            }
+            else
+            {
+                res.GO = goOption.def;
+            }
+            res.RatioOption = ratioOption.Cos;
+            return res;
+        }
+        /// <summary>
+        /// 大きさを変更するムーブ(Sin)
+        /// </summary>
+        /// <param name="time"></param>
+        /// <param name="name">=""</param>
+        /// <param name="scw">=Nan</param>
+        /// <param name="scy">=Nan</param>
+        /// <param name="sctx">wに対するtx変化=NAn</param>
+        /// <param name="scty">hに対するty変化=Nan</param>
+        /// <param name="basescale">ベースに対する変化にするか=true</param>
+        /// <param name="onlyroot">根のスケールだけ変更=false</param>
+        /// <returns>__MOVE__</returns>
+        static public EntityMove ScaleChangesin(float time, string name = "", float scw = float.NaN, float scy = float.NaN
+            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false)
+        {
+            var res = new EntityMove(time, 0, 0, scw, scy, sctx, scty, 0, float.NaN, float.NaN, name);
+            if (basescale)
+            {
+                res.SO = scaleOption.basescale;
+            }
+            else
+            {
+                res.SO = scaleOption.scale;
+            }
+            if (onlyroot)
+            {
+                res.GO = goOption.onlyRoot;
+            }
+            else
+            {
+                res.GO = goOption.def;
+            }
+            res.RatioOption = ratioOption.Sin;
+            return res;
+        }
+        /// <summary>
         /// 角度を狙った方向にする
         /// </summary>
         /// <param name="time"></param>
@@ -486,9 +556,12 @@ namespace Charamaker3.CharaModel
         /// <param name="dyp">場所</param>
         /// <param name="size">吹き出しの大きさ割合</param>
         /// <param name="Text">テキスト</param>
+        /// <param name="Sound">="None" テキスト変化時の音 "_"で変化なし</param>
+        /// <param name="Volume">=1 テキスト変化時の音量</param>
+        /// <param name="SoundCou">=3 サウンド変化の個数</param>
         /// <param name="name">=""</param>
         /// <returns>__MOVE__</returns>
-        static public SummonSerif MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text,string name="") 
+        static public SummonSerif MakeSerif(float Time, string Tag,float Jizoku,float dxp,float dyp,float size,string Text, string Sound = SoundEngine.NoneSound, float Volume = 1, int SoundCou = 3, string name="") 
         {
             float textSize = SerifStringSize;
 
@@ -502,8 +575,11 @@ namespace Charamaker3.CharaModel
             serif.name = name;
             serif.WakuHaba = textSize / 16;
             serif.SiroSiro = textSize / 6;
-            DrawableMove.SetText(Time , "Text",Text).add(serif);
-            
+            var textmove = DrawableMove.SetText(Time, "Text", Text);textmove.add(serif);
+            textmove.ChangeTextureSound = Sound;
+            textmove.ChangeTextureSoundVolume = Volume * size / 6f;
+            textmove.ChangeTextureSoundCount = SoundCou;
+
             var c = new SummonSerif(Tag,serif,0, Time + Jizoku);
             c.dxp = dxp;
             c.dyp = dyp;
@@ -521,9 +597,12 @@ namespace Charamaker3.CharaModel
         /// <param name="dyp">場所</param>
         /// <param name="size">吹き出しの大きさ割合</param>
         /// <param name="FPText">FPから読み込むテキスト</param>
+        /// <param name="Sound">="None" テキスト変化時の音 "_"で変化なし</param>
+        /// <param name="Volume">=1 テキスト変化時の音量</param>
+        /// <param name="SoundCou">=3 サウンド変化の個数</param>
         /// <param name="name">=""</param>
         /// <returns>__MOVE__</returns>
-        static public SummonSerif MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText, string name = "")
+        static public SummonSerif MakeSerifFP(float Time, string Tag,  float Jizoku, float dxp, float dyp, float size, string FPText, string Sound = SoundEngine.NoneSound, float Volume = 1, int SoundCou = 3, string name = "")
         {
             string Text = FP.l.GT(FPText);
 
@@ -541,7 +620,10 @@ namespace Charamaker3.CharaModel
             serif.SiroSiro = textSize / 6;
 
 
-            DrawableMove.SetText(Time, "Text", Text,true).add(serif);
+            var textmove = DrawableMove.SetText(Time, "Text", Text); textmove.add(serif);
+            textmove.ChangeTextureSound = Sound;
+            textmove.ChangeTextureSoundVolume = Volume * size / 6f;
+            textmove.ChangeTextureSoundCount = SoundCou;
 
             var c = new SummonSerif(Tag, serif, 0,Time+Jizoku);
             c.dxp = dxp;
@@ -807,19 +889,23 @@ namespace Charamaker3.CharaModel
             font.h = float.NaN;
 
             var res = new TextMove(name, time, new TextInformation(""), 0, font, name);
-
+            res.ChangeTextureSound = SoundEngine.NoneSound;
+            res.ChangeTextureSoundVolume = 1;
+            res.ChangeTextureSoundCount = -1;
             return res;
         }
-
         /// <summary>
         /// テキストをセットする。ちょっとずつやりたいなら消してからやってね
         /// </summary>>
         /// <param name="time">=0</param>
         /// <param name="name">=""</param>
         /// <param name="Text">=""</param>
+        /// <param name="Sound">="None" テキスト変化時の音 "_"で変化なし</param>
+        /// <param name="Volume">=1 テキスト変化時の音量</param>
+        /// <param name="SoundCou">=3 サウンド変化の個数</param>
         /// <param name="isSource">=true ソースのテキストを指定</param>
         /// <returns>__MOVE__</returns>
-        static public TextMove SetText(float time = 0,string name = "",string Text="",bool isSource=true)
+        static public TextMove SetText(float time = 0,string name = "",string Text="",string Sound= SoundEngine.NoneSound, float Volume= 1, int SoundCou=3, bool isSource = true)
         {
             var font = new FontC();
             font.ali = FontC.alignment.None;
@@ -838,7 +924,9 @@ namespace Charamaker3.CharaModel
 
             var t = new TextInformation(Text, isSource);
             var res = new TextMove(name, time,t, t.Analyzed.Count, font, name);
-
+            res.ChangeTextureSound = Sound;
+            res.ChangeTextureSoundVolume = Volume;
+            res.ChangeTextureSoundCount = SoundCou;
             return res;
         }
 
@@ -847,10 +935,13 @@ namespace Charamaker3.CharaModel
         /// </summary>>
         /// <param name="time">=0</param>
         /// <param name="name">=""</param>
-        /// <param name="FPText">=""</param>
+        /// <param name="FPText">="None"</param>
+        /// <param name="Sound">="None" テキスト変化時の音 "_"で変化なし</param>
+        /// <param name="Volume">=1 テキスト変化時の音量</param>
+        /// <param name="SoundCou">=3 サウンド変化の個数</param>
         /// <param name="isSource">=true ソースのテキストを指定</param>
         /// <returns>__MOVE__</returns>
-        static public TextMove SetTextFP(float time = 0, string name = "", string FPText = "", bool isSource = true)
+        static public TextMove SetTextFP(float time = 0, string name = "", string FPText = "", string Sound = SoundEngine.NoneSound, float Volume = 1, int SoundCou = 3, bool isSource = true )
         {
             var font = new FontC();
             font.ali = FontC.alignment.None;
@@ -874,7 +965,9 @@ namespace Charamaker3.CharaModel
 
             var t = new TextInformation(Text, isSource);
             var res = new TextMove(name, time, t, t.Analyzed.Count, font, name);
-
+            res.ChangeTextureSound = Sound;
+            res.ChangeTextureSoundVolume = Volume;
+            res.ChangeTextureSoundCount = SoundCou;
             return res;
         }
     }
@@ -3652,7 +3745,12 @@ namespace Charamaker3.CharaModel
 
         public FontC Font;
         public float TextLength = 0;
-
+        /// <summary>
+        /// "_"で変化なし。
+        /// </summary>
+        public string  ChangeTextureSound="_";
+        public int ChangeTextureSoundCount = -1;
+        public float ChangeTextureSoundVolume=float.NaN;
 
         List<List<float[]>> speeds = new List<List<float[]>>();
         List<List<float[]>> bspeeds = new List<List<float[]>>();
@@ -3927,7 +4025,15 @@ namespace Charamaker3.CharaModel
                     }
                     tags[t][i].text = TagTexts[t][i].Substring(0,(int)length);
 
-                    
+                    if (this.ChangeTextureSound != "_")
+                    {
+                        tags[t][i].ChangeTextSound = this.ChangeTextureSound;
+                        tags[t][i].ChangeTextSoundCount = this.ChangeTextureSoundCount;
+                    }
+                    if (float.IsNaN(this.ChangeTextureSoundVolume) == false)
+                    {
+                        tags[t][i].ChangeTextSoundVolume = this.ChangeTextureSoundVolume;
+                    }
                 }
             }
         }
@@ -3938,7 +4044,9 @@ namespace Charamaker3.CharaModel
             d.linechange();
             d.packAdd("Text", this.Text.ToSave());
             d.packAdd("TextLength", this.TextLength);
-
+            d.packAdd("ChangeTextureSound", this.ChangeTextureSound);
+            d.packAdd("ChangeTextureSoundVolume", this.ChangeTextureSoundVolume);
+            d.packAdd("ChangeTextureSoundCount", this.ChangeTextureSoundCount);
             return d;
         }
         protected override void ToLoad(DataSaver d)
@@ -3951,6 +4059,9 @@ namespace Charamaker3.CharaModel
             }
             this.Text.ToLoad(d.unpackDataD("Text"));
             this.TextLength=d.unpackDataF("TextLength", this.TextLength);
+            this.ChangeTextureSound=d.unpackDataS("ChangeTextureSound", this.ChangeTextureSound);
+            this.ChangeTextureSoundVolume=d.unpackDataF("ChangeTextureSoundVolume", this.ChangeTextureSoundVolume);
+            this.ChangeTextureSoundCount = (int)d.unpackDataF("ChangeTextureSoundCount", this.ChangeTextureSoundCount);
         }
         public override void copy(Component c)
         {
@@ -3961,6 +4072,9 @@ namespace Charamaker3.CharaModel
             this.Font.copy(cc.Font);
             cc.Text = this.Text.clone();
             cc.TextLength = this.TextLength;
+            cc.ChangeTextureSound = this.ChangeTextureSound;
+            cc.ChangeTextureSoundVolume = this.ChangeTextureSoundVolume;
+            cc.ChangeTextureSoundCount = this.ChangeTextureSoundCount;
         }
     }
     /// <summary>

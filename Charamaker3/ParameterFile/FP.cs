@@ -320,6 +320,7 @@ namespace Charamaker3.ParameterFile
             {
                 string load;
                 string region = "";
+                
                 while ((load = fs.ReadLine()) != null)
                 {
                     var lis = load.Split(':');

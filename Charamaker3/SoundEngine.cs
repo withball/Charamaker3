@@ -219,7 +219,10 @@ namespace Charamaker3
 
             Console.WriteLine(Tfile + "  otoload by" + name);
         }
-
+        /// <summary>
+        /// 無音
+        /// </summary>
+        public const string NoneSound="None";
 
         /// <summary>
         /// 効果音を鳴らすやつをロードする
@@ -228,6 +231,7 @@ namespace Charamaker3
         /// <param name="vol">この音のボリューム</param>
         virtual public otoman playoto(string file, float vol = 1)
         {
+            if(file== NoneSound) return null;
             if (file == c_nothing) return null;
             file = slashFormat(file);
             /*

@@ -2573,7 +2573,20 @@ namespace Charamaker3
         public TextInformation pretext = new TextInformation();
         public FontC font = new FontC();
         private TextRenderer _Trender = null;
+        /// <summary>
+        /// テキストが変わった時のサウンド
+        /// </summary>
+        public string ChangeTextSound = "None";
 
+
+        /// <summary>
+        /// テキストが変わった時のサウンドの音量
+        /// </summary>
+        public float ChangeTextSoundVolume = 1;
+        /// <summary>
+        /// テキストが変わった時のサウンドの数 -1で一個
+        /// </summary>
+        public int ChangeTextSoundCount = -1;
         internal TextRenderer Trender { get { return _Trender; }
 
             set {
@@ -2595,6 +2608,9 @@ namespace Charamaker3
             cc.text = this.text.clone();
             cc.pretext = this.pretext.clone();
             cc.font = new FontC();
+            cc.ChangeTextSound = this.ChangeTextSound;
+            cc.ChangeTextSoundVolume = this.ChangeTextSoundVolume;
+            cc.ChangeTextSoundCount = this.ChangeTextSoundCount;
             this.font.copy(cc.font);
         }
         public override DataSaver ToSave()
@@ -2606,11 +2622,10 @@ namespace Charamaker3
             d.linechange();
             dd.indent();
             d.packAdd("font", dd);
+            d.packAdd("ChangeTextSound", ChangeTextSound);
+            d.packAdd("ChangeTextSoundVolume", ChangeTextSoundVolume);
+            d.packAdd("ChangeTextSoundCount", ChangeTextSoundCount);
             return d;
-        }
-        public override void update(float cl)
-        {
-            base.update(cl);
         }
         protected override void ToLoad(DataSaver d)
         {
@@ -2619,7 +2634,14 @@ namespace Charamaker3
             this.font = new FontC();
             var dd = d.unpackDataD("font");
             this.font.ToLoad(dd);
+            this.ChangeTextSound=d.unpackDataS("ChangeTextSound", ChangeTextSound);
+            this.ChangeTextSoundVolume=d.unpackDataF("ChangeTextSoundVolume", ChangeTextSoundVolume);
+            this.ChangeTextSoundCount = (int)d.unpackDataF("ChangeTextSoundCount", ChangeTextSoundCount);
 
+        }
+        public override void update(float cl)
+        {
+            base.update(cl);
         }
         /// <summary>
         /// 文字列の一番下の位置
@@ -2652,6 +2674,12 @@ namespace Charamaker3
         }
 
         /// <summary>
+        /// テキストサウンドの大きさ
+        /// </summary>
+        public const float defTextSoundVolume = 0.75f;
+
+        
+        /// <summary>
         /// テキスト描画のためのTrenderを作成する。
         /// </summary>
         /// <param name="dis">間違えないでね！</param>
@@ -2672,6 +2700,24 @@ namespace Charamaker3
                 if (pretext != text)
                 {
                     Trender.SetRayout(TextLayout.AnalyzeText(text, Trender.render, font, Trender.rendZone), font);
+                    if (pretext.AnalyzedText.Length < text.AnalyzedText.Length)
+                    {
+                        float vol = 0;
+                        for (int i = pretext.AnalyzedText.Length; i < text.AnalyzedText.Length; ++i) 
+                        {
+                            //半角全角スペースは音ならない
+                            if (text.Analyzed[i].CharText != " " && text.Analyzed[i].CharText != "　")
+                            {
+                                vol = Mathf.max(vol, text.Analyzed[i].Size);
+                            }
+                        }
+                        //あまりに小さい文字の更新のときは音が鳴らない。
+                        if (vol > 0.05f)
+                        {
+
+                            FileMan.SE.playoto(ChangeTextSound +(ChangeTextSoundCount>=0?FileMan.randmods(ChangeTextSoundCount).ToString():""), ChangeTextSoundVolume * defTextSoundVolume*vol)?.Start();
+                        }
+                    }
                     pretext = text.clone();
                 }
             }
