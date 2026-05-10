@@ -738,15 +738,58 @@ namespace Charamaker
         {
             if (sel.c != null)
             {
-
+                List<string> names = new List<string>(); 
                 foreach (var a in sel.c.getTree(""))
                 {
+                    names.Add(a.name);
                     a.tx = -(a.tx - a.w * 0.5f) + a.w * 0.5f;
                     foreach (var b in sel.c.getJoint(a.name))
                     {
                         b.px = -(b.px - 0.5f) + 0.5f;
                     }
                 }
+                List<string> lrchange = new List<string>();
+
+                for (int i = 0; i < names.Count(); ++i) 
+                {
+                    for (int t = i+1; t < names.Count(); ++t)
+                    {
+                        if (names[i].Length <= 0 || names[t].Length <= 0) continue;
+
+                        var target=names[i].Substring(1);
+                        if (names[i][0] == 'l') 
+                        {
+                            if (names[t][0] == 'r') 
+                            {
+                                if (lrchange.Contains(target)==false)
+                                {
+                                    lrchange.Add(target);
+                                }
+                            }
+                        }
+                        if (names[i][0] == 'r')
+                        {
+                            if (names[t][0] == 'l')
+                            {
+                                if (lrchange.Contains(target) == false)
+                                {
+                                    lrchange.Add(target);
+                                }
+                            }
+                        }
+                    }
+                }
+                var str=sel.c.e.ToSave().getData();
+
+                foreach (var a in lrchange) 
+                {
+                    str=str.Replace("l"+a,"r_-@DAZE!PowerFullSoul"+a);
+                    str = str.Replace("r" + a,"l"+a);
+                    str = str.Replace("r_-@DAZE!PowerFullSoul" + a, "r" + a);
+                    
+                }
+                var newE=Entity.ToLoadEntity(new DataSaver(str));
+                newE.add(w);
             }
         }
 

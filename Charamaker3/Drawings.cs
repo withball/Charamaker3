@@ -209,16 +209,24 @@ namespace Charamaker3
         }
     }
     #endregion
+
+    public enum ColorType
+    {
+        Multiply, Additional, Absolute
+    }
     public class ColorC
     {
         public float r, g, b, opa;
-        public ColorC(float r, float g, float b, float opa)
+        public ColorType ct =ColorType.Multiply;
+        public ColorC(float r, float g, float b, float opa,ColorType ct = ColorType.Multiply)
         {
             this.r = r; this.g = g; this.b = b; this.opa = opa;
+            this.ct = ct;
         }
         public ColorC(ColorC c)
         {
             this.r = c.r; this.g = c.g; this.b = c.b; this.opa = c.opa;
+            this.ct = c.ct;
         }
         public static implicit operator Color4(ColorC d)
         {
@@ -253,7 +261,9 @@ namespace Charamaker3
                 Bo = true;
             }
 
-            return Br == true && Bg == true && Bb == true && Bo == true;
+            bool Bt= a.ct == b.ct;
+
+            return Br == true && Bg == true && Bb == true && Bo == true && Bt==true;
         }
         public static bool operator !=(ColorC a, ColorC b)
         {
@@ -283,8 +293,9 @@ namespace Charamaker3
                 Bo = true;
             }
 
+            bool Bt = a.ct == b.ct;
 
-            return Br == false || Bg == false || Bb == false || Bo == false;
+            return Br == false || Bg == false || Bb == false || Bo == false || Bt == false ;
         }
         public DataSaver ToSave()
         {
@@ -293,6 +304,7 @@ namespace Charamaker3
             d.packAdd("g", g);
             d.packAdd("b", b);
             d.packAdd("opa", opa);
+            d.packAdd("ct", ct);
             return d;
         }
         public void ToLoad(DataSaver d)
@@ -301,6 +313,7 @@ namespace Charamaker3
             g = d.unpackDataF("g");
             b = d.unpackDataF("b");
             opa = d.unpackDataF("opa");
+            ct=d.unpackDataE("ct", ct);
         }
     }
     public class BlurC
@@ -385,7 +398,8 @@ namespace Charamaker3
             HardBorder = d.unpackDataB("HardBorder", HardBorder);
         }
     }
-    
+
+
     public abstract class Drawable : Component
     {
         /// <summary>
@@ -452,10 +466,11 @@ namespace Charamaker3
             res.packAdd("linear", this.linear);
             res.linechange();
 
-            res.packAdd("r", this.col.r);
-            res.packAdd("g", this.col.g);
-            res.packAdd("b", this.col.b);
-            res.packAdd("opa", this.col.opa);
+            var cols = this.col.ToSave();
+            foreach (var a in cols.getAllPacks())
+            {
+                res.packAdd(a, cols.unpackDataS(a));
+            }
             res.linechange();
             res.packAdd("blur", this.blur.ToSave());
             return res;
@@ -468,10 +483,15 @@ namespace Charamaker3
             this.zRatio = d.unpackDataF("zRatio", this.zRatio);
 
             this.linear = d.unpackDataB("linear", linear);
-            this.col.r = d.unpackDataF("r");
-            this.col.g = d.unpackDataF("g");
-            this.col.b = d.unpackDataF("b");
-            this.col.opa = d.unpackDataF("opa");
+            {
+                var dd=new DataSaver();
+                var cols = this.col.ToSave();
+                foreach (var a in cols.getAllPacks())
+                {
+                    dd.packAdd(a, d.unpackDataS(a));
+                }
+                this.col.ToLoad(dd);
+            }
             this.blur.ToLoad(d.unpackDataD("blur"));
         }
 
@@ -956,7 +976,18 @@ namespace Charamaker3
             {
                 D_bitmap = cam.d.ldtex(FileMan.c_nothing);
             }
-            D_kousokubyouga = this.col.r == 1 && this.col.g == 1 && this.col.b == 1 && blur.Standard==0;
+            switch (this.col.ct)
+            {
+                case ColorType.Multiply:
+                    D_kousokubyouga = this.col.r == 1 && this.col.g == 1 && this.col.b == 1 && blur.Standard == 0;
+                    break;
+                case ColorType.Additional:
+                    D_kousokubyouga = this.col.r == 0 && this.col.g == 0 && this.col.b == 0 && blur.Standard == 0;
+                    break;
+                case ColorType.Absolute:
+                    D_kousokubyouga = false;
+                    break;
+            }
 
             D_rect = rectRectF(cam);
             D_trans = rectTrans(cam);
@@ -1044,31 +1075,73 @@ namespace Charamaker3
                 var trans = cam.render.ETrans;
                 trans.InterPolationMode= mode2;
                 /////////////////////////色
+                var blend = cam.render.EBlend;
+                switch (col.ct)
                 {
-                    var blend = cam.render.EBlend;
-                    blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
-                   
-                    Matrix5x4 colormatrix = new Matrix5x4(
-                        col.r, 0, 0, 0,
-                        0, col.g, 0, 0,
-                        0, 0, col.b, 0,
-                        0, 0, 0, col.opa,
-                        0, 0, 0, 0
-                        );
+                    default:
+                        {                           
+                            blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
 
-                    blend.Matrix = colormatrix;
+                            Matrix5x4 colormatrix = new Matrix5x4(
+                                col.r, 0, 0, 0,
+                                0, col.g, 0, 0,
+                                0, 0, col.b, 0,
+                                0, 0, 0, col.opa,
+                                0, 0, 0, 0
+                                );
+
+                            blend.Matrix = colormatrix;
+                        }
+                        break;
+                    case ColorType.Additional:
+                        {
+                            blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
+
+                            Matrix5x4 colormatrix = new Matrix5x4(
+                                1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, col.opa,
+                                col.r, col.g, col.b, 0
+                                );
+
+                            blend.Matrix = colormatrix;
 
 
-                    Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
-                    blur.SetInputEffect(0,blend, new SharpGen.Runtime.RawBool(false));
+                            ;
+                        }
+                        break;
+                    case ColorType.Absolute:
+                        {
+                            blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
 
-                    blur.StandardDeviation = this.blur.Standard;
-                    blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
-                    blur.BorderMode = this.blur.HardBorder?BorderMode.Hard:BorderMode.Soft;
+                            Matrix5x4 colormatrix = new Matrix5x4(
+                                0, 0, 0, 0,
+                                0, 0, 0, 0,
+                                0, 0, 0, 0,
+                                0, 0, 0, col.opa,
+                                col.r, col.g, col.b, 0
+                                );
 
-                    trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+                            blend.Matrix = colormatrix;
+
+
+                            ;
+                        }
+                        break;
                 }
-                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,0,0);
+
+                Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
+                blur.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
+
+                blur.StandardDeviation = this.blur.Standard;
+                blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
+                blur.BorderMode = this.blur.HardBorder ? BorderMode.Hard : BorderMode.Soft;
+
+                trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+
+
+            var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,0,0);
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;
                 //_BlendRender.BeginDraw();
@@ -1082,19 +1155,19 @@ namespace Charamaker3
 
                 semaphores.Draw.Release();
 
-            }
-
         }
 
     }
 
-    #region Text
+}
+
+#region Text
 
 
-    /// <summary>
-    /// 解析済みのテキスト
-    /// </summary>
-    public class TextInformation
+/// <summary>
+/// 解析済みのテキスト
+/// </summary>
+public class TextInformation
     {
         /// <summary>
         /// ソーステキストを指定したか

@@ -350,7 +350,8 @@ namespace Charamaker3
         static public Entity loadCharacter(string path, bool reset = false) 
         {
             var d=loadDS(@"character\"+path,reset,".ctc");
-            return Entity.ToLoadEntity(d);
+            var res= Entity.ToLoadEntity(d);
+            return res;
         }
 
         /// <summary>

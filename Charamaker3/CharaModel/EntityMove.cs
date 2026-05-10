@@ -577,7 +577,7 @@ namespace Charamaker3.CharaModel
             serif.SiroSiro = textSize / 6;
             var textmove = DrawableMove.SetText(Time, "Text", Text);textmove.add(serif);
             textmove.ChangeTextureSound = Sound;
-            textmove.ChangeTextureSoundVolume = Volume * size / 6f;
+            textmove.ChangeTextureSoundVolume = Volume * size / 9f;
             textmove.ChangeTextureSoundCount = SoundCou;
 
             var c = new SummonSerif(Tag,serif,0, Time + Jizoku);
@@ -622,7 +622,7 @@ namespace Charamaker3.CharaModel
 
             var textmove = DrawableMove.SetText(Time, "Text", Text); textmove.add(serif);
             textmove.ChangeTextureSound = Sound;
-            textmove.ChangeTextureSoundVolume = Volume * size / 6f;
+            textmove.ChangeTextureSoundVolume = Volume * size / 9f;
             textmove.ChangeTextureSoundCount = SoundCou;
 
             var c = new SummonSerif(Tag, serif, 0,Time+Jizoku);
