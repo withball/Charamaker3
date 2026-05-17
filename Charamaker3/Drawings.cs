@@ -267,35 +267,7 @@ namespace Charamaker3
         }
         public static bool operator !=(ColorC a, ColorC b)
         {
-            if (ReferenceEquals(a, null) || ReferenceEquals(b, null))
-            {
-                return ReferenceEquals(a, b) == false;
-            }
-
-            bool Br = a.r == b.r;
-            if (float.IsNaN(a.r) && float.IsNaN(b.r))
-            {
-                Br = true;
-            }
-            bool Bg = a.g == b.g;
-            if (float.IsNaN(a.g) && float.IsNaN(b.g))
-            {
-                Bg = true;
-            }
-            bool Bb = a.b == b.b;
-            if (float.IsNaN(a.b) && float.IsNaN(b.b))
-            {
-                Bb = true;
-            }
-            bool Bo = a.opa == b.opa;
-            if (float.IsNaN(a.opa) && float.IsNaN(b.opa))
-            {
-                Bo = true;
-            }
-
-            bool Bt = a.ct == b.ct;
-
-            return Br == false || Bg == false || Bb == false || Bo == false || Bt == false ;
+           return !(a == b);
         }
         public DataSaver ToSave()
         {
@@ -323,7 +295,7 @@ namespace Charamaker3
             /// <summary>
             /// スピード
             /// </summary>
-            Speed =0,
+            Speed = 0,
             /// <summary>
             /// バランス
             /// </summary>
@@ -331,34 +303,68 @@ namespace Charamaker3
             /// <summary>
             /// クオリティ
             /// </summary>
-            Quality = 2
+            Quality = 2,
+            /// <summary>
+            /// None Moveで使うとベースと同じ
+            /// </summary>
+            None,
+            /// <summary>
+            /// None Moveで使うと変化させない。
+            /// </summary>
+            NotChange,
+        }
+        public enum BlurBorder : int
+        {
+            /// <summary>
+            /// ソフト
+            /// </summary>
+            Soft =0 ,
+            /// <summary>
+            /// ハード
+            /// </summary>
+            Hard = 1,
+            /// <summary>
+            /// None Moveで使うとベースと同じ
+            /// </summary>
+            None,
+            /// <summary>
+            /// None Moveで使うと変化させない。
+            /// </summary>
+            NotChange,
+
         }
 
-
         /// <summary>
-        /// 標準偏差
+        /// 標準偏差、ぼかしの強さ
         /// </summary>
         public float Standard = 0;
         /// <summary>
-        /// ぼかしの強さ
+        /// 方法
         /// </summary>
         public BlurOptimization Optimization = BlurOptimization.Speed;
         /// <summary>
         /// HardBorderを使うか
         /// </summary>
-        public bool HardBorder = false;
+        public BlurBorder BorderMode = 0;
 
-        public BlurC(float standard, BlurOptimization optimization=BlurOptimization.Speed, bool isHardborder=false)
+        /// <summary>
+        /// ぼかした後のOpacityを0,1にする閾値を作る。0で何もしない。
+        /// </summary>
+        public float MinOpacity = 0;
+
+        public BlurC(float standard, BlurOptimization optimization=BlurOptimization.Speed, BlurBorder isHardborder =0,float minOpacity=0)
         {
             Standard = standard;
             Optimization = optimization;
-            HardBorder = isHardborder;
+            BorderMode = isHardborder;
+            MinOpacity = minOpacity;
         }
         public BlurC(BlurC c)
         {
             this.Standard = c.Standard;
             this.Optimization = c.Optimization;
-            this.HardBorder = c.HardBorder;
+            this.BorderMode = c.BorderMode;
+            this.MinOpacity = c.MinOpacity;
         }
         public static bool operator ==(BlurC a, BlurC b)
         {
@@ -374,7 +380,8 @@ namespace Charamaker3
             }
             bool Bg = a.Optimization == b.Optimization;
 
-            bool Bb = a.HardBorder == b.HardBorder;
+            bool Bb = a.BorderMode == b.BorderMode;
+            bool Bmo = a.MinOpacity == b.MinOpacity;
 
             return Br == true && Bg == true && Bb == true;
         }
@@ -388,14 +395,16 @@ namespace Charamaker3
             var d = new DataSaver();
             d.packAdd("Standard", Standard);
             d.packAdd("Optimization", Optimization);
-            d.packAdd("HardBorder", HardBorder);
+            d.packAdd("HardBorder", BorderMode);
+            d.packAdd("MinOpacity", MinOpacity);
             return d;
         }
         public void ToLoad(DataSaver d)
         {
             Standard = d.unpackDataF("Standard", Standard);
             Optimization = d.unpackDataE("Optimization", Optimization);
-            HardBorder = d.unpackDataB("HardBorder", HardBorder);
+            BorderMode = d.unpackDataE("HardBorder", BorderMode);
+            MinOpacity = d.unpackDataF("MinOpacity", MinOpacity);
         }
     }
 
@@ -413,7 +422,7 @@ namespace Charamaker3
         /// <summary>
         /// ガウスぼかしの具合
         /// </summary>
-        public BlurC blur = new BlurC(0,0,false);
+        public BlurC blur = new BlurC(0,0,0);
 
 
         /// <summary>
@@ -1019,15 +1028,15 @@ namespace Charamaker3
             if (D_kousokubyouga)
             {
                 //var blended = cam.d.Blend(bitmap, this.col);
-                
+
                 {
-                  
+
 
                     semaphores.Draw.Wait();
 
                     var render = cam.render.Render;
                     render.Transform = D_trans;
-                    
+
                     render.DrawBitmap(D_bitmap
                            , D_rect
                            , this.col.opa, mode
@@ -1073,13 +1082,13 @@ namespace Charamaker3
                 }
 
                 var trans = cam.render.ETrans;
-                trans.InterPolationMode= mode2;
+                trans.InterPolationMode = mode2;
                 /////////////////////////色
                 var blend = cam.render.EBlend;
                 switch (col.ct)
                 {
                     default:
-                        {                           
+                        {
                             blend.SetInputEffect(0, cam.render.ECrop2, new SharpGen.Runtime.RawBool(false));
 
                             Matrix5x4 colormatrix = new Matrix5x4(
@@ -1131,17 +1140,39 @@ namespace Charamaker3
                         break;
                 }
 
-                Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
-                blur.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
+                {
+                    ////////////////////////////////////
+                    var blur = cam.render.EBlur;
+                    blur.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
 
-                blur.StandardDeviation = this.blur.Standard;
-                blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
-                blur.BorderMode = this.blur.HardBorder ? BorderMode.Hard : BorderMode.Soft;
+                    blur.StandardDeviation = this.blur.Standard;
+                    blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
+                    blur.BorderMode = this.blur.BorderMode == BlurC.BlurBorder.Hard ? BorderMode.Hard : BorderMode.Soft;
+                    ////////////////////////////////////
+                    if (this.blur.MinOpacity > 0)
+                    {
+                        var bluropa = cam.render.EBlurOpacity;
+                        bluropa.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
 
-                trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+                        float[] table = new float[256];
 
+                        for (int i = 0; i < 256; ++i)
+                        {
+                            table[i] = (i / 255f) < this.blur.MinOpacity ? 0 : 1;
+                        }
+                        bluropa.AlphaTable = table;
+                        //////////////////////////////////////////////////////////////////////
+                        trans.SetInputEffect(0, bluropa, new SharpGen.Runtime.RawBool(false));
+                    }
+                    else 
+                    {
 
-            var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,0,0);
+                        //////////////////////////////////////////////////////////////////////
+                        trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+                    }
+                }
+
+                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h, 0, 0);
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;
                 //_BlendRender.BeginDraw();
@@ -1155,7 +1186,7 @@ namespace Charamaker3
 
                 semaphores.Draw.Release();
 
-        }
+            }
 
     }
 
@@ -2050,6 +2081,7 @@ public class TextInformation
         /// ふちをずらす割合。0でふちは無し
         /// </summary>
         public float hutiZure = 0.00f;
+        public int hutiSize = 1;
         /// <summary>
         /// ふちの色。透明度は関係ない。
         /// </summary>
@@ -2389,7 +2421,6 @@ public class TextInformation
                 }
             }
         }
-
         public void Draw(TextInformation Text, FontC F, ColorC color,DisplaySemaphores semaphores)
         {
             if (CheckChange(Text, F, color))
@@ -2547,7 +2578,99 @@ public class TextInformation
                         }
                     }
                 }
+                //一旦描画を確定させないといけないっぽいから使えない。
+                void DrawBluer(Rectangle drawR,  BlurC inBlur)
+                {
+                    semaphores.Draw.Wait();
 
+                    var render = renderBack.Render;
+                    render.Transform = Matrix3x2.CreateScale(1, 1);
+                    //_BlendRender.PushAxisAlignedClip(new Rectangle(0,0,bitmap.PixelSize.Width, bitmap.PixelSize.Height)
+                    //    , AntialiasMode.PerPrimitive);
+                    BitmapInterpolationMode mode;
+                    AffineTransform2DInterpolationMode mode2;
+                    InterpolationMode mode3;
+                   
+                    {
+                        mode = BitmapInterpolationMode.NearestNeighbor;
+                        mode2 = AffineTransform2DInterpolationMode.NearestNeighbor;
+                        mode3 = InterpolationMode.NearestNeighbor;
+                    }
+
+
+
+                    var trans = renderBack.ETrans;
+                    trans.InterPolationMode = mode2;
+                    /////////////////////////////クロップ
+                    Rectangle sourceRect;
+                    sourceRect = drawR;
+                    {
+                        var crop0 = renderBack.ECrop0;
+                        crop0.SetInput(0, renderBack.Bitmap1, new SharpGen.Runtime.RawBool(true));
+                        crop0.BorderMode = BorderMode.Hard;
+
+                        crop0.TransformMatrix = Matrix3x2.CreateScale(1, 1);
+                        crop0.InterPolationMode = mode2;
+
+                        var crop1 = renderBack.ECrop1;
+                        crop1.SetInputEffect(0, crop0, new SharpGen.Runtime.RawBool(false));
+                        crop1.BorderMode = BorderMode.Hard;
+
+                        crop1.Rectangle = new Vector4(sourceRect.x, sourceRect.y, sourceRect.x + sourceRect.w, sourceRect.y + sourceRect.h);
+
+                        var crop2 = renderBack.ECrop2;
+                        crop0.InterPolationMode = mode2;
+                        crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
+
+                        crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
+                        //crop.Rectangle = new Vector4(0, 0, 5, 5);
+                    }
+
+                    {
+                        ////////////////////////////////////
+                        var blur = renderBack.EBlur;
+                        blur.SetInput(0, renderBack.Bitmap1, new SharpGen.Runtime.RawBool(false));
+
+                        blur.StandardDeviation = inBlur.Standard;
+                        blur.Optimization = (GaussianBlurOptimization)inBlur.Optimization;
+                        blur.BorderMode = inBlur.BorderMode == BlurC.BlurBorder.Hard ? BorderMode.Hard : BorderMode.Soft;
+                        ////////////////////////////////////
+                        if (inBlur.MinOpacity > 0)
+                        {
+                            var bluropa = renderBack.EBlurOpacity;
+                            bluropa.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+
+                            float[] table = new float[256];
+
+                            for (int i = 0; i < 256; ++i)
+                            {
+                                table[i] = (i / 255f) < inBlur.MinOpacity ? 0 : 1;
+                            }
+                            bluropa.AlphaTable = table;
+                            //////////////////////////////////////////////////////////////////////
+                            trans.SetInputEffect(0, bluropa, new SharpGen.Runtime.RawBool(false));
+                        }
+                        else
+                        {
+
+                            //////////////////////////////////////////////////////////////////////
+                            trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
+                        }
+                    }
+
+                    Matrix3x2 transmatrix = new Matrix3x2(1,0,0,1,drawR.x,drawR.y);
+                    //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
+                    trans.TransformMatrix = transmatrix;
+                    //_BlendRender.BeginDraw();
+
+
+                    //d2dContext.Clear(new ColorC(0, 0, 0, 0));
+                    //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
+                    //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
+                    renderBack.DeviceContext.DrawImage(trans, mode3 , CompositeMode.SourceOver);
+
+                    semaphores.Draw.Release();
+                }
 
                 if (F.hutiZure > 0)
                 {
@@ -2555,25 +2678,38 @@ public class TextInformation
                     var c = new ColorC(F.hutiColor);
                     c.opa = F.hutiColor.opa;
                     var lis = new List<FXY>();
+
                     lis.Add(new FXY(0, 0));
                     lis.Add(new FXY(1, 0));
                     lis.Add(new FXY(-1, 0));
                     lis.Add(new FXY(0, 1));
                     lis.Add(new FXY(0, -1));
-                    for (int i = 0; i < lis.Count; i++)
                     {
                         var analyze=TextLayout.AnalyzeText(Text, renderBack, F, rendZone);
                         foreach (var a in analyze) 
                         {
                             foreach (var b in a)
                             {
-                                b.x += b.c.Size * F.size * F.hutiZure *lis[i].x;
-                                b.y += b.c.Size * F.size * F.hutiZure * lis[i].y;
+                                float s=b.c.Size* F.size* F.hutiZure;
+                                for (int x = -(int)s; x <= s; ++x)
+                                {
+                                    for (int y = -(int)s; y <= s; ++y)
+                                    {
+                                        if (x * x + y * y < s * s)
+                                        {
+                                            b.x += x;
+                                            b.y += y;
+                                            DrawText(analyze, rendZone, F, true);
+                                            b.x -= x;
+                                            b.y -= y;
+                                        }
+                                    }
+                                }
                             }
                         }
-                        DrawText(analyze, rendZone, F,true);
                         //render.BitmapRender.DrawText(Text.AnalyzedText, F.ToFont(), lis[i], slb);
                     }
+                    //DrawBluer(rendZone,new BlurC(3,minOpacity:0.1f));
                 }
 
                 List<List<TextLayout>> AnalysedTexts = TextLayout.AnalyzeText(Text, render, F, rendZone);
@@ -2929,16 +3065,16 @@ public class TextInformation
 
                     blend.Matrix = colormatrix;
 
-                    Vortice.Direct2D1.Effects.GaussianBlur blur = cam.render.EBlur;
+                   var blur = cam.render.EBlur;
                     blur.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
-
+                    
                     blur.StandardDeviation = this.blur.Standard;
                     blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
-                    blur.BorderMode = this.blur.HardBorder ? BorderMode.Hard : BorderMode.Soft;
+                    blur.BorderMode = this.blur.BorderMode== BlurC.BlurBorder.Hard ? BorderMode.Hard : BorderMode.Soft;
 
                     trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
                 }
-                var transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,zure.x,zure.y);
+                Matrix3x2 transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,zure.x,zure.y);
                 
                 //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
                 trans.TransformMatrix = transmatrix;

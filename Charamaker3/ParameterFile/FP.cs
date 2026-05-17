@@ -374,7 +374,7 @@ namespace Charamaker3.ParameterFile
                                             }
 
                                         }
-                                        Debug.WriteLine(region + load.Substring(0, ii) + "::desuyoString");
+                                        //Debug.WriteLine(region + load.Substring(0, ii) + "::desuyoString");
                                         texts.Add(region + load.Substring(0, ii), tx);
                                     }
                                 }

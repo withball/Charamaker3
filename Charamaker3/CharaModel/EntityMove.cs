@@ -781,6 +781,26 @@ namespace Charamaker3.CharaModel
             return res;
         }
         /// <summary>
+        /// 色を絶対的に変える
+        /// </summary>
+        /// <param name="time">=0</param>
+        /// <param name="name">=""</param>
+        /// <param name="opa">=Nan</param>
+        /// <param name="r">=nan</param>
+        /// <param name="g">=nan</param>
+        /// <param name="b">=nan</param>
+        /// <param name="go">=goOption.def,onlyRoot,goAll</param>
+        /// <returns>__MOVE__</returns>
+
+        static public DrawableMove AbsoluteColorChange(float time = 0, string name = "", float opa = float.NaN
+            , float r = float.NaN, float g = float.NaN, float b = float.NaN, goOption go = goOption.def)
+        {
+            var res = new DrawableMove(time, float.NaN, r, g, b, opa, "_", name);
+            res.CO = changeOption.Absolute;
+            res.GO = go;
+            return res;
+        }
+        /// <summary>
         /// 色をベースから相対的に変える
         /// </summary>
         /// <param name="time">=0</param>
@@ -861,6 +881,7 @@ namespace Charamaker3.CharaModel
                 res.GO = goOption.goAll;
             }
             res.CO = changeOption.fromBase;
+            
             return res;
         }
 
@@ -970,6 +991,21 @@ namespace Charamaker3.CharaModel
             res.ChangeTextureSoundCount = SoundCou;
             return res;
         }
+        /// <summary>
+        /// ブラーの大きさを掛け算して操作する。
+        /// </summary>
+        /// <param name="time">=0</param>
+        /// <param name="tag">関節のターゲット=""</param>
+        /// <param name="tagDrawable">Drawableのターゲット=""</param>
+        /// <param name="standard">ぼかし具合=float.NaN NaNで何もしない、-1でベースに戻す。</param>
+        /// <param name="minOpacity">くっきり=float.NaN NaNで何もしない、-1でベースに戻す。</param>
+        /// <returns>__MOVE__</returns>
+        static public BlurMove SetBlur(float time = 0, string tag = "", string tagDrawable = "", float standard = float.NaN, float minOpacity = float.NaN)
+        {
+            var res = new BlurMove(tag, time, new BlurC(standard, BlurC.BlurOptimization.NotChange, BlurC.BlurBorder.NotChange, minOpacity));
+            res.name = tagDrawable;
+            return res;
+        }
     }
     /// <summary>
     /// レシオの変化
@@ -1009,7 +1045,7 @@ namespace Charamaker3.CharaModel
         No = 1, Mirror = -1, Reverse = 0
     }
 
-    public enum changeOption { difference = 1, fromBase = 2 };
+    public enum changeOption { difference = 1, fromBase = 2,Absolute=3 };
     /// <summary>
     /// 値を直接的に変更するクラス。もう一つはmirrorのクラス。
     /// WARNING: basew=0のときあやしい
@@ -2573,7 +2609,7 @@ namespace Charamaker3.CharaModel
         List<List<float[]>> speeds = new List<List<float[]>>();
         List<List<WeakReference<Drawable>>> tagsWeak = new List<List<WeakReference<Drawable>>>();
         List<List<WeakReference<Drawable>>> tagBasesWeak = new List<List<WeakReference<Drawable>>>();
-
+        public string CompTag = "";
         bool GetTags(out List<List<Drawable>> tags, out List<List<Drawable>> tagBases)
         {
             tags = new List<List<Drawable>>();
@@ -2592,7 +2628,10 @@ namespace Charamaker3.CharaModel
                         Drawable e;
                         if (b.TryGetTarget(out e))
                         {
-                            tags.Last().Add(e);
+                            if (CompTag == "" || e.name == CompTag)
+                            {
+                                tags.Last().Add(e);
+                            }
                         }
                         else
                         {
@@ -2690,6 +2729,7 @@ namespace Charamaker3.CharaModel
             }
             cc.texture = this.texture;
             cc.zname = this.zname;
+            cc.CompTag= this.CompTag;
 
             cc.CO = this.CO;
             cc.RatioOption = this.RatioOption;
@@ -2699,6 +2739,7 @@ namespace Charamaker3.CharaModel
         {
             var res = base.ToSave();
             res.linechange();
+            res.packAdd("CompTag", CompTag);
             res.packAdd("GO", (goOption)GO);
             res.packAdd("RatioOption", RatioOption);
             res.packAdd("_Z", basespeeds[_Z]);
@@ -2717,6 +2758,7 @@ namespace Charamaker3.CharaModel
         {
             base.ToLoad(d);
 
+            CompTag= d.unpackDataS("CompTag", CompTag);
             GO = d.unpackDataE<goOption>("GO", goOption.def);
             RatioOption = d.unpackDataE<ratioOption>("RatioOption", RatioOption);
             basespeeds[_Z] = d.unpackDataF("_Z");
@@ -2877,7 +2919,75 @@ namespace Charamaker3.CharaModel
                     {
                         if (t == 0 || GO == goOption.goAll)
                         {
-                            if (CO != changeOption.difference)
+                            if (CO == changeOption.Absolute)
+                            {
+                                switch (j)
+                                {
+                                    case _Z:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            if (zparts != null)
+                                            {
+                                                speeds[t][i][j] = zpartsdz - tags[t][i].z;
+
+                                            }
+                                            else
+                                            {
+                                                speeds[t][i][j] = ((maxz - minz) * basespeeds[j]) + tagBases[t][i].z - tags[t][i].z;
+
+                                            }
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+
+                                        }
+                                        break;
+                                    case _R:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] =  basespeeds[j] - tags[t][i].col.r;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _G:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = basespeeds[j] - tags[t][i].col.g;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _B:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] =basespeeds[j] - tags[t][i].col.b;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _OPA:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+
+                                            speeds[t][i][j] = basespeeds[j] - tags[t][i].col.opa;
+
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                }
+                            }
+                            else if (CO != changeOption.difference)
                             {
                                 switch (j)
                                 {
@@ -2943,7 +3053,8 @@ namespace Charamaker3.CharaModel
                                             speeds[t][i][j] = 0;
                                         }
                                         break;
-                                };
+                                }
+                                ;
 
                             }
                             else
@@ -2953,7 +3064,64 @@ namespace Charamaker3.CharaModel
                         }
                         else if (GO != goOption.onlyRoot)
                         {
-                            if (CO != changeOption.difference)
+                            if (CO == changeOption.Absolute)
+                            {
+                                switch (j)
+                                {
+                                    case _R:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = basespeeds[j] - tags[t][i].col.r;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _G:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = basespeeds[j] - tags[t][i].col.g;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _B:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = basespeeds[j] - tags[t][i].col.b;
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    case _OPA:
+                                        if (!float.IsNaN(basespeeds[j]))
+                                        {
+                                            speeds[t][i][j] = basespeeds[j] - tags[t][i].col.opa;
+
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                    default:
+                                        if (speeds[0].Count > 0)
+                                        {
+                                            speeds[t][i][j] = speeds[0][0][j];
+                                        }
+                                        else
+                                        {
+                                            speeds[t][i][j] = 0;
+                                        }
+                                        break;
+                                }
+                            }
+                            else if(CO != changeOption.difference)
                             {
                                 switch (j)
                                 {
@@ -4075,6 +4243,289 @@ namespace Charamaker3.CharaModel
             cc.ChangeTextureSound = this.ChangeTextureSound;
             cc.ChangeTextureSoundVolume = this.ChangeTextureSoundVolume;
             cc.ChangeTextureSoundCount = this.ChangeTextureSoundCount;
+        }
+    }/// <summary>
+     /// テキストを編集するムーブ
+     /// </summary>
+    public class BlurMove : Component
+    {
+        public string Tag;
+
+        public BlurC Blur;
+
+        List<List<float[]>> speeds = new List<List<float[]>>();
+        List<List<float[]>> bspeeds = new List<List<float[]>>();
+
+        List<List<WeakReference<Drawable>>> tagsWeak = new List<List<WeakReference<Drawable>>>();
+        List<List<WeakReference<Drawable>>> basetagsWeak = new List<List<WeakReference<Drawable>>>();
+        bool GetTags(out List<List<Drawable>> tags, out List<List<Drawable>> basetags)
+        {
+            tags = new List<List<Drawable>>();
+            basetags = new List<List<Drawable>>();
+            foreach (var a in tagsWeak)
+            {
+                tags.Add(new List<Drawable>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        tags.Add(null);
+                    }
+                    else
+                    {
+                        Drawable e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            if (name == "" || e.name == name)
+                            {
+                                tags.Last().Add(e);
+                            }
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            basetags.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            foreach (var a in basetagsWeak)
+            {
+                basetags.Add(new List<Drawable>());
+                foreach (var b in a)
+                {
+                    if (b == null)
+                    {
+                        basetags.Add(null);
+                    }
+                    else
+                    {
+                        Drawable e;
+                        if (b.TryGetTarget(out e))
+                        {
+                            if (name == "" || e.name == name)
+                            {
+                                basetags.Last().Add(e);
+                            }
+                        }
+                        else
+                        {
+                            tags.Clear();
+                            basetags.Clear();
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        bool instant { get { return time <= 0; } }
+
+        const int _Standard = 0;
+        const int _MinOpacity = 1;
+        const int _speedLength = 2;
+        /// <summary>
+        /// からのコンストラクタ
+        /// </summary>
+        public BlurMove()
+        {
+        }
+        /// <summary>
+        /// 普通のコンストラクタ
+        /// </summary>
+        /// <param name="Tag">変化させるターゲット</param>
+        /// <param name="time"></param>
+        /// <param name="Text">即時反映=""で変化なし</param>
+        /// <param name="isSource">ソース指定</param>
+        /// <param name="TextLength">変化するテキストの長さ=0で""になる</param>
+        /// <param name="font">変化するフォント。isItaricなどは即時反映</param>
+        /// <param name="name">ターゲットの名前</param>
+        public BlurMove(string Tag, float time, BlurC blur, string name = "") : base(time, name)
+        {
+            this.Tag = Tag;
+
+            this.Blur = new BlurC(blur);
+        }
+
+        protected override void onadd(float cl)
+        {
+            tagsWeak.Clear();
+            speeds.Clear();
+            bspeeds.Clear();
+            //characterから得るtag
+            var cs = e.getcompos<Character>();
+            if (cs.Count == 0)
+            {
+                var lis = new List<WeakReference<Drawable>>();
+                foreach (var a in e.getcompos<Drawable>())
+                {
+                    lis.Add(new WeakReference<Drawable>(a));
+                }
+                tagsWeak.Add(lis);
+                basetagsWeak.Add(lis);
+            }
+            else
+            {
+                foreach (var a in cs)
+                {
+                    foreach (var b in a.getTree(Tag))
+                    {
+                        var lis = new List<WeakReference<Drawable>>();
+                        foreach (var c in b.getcompos<Drawable>())
+                        {
+                            lis.Add(new WeakReference<Drawable>(c));
+                        }
+                        tagsWeak.Add(lis);
+                    }
+                    foreach (var b in a.BaseCharacter.getTree(Tag))
+                    {
+                        var lis = new List<WeakReference<Drawable>>();
+                        foreach (var c in b.getcompos<Drawable>())
+                        {
+                            lis.Add(new WeakReference<Drawable>(c));
+                        }
+                        basetagsWeak.Add(lis);
+                    }
+                }
+            }
+            List<List<Drawable>> tags;
+            List<List<Drawable>> basetags;
+            GetTags(out tags,out basetags);
+            for (int t = 0; t < tags.Count; t++)
+            {
+                speeds.Add(new List<float[]>());
+                bspeeds.Add(new List<float[]>());
+                for (int i = 0; i < tags[t].Count; i++)
+                {
+                    speeds[t].Add(new float[_speedLength]);
+                    bspeeds[t].Add(new float[_speedLength]);
+                    for (int j = 0; j < speeds[t][i].Length; j++)
+                    {
+                        switch (j)
+                        {
+                            case _Standard:
+                                //-1でベースに戻す。
+                                if (Blur.Standard < 0)
+                                {
+                                    speeds[t][i][j] = basetags[t][i].blur.Standard;
+                                    bspeeds[t][i][j] = tags[t][i].blur.Standard;
+                                }
+                                else if (float.IsNaN(Blur.Standard) == false)
+                                {
+                                    speeds[t][i][j] = Blur.Standard ;
+                                    bspeeds[t][i][j] = tags[t][i].blur.Standard;
+                                }
+                                else //Nanで何もしない。
+                                {
+                                    speeds[t][i][j] = tags[t][i].blur.Standard;
+                                    bspeeds[t][i][j] = tags[t][i].blur.Standard;
+                                }
+                                break;
+                            case _MinOpacity:
+                                //-1でベースに戻す。
+                                if (Blur.MinOpacity < 0 )
+                                {
+
+                                    speeds[t][i][j] = basetags[t][i].blur.MinOpacity;
+                                    bspeeds[t][i][j] = tags[t][i].blur.MinOpacity;
+                                }
+                                else  if (float.IsNaN(Blur.MinOpacity) == false)
+                                {
+                                    speeds[t][i][j] = Blur.MinOpacity * basetags[t][i].blur.MinOpacity;
+                                    bspeeds[t][i][j] = tags[t][i].blur.MinOpacity;
+                                }
+                                else //Nanで何もしない。
+                                {
+                                    speeds[t][i][j] = tags[t][i].blur.MinOpacity;
+                                    bspeeds[t][i][j] = tags[t][i].blur.MinOpacity;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            if (instant)
+            {
+                setBlurs(1, tags,basetags);
+            }
+            /* else
+             {
+                 float speed = 1 / time;
+                 addDefference(Math.Min(speed * cl,1));
+             }*/
+            base.onadd(cl);
+        }
+        protected override void onupdate(float cl)
+        {
+
+            if (cl > 0)
+            {
+                if (!instant)
+                {
+                    List<List<Drawable>> tags;
+                    List<List<Drawable>> basetags;
+                    GetTags(out tags,out basetags);
+                    this.setBlurs(timer / time, tags, basetags);
+                }
+            }
+            base.onupdate(cl);
+
+        }
+        void setBlurs(float ratio, List<List<Drawable>> tags, List<List<Drawable>> basetags)
+        {
+            for (int t = 0; t < tags.Count; t++)
+            {
+                for (int i = 0; i < tags[t].Count; i++)
+                {
+                    if (Blur.Optimization == BlurC.BlurOptimization.None)
+                    {
+                        tags[t][i].blur.Optimization = basetags[t][i].blur.Optimization;
+                    }
+                    else if (Blur.Optimization != BlurC.BlurOptimization.NotChange)
+                    {
+                        tags[t][i].blur.Optimization = Blur.Optimization;
+                    }
+                    if (Blur.BorderMode != BlurC.BlurBorder.None)
+                    {
+                        tags[t][i].blur.BorderMode = basetags[t][i].blur.BorderMode;
+                    }
+                    else if (Blur.BorderMode != BlurC.BlurBorder.NotChange)
+                    {
+                        tags[t][i].blur.BorderMode = Blur.BorderMode;
+                    }
+                    {
+                        tags[t][i].blur.MinOpacity = (speeds[t][i][_MinOpacity] * ratio + bspeeds[t][i][_MinOpacity] * (1 - ratio));
+                    }
+                   
+                    {
+                        tags[t][i].blur.Standard = (speeds[t][i][_Standard] * ratio + bspeeds[t][i][_Standard] * (1 - ratio));
+                    }
+                  
+                }
+            }
+        }
+        public override DataSaver ToSave()
+        {
+            var d = base.ToSave();
+            d.packAdd("Blur", Blur.ToSave().indent());
+            d.linechange();
+            return d;
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            {
+                this.Blur = new BlurC(0);
+                var dd = d.unpackDataD("Blur");
+                this.Blur.ToLoad(dd);
+            }
+        }
+        public override void copy(Component c)
+        {
+            var cc = (BlurMove)c;
+            base.copy(c);
+            cc.Blur = new BlurC(cc.Blur);
         }
     }
     /// <summary>

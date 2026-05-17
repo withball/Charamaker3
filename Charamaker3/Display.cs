@@ -17,8 +17,8 @@ using Vortice.DirectWrite;
 using Charamaker3.Shapes;
 using Rectangle = Charamaker3.Shapes.Rectangle;
 using System.Threading;
-
-using Vortice;
+using Vortice.Dxc;
+using Vortice.Direct3D12;
 using Vortice.DCommon;
 using Vortice.Direct2D1;
 using Vortice.Mathematics;
@@ -31,7 +31,6 @@ namespace Charamaker3
     /// </summary>
     public class C3RenderSet
     {
-
         public ID2D1RenderTarget Render;
 
         public ID2D1DeviceContext DeviceContext;
@@ -48,22 +47,26 @@ namespace Charamaker3
         public Vortice.Direct2D1.Effects.AffineTransform2D ECrop2 = null;
         public Vortice.Direct2D1.Effects.ColorMatrix EBlend = null;
         public Vortice.Direct2D1.Effects.GaussianBlur EBlur = null;
+        public Vortice.Direct2D1.Effects.TableTransfer EBlurOpacity = null;
         public Vortice.Direct2D1.Effects.AffineTransform2D ETrans = null;
-
         /// <summary>
         /// エフェクトとかも確保してくれる
         /// </summary>
         /// <param name="render"></param>
         public C3RenderSet(ID2D1RenderTarget render) 
         {
-        this.Render = render;
+            this.Render = render;
             this.DeviceContext=this.Render.QueryInterface<ID2D1DeviceContext>();
+
             this.ECrop0 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
             this.ECrop1 = new Vortice.Direct2D1.Effects.Crop(DeviceContext);
             this.ECrop2 = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
             this.EBlend = new Vortice.Direct2D1.Effects.ColorMatrix(DeviceContext);
             this.EBlur = new Vortice.Direct2D1.Effects.GaussianBlur(DeviceContext);
+            this.EBlurOpacity = new Vortice.Direct2D1.Effects.TableTransfer(DeviceContext);
+        
             this.ETrans = new Vortice.Direct2D1.Effects.AffineTransform2D(DeviceContext);
+            
             DWrite.DWriteCreateFactory<IDWriteFactory>(Vortice.DirectWrite.FactoryType.Shared,out this.WriteFactory);
         }
         /// <summary>
@@ -76,6 +79,7 @@ namespace Charamaker3
             ECrop2?.Release();
             EBlend?.Release();
             EBlur?.Release();
+            EBlurOpacity?.Release();
             ETrans?.Release();
             DeviceContext?.Release();
 

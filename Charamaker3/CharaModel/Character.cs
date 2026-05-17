@@ -258,8 +258,9 @@ namespace Charamaker3.CharaModel
         /// <summary>
         /// キャラクターを縁取りする。
         /// </summary>
-        static public void Hutidori(Entity e,ColorC col,BlurC bul)
+        static public List<Drawable> Hutidori(Entity e,ColorC col,BlurC bul,string name="huti")
         {
+            var res=new List<Drawable>();
             var cs = e.getcompos<Character>();
             foreach (var c in cs)
             {
@@ -285,19 +286,22 @@ namespace Charamaker3.CharaModel
                     minz = minz - Mathf.max(Mathf.abs(minz * 0.5f),0.1f);
                     foreach (var ee in cc.getTree(""))
                     {
-                        foreach (var d in ee.getcompos<Drawable>())
+                        foreach (var d in ee.getcompos<Texture>())
                         {
                             var dd=(Drawable)d.clone();
                             dd.z= minz;
 
-                            dd.col = col;
-                            dd.blur = bul;
+                            dd.col = new ColorC(col);
+                            dd.blur = new BlurC(bul);
                             dd.add(ee);
+                            res.Add(dd);
+                            dd.name= name;
                         }
                     }
                 }
 
             }
+            return res;
         }
         //先頭のジョイントはEntityがコアの特別なジョイント
         List<Joint> _joints = new List<Joint>();
