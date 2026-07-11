@@ -183,9 +183,10 @@ namespace Charamaker3.CharaModel
         /// <param name="scty">hに対するty変化=Nan</param>
         /// <param name="basescale">ベースに対する変化にするか=true</param>
         /// <param name="onlyroot">根のスケールだけ変更=false</param>
+        /// <param name="TxyAll">子全体に中心点の移動を適用するか=false</param>
         /// <returns>__MOVE__</returns>
         static public EntityMove ScaleChange(float time, string name = "", float scw = float.NaN, float scy = float.NaN
-            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false)
+            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false, bool TxyAll = false)
         {
             var res = new EntityMove(time, 0, 0, scw, scy, sctx, scty, 0, float.NaN, float.NaN, name);
             if (basescale)
@@ -202,10 +203,19 @@ namespace Charamaker3.CharaModel
             }
             else
             {
-                res.GO = goOption.def;
+                if (TxyAll == true)
+                {
+                    res.GO = goOption.goAll;
+                }
+                else
+                {
+                    res.GO = goOption.def;
+                }
             }
             return res;
         }
+
+
         /// <summary>
         /// 大きさを変更するムーブ(Cos)
         /// </summary>
@@ -217,9 +227,10 @@ namespace Charamaker3.CharaModel
         /// <param name="scty">hに対するty変化=Nan</param>
         /// <param name="basescale">ベースに対する変化にするか=true</param>
         /// <param name="onlyroot">根のスケールだけ変更=false</param>
+        /// <param name="TxyAll">子全体に中心点の移動を適用するか=false</param>
         /// <returns>__MOVE__</returns>
         static public EntityMove ScaleChangecos(float time, string name = "", float scw = float.NaN, float scy = float.NaN
-            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false)
+            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false, bool TxyAll = false)
         {
             var res = new EntityMove(time, 0, 0, scw, scy, sctx, scty, 0, float.NaN, float.NaN, name);
             if (basescale)
@@ -236,7 +247,14 @@ namespace Charamaker3.CharaModel
             }
             else
             {
-                res.GO = goOption.def;
+                if (TxyAll == true)
+                {
+                    res.GO = goOption.goAll;
+                }
+                else
+                {
+                    res.GO = goOption.def;
+                }
             }
             res.RatioOption = ratioOption.Cos;
             return res;
@@ -252,9 +270,10 @@ namespace Charamaker3.CharaModel
         /// <param name="scty">hに対するty変化=Nan</param>
         /// <param name="basescale">ベースに対する変化にするか=true</param>
         /// <param name="onlyroot">根のスケールだけ変更=false</param>
+        /// <param name="TxyAll">子全体に中心点の移動を適用するか=false</param>
         /// <returns>__MOVE__</returns>
         static public EntityMove ScaleChangesin(float time, string name = "", float scw = float.NaN, float scy = float.NaN
-            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false)
+            , float sctx = float.NaN, float scty = float.NaN, bool basescale = true, bool onlyroot = false, bool TxyAll = false)
         {
             var res = new EntityMove(time, 0, 0, scw, scy, sctx, scty, 0, float.NaN, float.NaN, name);
             if (basescale)
@@ -271,7 +290,14 @@ namespace Charamaker3.CharaModel
             }
             else
             {
-                res.GO = goOption.def;
+                if (TxyAll == true)
+                {
+                    res.GO = goOption.goAll;
+                }
+                else
+                {
+                    res.GO = goOption.def;
+                }
             }
             res.RatioOption = ratioOption.Sin;
             return res;
@@ -1200,6 +1226,11 @@ namespace Charamaker3.CharaModel
         /// 世界に対する角度にするか
         /// </summary>
         public bool IsWorldDegree = false;
+
+        /// <summary>
+        /// 現在の中心点を無視してスケールするか。
+        /// </summary>
+        public bool IgnoreNowtxy=false;
         public EntityMove() { }
         public EntityMove(float time, float dx = 0, float dy = 0, float dw = 0, float dh = 0, float dtx = 0, float dty = 0
             , float ddegree = 0, float ddx = 0, float ddy = 0, string name = "") : base(time, name)
@@ -1633,69 +1664,87 @@ namespace Charamaker3.CharaModel
                                     }
                                     break;
                                 case _TX:
-                                    float ratio;
-                                    if (float.IsNaN(basespeeds[_W]))
-                                    {
-                                        ratio = 1;
-                                    }
-                                    else if (tags[t].w != 0)
-                                    {
-                                        ratio = (basespeeds[_W] * tagBases[t].w / tags[t].w);
-                                    }
-                                    else
-                                    {
-                                        ratio = (basespeeds[_W]);
-                                    }
+                                    
                                     if (!float.IsNaN(basespeeds[i]))
                                     {
-                                        if (tagBases[t].w != 0)
+                                        float ratio;
+                                        if (float.IsNaN(basespeeds[_W]))
                                         {
-                                            speeds[t][i] =
-                                                +ratio * (tagBases[t].w * basespeeds[i] * tags[t].w / tagBases[t].w
-                                                + tagBases[t].tx * tags[t].w / tagBases[t].w)
-                                                - tags[t].tx;
+                                            ratio = 1;
+                                        }
+                                        else if ((tags[t].w + speeds[t][_W]) != 0)
+                                        {
+                                            ratio = (basespeeds[_W] * tagBases[t].w / (tags[t].w + speeds[t][_W]));
                                         }
                                         else
                                         {
-                                            speeds[t][i] = ratio * (tagBases[t].w * basespeeds[i] + tagBases[t].tx) - tags[t].tx;
+                                            ratio = (basespeeds[_W]);
                                         }
+                                        speeds[t][i] =
+                                             +(tagBases[t].w * basespeeds[i])
+                                             + ratio * (tagBases[t].tx)
+                                            - tags[t].tx;
+
                                     }
                                     else
                                     {
+                                        float ratio;
+                                        if (float.IsNaN(basespeeds[_W]))
+                                        {
+                                            ratio = 1;
+                                        }
+                                        else if (tags[t].w != 0)
+                                        {
+                                            ratio = (basespeeds[_W] * tagBases[t].w / tags[t].w);
+                                        }
+                                        else
+                                        {
+                                            ratio = (basespeeds[_W]);
+                                        }
 
                                         speeds[t][i] = (ratio * tags[t].tx) - tags[t].tx;
 
                                     }
                                     break;
                                 case _TY:
-                                    if (float.IsNaN(basespeeds[_H]))
-                                    {
-                                        ratio = 1;
-                                    }
-                                    else if (tags[t].h != 0)
-                                    {
-                                        ratio = (basespeeds[_H] * tagBases[t].h / tags[t].h);
-                                    }
-                                    else
-                                    {
-                                        ratio = (basespeeds[_H]);
-                                    }
+                                    
                                     if (!float.IsNaN(basespeeds[i]))
                                     {
-                                        if (tagBases[t].h != 0)
+                                        float ratio;
+                                        if (float.IsNaN(basespeeds[_H]))
                                         {
-                                            speeds[t][i] =
-                                                +ratio * (tagBases[t].h * basespeeds[i] * tags[t].h / tagBases[t].h
-                                                + tagBases[t].ty * tags[t].h / tagBases[t].h)
-                                                - tags[t].ty;
+                                            ratio = 1;
+                                        }
+                                        else if ((tags[t].h + speeds[t][_H]) != 0)
+                                        {
+                                            ratio = (basespeeds[_H] * tagBases[t].h / (tags[t].h + speeds[t][_H]));
                                         }
                                         else
                                         {
-                                            speeds[t][i] = ratio * (tagBases[t].h * basespeeds[i] + tagBases[t].ty) - tags[t].ty;
+                                            ratio = (basespeeds[_H]);
                                         }
+
+                                        speeds[t][i] =
+                                             +(tagBases[t].h * basespeeds[i])
+                                             + ratio * (tagBases[t].ty)
+                                            - tags[t].ty;
+
                                     }
                                     else
                                     {
+                                        float ratio;
+                                        if (float.IsNaN(basespeeds[_H]))
+                                        {
+                                            ratio = 1;
+                                        }
+                                        else if (tags[t].h != 0)
+                                        {
+                                            ratio = (basespeeds[_H] * tagBases[t].h / tags[t].h);
+                                        }
+                                        else
+                                        {
+                                            ratio = (basespeeds[_H]);
+                                        }
 
                                         speeds[t][i] = (ratio * tags[t].ty) - tags[t].ty;
 

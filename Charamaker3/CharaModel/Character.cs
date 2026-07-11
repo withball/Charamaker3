@@ -355,6 +355,7 @@ namespace Charamaker3.CharaModel
                     if (a.parent == null) a.parent = e;
                 }
             }
+            assembleCharacter();
             /*
             if (e.name != BaseCharacter,name) 
             {
