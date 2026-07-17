@@ -653,6 +653,12 @@ namespace Charamaker
             LastLoad = load;
             var newe = FileMan.loadCharacter(textB.Text, true);
 
+            Character.Hutidori(newe
+               , new ColorC(1,1,1,1, ColorType.Absolute)
+             , new BlurC(1, minOpacity: 0.2f)
+               );
+        
+                Character.SetupCharacter(newe, newe.name,1,1,1);
             if (newe.getcompos<Character>().Count > 0)
             {
                 newe.add(w);

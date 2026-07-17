@@ -638,4 +638,85 @@ namespace Charamaker3.CharaModel
             this.Gravity = d.unpackDataF("Gravity", this.Gravity);
         }
     }
+    /// <summary>
+    /// コマ送りアニメーションをする。
+    /// </summary>
+    public class Komaokuri : Component
+    {
+        /// <summary>
+        /// ターゲットのパーツ
+        /// </summary>
+        public String Target = "";
+        /// <summary>
+        /// 切り替えのタイマー
+        /// </summary>
+        public SuperTimer KirikaeTime=new SuperTimer(1,1);
+        /// <summary>
+        /// テクスチャの名前
+        /// </summary>
+        public List<string> TextureNames = new List<string>();
+
+        public int TextureIndex = 0;
+
+        protected override void onupdate(float cl)
+        {
+            base.onupdate(cl);
+            if (TextureNames.Count > 0) 
+            {
+                int times = KirikaeTime.Update(cl);
+                while (times-->0) 
+                {
+                    TextureIndex = (TextureIndex+1)%TextureNames.Count;
+
+                }
+                DrawableMove.ChangeTexture(0, Target, TextureNames[TextureIndex]).addAndRemove(e,100);
+            }
+        }
+       
+        public override void copy(Component c)
+        {
+            base.copy(c);
+            var cc = (Komaokuri)c;
+            cc.Target = this.Target;
+           
+            cc.KirikaeTime = new SuperTimer(KirikaeTime);
+            cc.TextureNames = new List<string>(this.TextureNames);
+            cc.TextureIndex = this.TextureIndex;
+        }
+        public override DataSaver ToSave()
+        {
+            var res = base.ToSave();
+            res.packAdd("Target", this.Target);
+            res.linechange();
+            res.packAdd("KirikaeTime", this.KirikaeTime.ToSave().indent(1));
+            res.linechange();
+            var s="";
+            for (int i=0;i< TextureNames.Count;++i) 
+            {
+                if (i != 0) { s += ","; }
+                s += TextureNames[i];
+            }
+
+            res.packAdd("TextureNames", s); 
+            res.linechange();
+            res.packAdd("TextureIndex", 0);
+            
+            return res;
+
+        }
+        protected override void ToLoad(DataSaver d)
+        {
+            base.ToLoad(d);
+            this.Target = d.unpackDataS("Target", this.Target);
+            this.KirikaeTime.ToLoad(d.unpackDataD("KirikaeTime"));
+
+            TextureNames.Clear();
+            var s = d.unpackDataD("TextureNames");
+            foreach (var a in s.splitDataS(','))
+            {
+                TextureNames.Add(a);
+            }
+            this.TextureIndex=(int)d.unpackDataF("TextureIndex", 0);
+        }
+    }
 }

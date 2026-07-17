@@ -1158,7 +1158,7 @@ namespace Charamaker3
 
                         for (int i = 0; i < 256; ++i)
                         {
-                            table[i] = (i / 255f) < this.blur.MinOpacity ? 0 : 1;
+                            table[i] = col.opa * (i / 255f) < this.blur.MinOpacity ? 0 : col.opa;
                         }
                         bluropa.AlphaTable = table;
                         //////////////////////////////////////////////////////////////////////

@@ -695,6 +695,27 @@ namespace Charamaker3
             this.MaxTime = MaxTime;
             Reset();
         }
+        public SuperTimer(SuperTimer timer)
+        {
+            this.MinTime = timer.MinTime;
+            this.MaxTime = timer.MaxTime;
+            this.Timer = timer.Timer;
+        }
+
+        public DataSaver ToSave()
+        {
+            var d = new DataSaver();
+            d.packAdd("MinTime", this.MinTime);
+            d.packAdd("MaxTime", this.MaxTime);
+            return d;
+        }
+
+        public void ToLoad(DataSaver d)
+        {
+            this.MinTime=d.unpackDataF("MinTime", this.MinTime);
+            this.MaxTime=d.unpackDataF("MaxTime", this.MaxTime);
+            Reset();
+        }
     }
     /// <summary>
     /// 単振動により値が変化するfloat多重振り子的なこともできますわよ
