@@ -1672,9 +1672,9 @@ namespace Charamaker3.CharaModel
                                         {
                                             ratio = 1;
                                         }
-                                        else if ((tags[t].w + speeds[t][_W]) != 0)
+                                        else if ((tagBases[t].w) != 0)
                                         {
-                                            ratio = (basespeeds[_W] * tagBases[t].w / (tags[t].w + speeds[t][_W]));
+                                            ratio = ((tags[t].w + speeds[t][_W]))/ tagBases[t].w;
                                         }
                                         else
                                         {
@@ -1715,9 +1715,9 @@ namespace Charamaker3.CharaModel
                                         {
                                             ratio = 1;
                                         }
-                                        else if ((tags[t].h + speeds[t][_H]) != 0)
+                                        else if ((tagBases[t].h) != 0)
                                         {
-                                            ratio = (basespeeds[_H] * tagBases[t].h / (tags[t].h + speeds[t][_H]));
+                                            ratio = ((tags[t].h + speeds[t][_H])) / tagBases[t].h;
                                         }
                                         else
                                         {

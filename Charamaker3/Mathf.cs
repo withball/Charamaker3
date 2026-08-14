@@ -387,7 +387,6 @@ namespace Charamaker3
 
     //ソートするためのノード
     class sortnode<T>
-        where T : class
     {
         /// <summary>
         /// ソート対象のオブジェクト
@@ -415,7 +414,6 @@ namespace Charamaker3
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public class supersort<T>
-        where T : class
     {
         /// <summary>
         /// ランダムに並べ替える

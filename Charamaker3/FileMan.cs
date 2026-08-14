@@ -129,12 +129,27 @@ namespace Charamaker3
 
         }
         /// <summary>
+        /// リストをシャッフルする。
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        static public List<T> shuffle<T>(List<T> list)
+        {
+            var sort = new supersort<T>();
+            foreach (var a in list) 
+            {
+                sort.add(a, whrandhani(list.Count * 10,true));
+            }
+            sort.sort(false);
+            return sort.getresult();
+        }
+        /// <summary>
         /// Listからランダムに一つピックする
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
         static public T pickone<T>(List<T> list)
-
         {
             if (list.Count > 0)
             {
@@ -142,6 +157,7 @@ namespace Charamaker3
             }
             return default(T);
         }
+
         /// <summary>
         /// Listからランダムに一つピックする
         /// </summary>
