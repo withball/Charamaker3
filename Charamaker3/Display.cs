@@ -261,7 +261,8 @@ namespace Charamaker3
                         }
 
                     }
-               }));
+               }
+                ));
             }
             foreach (var task in tasks) { task.Wait(); }
             tasks.Clear();
@@ -1265,14 +1266,14 @@ namespace Charamaker3
 
             //ここでテキストレンダラーを処理
             {
-                var keys=new List<ITextRendererAble>(textRendererRequests.Keys);
-                for (int i = keys.Count - 1; i >= 0; i--)
-                {
-                    if (textRendererRequests[keys[i]].IsCanceled || textRendererRequests[keys[i]].IsFaulted|| textRendererRequests[keys[i]].IsCompleted)
-                    {
-                        textRendererRequests.Remove(keys[i]);
-                    }
-                }
+                //var keys=new List<ITextRendererAble>(textRendererRequests.Keys);
+                //for (int i = keys.Count - 1; i >= 0; i--)
+                //{
+                //    if (textRendererRequests[keys[i]].IsCanceled || textRendererRequests[keys[i]].IsFaulted|| textRendererRequests[keys[i]].IsCompleted)
+                //    {
+                //        textRendererRequests.Remove(keys[i]);
+                //    }
+                //}
             }
             _TextRender.BitmapRender.BeginDraw();
             _TextRenderBack.BitmapRender.BeginDraw();
@@ -1289,15 +1290,45 @@ namespace Charamaker3
                     a.c.PreDraw(a, Semaphores);
                 }
             }
-            _TextRender.BitmapRender.EndDraw();
-            _TextRenderBack.BitmapRender.EndDraw();
-
             //ここで占有地を解放
             for (int i = textRenderersRemove.Count - 1; i >= 0; i--)
             {
+
+                //Debug.WriteLine(Text + " Drawed!");
+                //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
+                var Clip = (RawRectF)textRenderersRemove[i].rendZone;
+
+                Clip = new RawRectF(Clip.Left - 1, Clip.Top - 1, Clip.Right + 1, Clip.Bottom + 1);
+
+
+
+                textRenderersRemove[i].render.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
+                textRenderersRemove[i].render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
+
+                textRenderersRemove[i].renderBack.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
+                textRenderersRemove[i].renderBack.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
+
+                float R = 0, G = 0.98f, B = 0.0f;
+                {
+
+                    //render.Clear(new ColorC(FileMan.whrandhani(R), FileMan.whrandhani(G), FileMan.whrandhani(B)
+                    //    , 0.5f));
+                    textRenderersRemove[i].render.BitmapRender.Clear(new ColorC(R, G, B, 1));
+
+                    textRenderersRemove[i].renderBack.BitmapRender.Clear(new ColorC(R, G, B, 1));
+                }
+
+                textRenderersRemove[i].render.BitmapRender.PopAxisAlignedClip();
+                textRenderersRemove[i].renderBack.BitmapRender.PopAxisAlignedClip();
+
                 textRenderers.Remove(textRenderersRemove[i]);
                 textRenderersRemove.RemoveAt(i);
             }
+
+            _TextRender.BitmapRender.EndDraw();
+            _TextRenderBack.BitmapRender.EndDraw();
+
+          
         }
         /// <summary>
         /// このカメラのスクショをとる
@@ -1504,11 +1535,11 @@ namespace Charamaker3
         /// </summary>
         public int TextRenderesNum { get { return textRenderers.Count; } }
         public int TextRenderesRemoveNum { get { return textRenderersRemove.Count; } }
-        internal TextRenderer makeTextRenderer(ITextRendererAble target,float w, float h)
+        internal TextRenderer makeTextRenderer(ITextRendererAble target, float w, float h)
         {
             if (textRendererRequests.ContainsKey(target) == false)
             {
-                textRendererRequests.Add(target,Task<TextReader>.Run(() =>
+                textRendererRequests.Add(target, Task<TextReader>.Run(() =>
                 {
                     TextRenderer result = null;
                     MakeTextRendererSemaphore.Wait();
@@ -1580,7 +1611,7 @@ namespace Charamaker3
                 int tt = Math.Min(t, textRenderers.Count);
                 int preTT = preT;
 
-             //   hanteis.Add(Task.Run(() =>
+                //hanteis.Add(Task.Run(() =>
                 {
                     for (int ttt = preTT; ttt < tt; ++ttt)
                     {
@@ -1631,7 +1662,7 @@ namespace Charamaker3
                         }
                     }
                 }
-              //  ));
+              //    ));
                 preT = t;
             }
             foreach (var a in hanteis)

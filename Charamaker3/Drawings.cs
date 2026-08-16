@@ -2874,7 +2874,7 @@ namespace Charamaker3
 
         void ITextRendererAble.SetTextRenderer(TextRenderer set) 
         {
-            _Trender = set;
+            Trender = set;
         }
         /// <summary>
         /// テキストが変わった時のサウンド
@@ -2922,7 +2922,6 @@ namespace Charamaker3
             cc.ChangeTextSound = this.ChangeTextSound;
             cc.ChangeTextSoundVolume = this.ChangeTextSoundVolume;
             cc.ChangeTextSoundCount = this.ChangeTextSoundCount;
-            cc.Trender = this.Trender;
 
             this.font.copy(cc.font);
         }
@@ -3001,12 +3000,11 @@ namespace Charamaker3
             if (Trender == null)
             {
                 //ここでテンポラリなやつをもらう。
-                Trender = dis.makeTextRenderer(this,font.w, font.h);
+             dis.makeTextRenderer(this,font.w, font.h);
             }
             else if (Trender.MustReset || (Trender.rendZone.w != font.w && Trender.rendZone.h != font.h))
             {
-                Trender.Release();
-                Trender = dis.makeTextRenderer(this,font.w, font.h);
+               dis.makeTextRenderer(this,font.w, font.h);
             }
             if (Trender != null)
             {
@@ -3252,9 +3250,9 @@ namespace Charamaker3
             }
             if (onWorld==false)
             {
-
-                _Trender?.Release();
-                _Trender = null;
+                // やっぱりワールドから消えた程度ではリリースしない。
+                //_Trender?.Release();
+                //_Trender = null;
             }
         }
         
