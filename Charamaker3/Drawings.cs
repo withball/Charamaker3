@@ -536,15 +536,17 @@ namespace Charamaker3
         /// これをする前にCandrawで確かめておく?
         /// </summary>
         /// <param name="cam"></param>
-        public virtual void PreDraw(Camera cam, DisplaySemaphores semaphores) { }
+        public virtual void PreDraw(Camera cam, DisplaySemaphores semaphores) 
+        {
+        }
 
         /// <summary>
         /// 描画可能な条件
         /// </summary>
         /// <returns></returns>
-        virtual public bool CanPreDraw(Camera cam)
+        virtual public bool CanPreDraw(Camera cam, DisplaySemaphores semaphores)
         {
-            return col.opa>0;
+            return col.opa > 0;
         }
         protected bool onCamera(Camera cam)
         {
@@ -872,6 +874,9 @@ namespace Charamaker3
         }
     }
 
+    /// <summary>
+    /// 画像一枚
+    /// </summary>
     public class Texture : Drawable
     {
         /// <summary>
@@ -1192,13 +1197,13 @@ namespace Charamaker3
 
 }
 
-#region Text
+    #region Text
 
 
-/// <summary>
-/// 解析済みのテキスト
-/// </summary>
-public class TextInformation
+    /// <summary>
+    /// 解析済みのテキスト
+    /// </summary>
+    public class TextInformation
     {
         /// <summary>
         /// ソーステキストを指定したか
@@ -1216,16 +1221,18 @@ public class TextInformation
         /// <summary>
         /// テキストソース
         /// </summary>
-        public string TextSource { get { return _TextSource; }
+        public string TextSource
+        {
+            get { return _TextSource; }
             set
             {
                 _TextSource = value;
-                
+
                 Analyzed.Clear();
                 Analyzed = CharInformation.AnalyzeText(value);
 
                 _AnalyzedText = "";
-                foreach (var a in Analyzed) 
+                foreach (var a in Analyzed)
                 {
                     _AnalyzedText += a.CharText;
                 }
@@ -1237,32 +1244,34 @@ public class TextInformation
         /// 解析済みテキスト
         /// </summary>
         protected string _AnalyzedText = "";
-        
+
         /// <summary>
         /// 解析済みのテキスト
         /// </summary>
-        public string AnalyzedText { get { return _AnalyzedText; } 
-            set 
+        public string AnalyzedText
+        {
+            get { return _AnalyzedText; }
+            set
             {
                 _AnalyzedText = value;
                 _TextSource = value;
 
                 Analyzed.Clear();
-                for (int i = 0; i < value.Length; ++i) 
+                for (int i = 0; i < value.Length; ++i)
                 {
-                    Analyzed.Add(new CharInformation(null,false,1,value.Substring(i,1),-1,-1));
+                    Analyzed.Add(new CharInformation(null, false, 1, value.Substring(i, 1), -1, -1));
                 }
                 _SourceSetted = false;
-            } 
+            }
         }
 
-        public TextInformation(string t="",bool isSource=true) 
+        public TextInformation(string t = "", bool isSource = true)
         {
             if (isSource)
             {
                 this.TextSource = t;
             }
-            else 
+            else
             {
                 this.AnalyzedText = t;
             }
@@ -1271,7 +1280,7 @@ public class TextInformation
         /// <summary>
         /// 描画テキスト 直接いじってもいいけどさ。
         /// </summary>
-        public List<CharInformation> Analyzed=new List<CharInformation>();
+        public List<CharInformation> Analyzed = new List<CharInformation>();
 
         /// <summary>
         /// n文字を抜き出す
@@ -1279,17 +1288,17 @@ public class TextInformation
         /// <param name="start">始まる位置</param>
         /// <param name="length">長さ(-1で最後まで)</param>
         /// <returns>文字の方はいじらないでね</returns>
-        public TextInformation Substring(int start,int length) 
+        public TextInformation Substring(int start, int length)
         {
-            var res=clone();
-            for (int i = 0; i<start;++i)
+            var res = clone();
+            for (int i = 0; i < start; ++i)
             {
                 if (res.Analyzed.Count > 0)
                 {
                     res.Analyzed.RemoveAt(0);
                     res._AnalyzedText.Remove(0);
                 }
-                else 
+                else
                 {
                     //これは全部消えてしまったってこと
                     res._AnalyzedText = "";
@@ -1349,23 +1358,23 @@ public class TextInformation
                 pasted.Analyzed.Add(new CharInformation(a));
             }
         }
-        public TextInformation clone() 
+        public TextInformation clone()
         {
-            var res=new TextInformation();
+            var res = new TextInformation();
             this.copy(res);
             return res;
         }
 
 
-        public DataSaver ToSave() 
+        public DataSaver ToSave()
         {
-            var d=new DataSaver();
+            var d = new DataSaver();
             d.packAdd("SourceSetted", SourceSetted);
             if (SourceSetted)
             {
                 d.packAdd("Text", TextSource);
             }
-            else 
+            else
             {
                 d.packAdd("Text", AnalyzedText);
             }
@@ -1383,10 +1392,12 @@ public class TextInformation
                 AnalyzedText = d.unpackDataS("Text", AnalyzedText);
             }
         }
-        
+
     }
 
-    //テキストに色を付けたりサイズを変えたりするやつ。
+    /// <summary>
+    /// テキストに色を付けたりサイズを変えたりするやつ。
+    /// </summary>
     public class CharInformation
     {
         /// <summary>
@@ -1872,9 +1883,29 @@ public class TextInformation
                 res.Add(add);
             }
             return res;
-        } } 
+        }
+        bool isSameOption(CharInformation a, CharInformation b)
+        {
+            bool colorEqual;
+            if ((a.Color == null) && (a.Color == null))
+            {
+                colorEqual = true;
+            }
+            else if ((a.Color != null) && (a.Color != null))
+            {
+                colorEqual = a.Color == b.Color;
+            }
+            else
+            {
+                colorEqual = false;
+            }
+            return a.isMultiplyColor == b.isMultiplyColor && colorEqual && a.Size == b.Size && a.Bold == b.Bold && a.Italic == b.Italic;
+        }
+    } 
     
-        //テキストに色を付けたりサイズを変えたりするやつ。
+    /// <summary>
+    /// テキストに色を付けたりサイズを変えたりするやつ。
+    /// </summary>
     public class TextLayout
     {
         public CharInformation c;
@@ -1908,7 +1939,7 @@ public class TextInformation
         /// <summary>
         /// テキストを一文字ずつに分割する。
         /// </summary>
-        /// <param name="FullText"></param>
+        /// <param name="text"></param>
         /// <param name="render"></param>
         /// <param name="F"></param>
         /// <param name="rendZone"></param>
@@ -2032,7 +2063,9 @@ public class TextInformation
     /// </summary>
     public class FontC
     {
-        //EncodehはUTF-8BOMつきでお願い。
+        /// <summary>
+        /// EncodehはUTF-8BOMつきでお願い。
+        /// </summary>
         public enum alignment
         {
             /// <summary>
@@ -2265,7 +2298,7 @@ public class TextInformation
     /// <summary>
     /// bmp上の領域を確保して文字を書くためのクラス
     /// </summary>
-    class TextRenderer
+    public class TextRenderer
     {
         internal C3BitmapRenderSet render;
         internal C3BitmapRenderSet renderBack;
@@ -2282,6 +2315,16 @@ public class TextInformation
         public bool MustReset { get { return _MustReset; } }
         bool NoChange = false;
         bool NoChange2 = false;
+        /// <summary>
+        /// まだ描画がされていないフラグ
+        /// </summary>
+        public bool isNotDrawed 
+        { 
+            get
+            {
+                return this.PastColor == null || PastFont == null || PastText == null;
+            } 
+        }
         /// <summary>
         /// 
         /// </summary>
@@ -2355,6 +2398,13 @@ public class TextInformation
         {
             parent.ReleaseTextRenderer(this);
         }
+        /// <summary>
+        /// コピー用のテキストレンダーを追加する。
+        /// </summary>
+        public void Add()
+        {
+            parent.AddTextRenderer(this);
+        }
 
         /// <summary>
         /// 新しく作る
@@ -2421,7 +2471,7 @@ public class TextInformation
                 }
             }
         }
-        public void Draw(TextInformation Text, FontC F, ColorC color,DisplaySemaphores semaphores)
+        public int Draw(TextInformation Text, FontC F, ColorC color,DisplaySemaphores semaphores)
         {
             if (CheckChange(Text, F, color))
             {
@@ -2579,7 +2629,7 @@ public class TextInformation
                     }
                 }
                 //一旦描画を確定させないといけないっぽいから使えない。
-                void DrawBluer(Rectangle drawR,  BlurC inBlur)
+                /*void DrawBluer(Rectangle drawR,  BlurC inBlur)
                 {
                     semaphores.Draw.Wait();
 
@@ -2671,6 +2721,7 @@ public class TextInformation
 
                     semaphores.Draw.Release();
                 }
+                */
 
                 if (F.hutiZure > 0)
                 {
@@ -2686,20 +2737,40 @@ public class TextInformation
                     lis.Add(new FXY(0, -1));
                     {
                         var analyze=TextLayout.AnalyzeText(Text, renderBack, F, rendZone);
-                        foreach (var a in analyze) 
+                        float maxzure = 0;
+                        foreach (var a in analyze)
                         {
                             foreach (var b in a)
                             {
-                                float s=b.c.Size* F.size* F.hutiZure;
-                                for (int x = -(int)s; x <= s; ++x)
+                                float s = b.c.Size * F.size * F.hutiZure;
+                                maxzure = Mathf.max(s, maxzure);
+                            }
+                        }
+
+                        for (int x = -(int)maxzure; x <= maxzure; ++x)
+                        {
+                            for (int y = -(int)maxzure; y <= maxzure; ++y)
+                            {
+                                foreach (var a in analyze)
                                 {
-                                    for (int y = -(int)s; y <= s; ++y)
+                                    foreach (var b in a)
                                     {
+                                        float s = b.c.Size * F.size * F.hutiZure;
                                         if (x * x + y * y < s * s)
                                         {
                                             b.x += x;
                                             b.y += y;
-                                            DrawText(analyze, rendZone, F, true);
+                                        }
+                                    }
+                                }
+                                DrawText(analyze, rendZone, F, true);
+                                foreach (var a in analyze)
+                                {
+                                    foreach (var b in a)
+                                    {
+                                        float s = b.c.Size * F.size * F.hutiZure;
+                                        if (x * x + y * y < s * s)
+                                        {
                                             b.x -= x;
                                             b.y -= y;
                                         }
@@ -2707,6 +2778,8 @@ public class TextInformation
                                 }
                             }
                         }
+                         
+
                         //render.BitmapRender.DrawText(Text.AnalyzedText, F.ToFont(), lis[i], slb);
                     }
                     //DrawBluer(rendZone,new BlurC(3,minOpacity:0.1f));
@@ -2715,7 +2788,7 @@ public class TextInformation
                 List<List<TextLayout>> AnalysedTexts = TextLayout.AnalyzeText(Text, render, F, rendZone);
                 SetRayout(AnalysedTexts, F);
 
-               DrawText(AnalysedTexts, rendZone, F,false);
+                DrawText(AnalysedTexts, rendZone, F,false);
                 render.BitmapRender.PopAxisAlignedClip();
                 renderBack.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
@@ -2728,8 +2801,14 @@ public class TextInformation
 
                 parent.Drawed(this);
                 NoChange = true;
+                int cost = 0;
+                foreach (var a in AnalysedTexts) 
+                {
+                    cost += a.Count;
+                }
+                return cost;
             }
-
+            return 0;
         }
         /// <summary>
         /// 画面に描画する前に呼び出すよ
@@ -2775,13 +2854,28 @@ public class TextInformation
         }
     }
 
-
-    public class Text : Drawable
+    /// <summary>
+    /// テキストレンダラーを非同期でごちゃごちゃするためのクラス
+    /// </summary>
+    public interface ITextRendererAble 
+    {
+        /// <summary>
+        /// テキストレンダラーをセットする。
+        /// </summary>
+        void SetTextRenderer(TextRenderer set);
+    }
+    public class Text : Drawable , ITextRendererAble
     {
         public TextInformation text = new TextInformation();
         public TextInformation pretext = new TextInformation();
         public FontC font = new FontC();
         private TextRenderer _Trender = null;
+        
+
+        void ITextRendererAble.SetTextRenderer(TextRenderer set) 
+        {
+            _Trender = set;
+        }
         /// <summary>
         /// テキストが変わった時のサウンド
         /// </summary>
@@ -2808,18 +2902,28 @@ public class TextInformation
             this.text = new TextInformation(text);
             this.font = new FontC();
             font.copy(this.font);
+
         }
-        public Text() { }
+        public Text() 
+        {
+        }
+
+        /// <summary>
+        /// コピー後はPreと違くなったらTrenderがリセットされる感じの挙動ってことで
+        /// </summary>
+        /// <param name="c"></param>
         public override void copy(Component c)
         {
             base.copy(c);
             var cc = (Text)c;
             cc.text = this.text.clone();
-            cc.pretext = this.pretext.clone();
+            cc.pretext = this.text.clone();
             cc.font = new FontC();
             cc.ChangeTextSound = this.ChangeTextSound;
             cc.ChangeTextSoundVolume = this.ChangeTextSoundVolume;
             cc.ChangeTextSoundCount = this.ChangeTextSoundCount;
+            cc.Trender = this.Trender;
+
             this.font.copy(cc.font);
         }
         public override DataSaver ToSave()
@@ -2897,12 +3001,12 @@ public class TextInformation
             if (Trender == null)
             {
                 //ここでテンポラリなやつをもらう。
-                Trender = dis.makeTextRenderer(font.w, font.h);
+                Trender = dis.makeTextRenderer(this,font.w, font.h);
             }
             else if (Trender.MustReset || (Trender.rendZone.w != font.w && Trender.rendZone.h != font.h))
             {
                 Trender.Release();
-                Trender = dis.makeTextRenderer(font.w, font.h);
+                Trender = dis.makeTextRenderer(this,font.w, font.h);
             }
             if (Trender != null)
             {
@@ -2954,8 +3058,17 @@ public class TextInformation
         public override void PreDraw(Camera cam, DisplaySemaphores semaphores)
         {
             MakeTrender(cam.d);
+            if (Trender == null)
+            {
+                return;
+            }
             base.PreDraw(cam, semaphores);
-            Trender.Draw(text, font, col,semaphores);
+            
+            if (semaphores.PredrawCost>0&& Trender.Draw(text, font, col, semaphores)>0) 
+            {
+                //文字数が多いほどコストを消費する。
+                semaphores.PredrawCost -= 0.00f;
+            }
 
             D_rect = rectRectF(cam);
             D_trans = rectTrans(cam);
@@ -2963,7 +3076,7 @@ public class TextInformation
         }
         public override void draw(Camera cam, DisplaySemaphores semaphores)
         {
-            if (Trender == null) 
+            if (Trender == null || Trender.isNotDrawed == true)
             {
                 return;
             }
@@ -3148,9 +3261,9 @@ public class TextInformation
         public override void removetoworld(float cl = 0)
         {
             base.removetoworld(cl);
-
-            _Trender?.Release();
-            _Trender = null;
+            // やっぱりワールドから消えた程度ではリリースしない。
+            //_Trender?.Release();
+            //_Trender = null;
         }
         ~Text()
         {

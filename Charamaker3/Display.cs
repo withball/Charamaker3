@@ -227,9 +227,9 @@ namespace Charamaker3
             this.watchRect = WatchRect;
 
         }
-        public override bool CanPreDraw(Camera cam)
+        public override bool CanPreDraw(Camera cam, DisplaySemaphores semaphores)
         {
-            return base.CanPreDraw(cam)&& CanDraw(cam);
+            return base.CanPreDraw(cam,semaphores) && CanDraw(cam);
         }
 
         /// <summary>
@@ -251,17 +251,17 @@ namespace Charamaker3
             //cl=0でも呼び出される
             if (watchRect.world != null)
             {
-                //tasks.Add(Task.Run(() =>
-                //{
+                tasks.Add(Task.Run(() =>
+                {
                     foreach (var a in watchRect.world.Ddic.getresult())
                     {
-                        if (a.CanPreDraw(this))
+                        if (a.CanPreDraw(this,semaphores))
                         {
                             a.PreDraw(this, semaphores);
                         }
 
                     }
-               //}));
+               }));
             }
             foreach (var task in tasks) { task.Wait(); }
             tasks.Clear();
@@ -779,6 +779,10 @@ namespace Charamaker3
     {
         public SemaphoreSlim Draw = new SemaphoreSlim(1, 1);
         public SemaphoreSlim TextRender = new SemaphoreSlim(1, 1);
+        /// <summary>
+        /// 事前描画に使える残りコスト
+        /// </summary>
+        public float PredrawCost = 1;
     }
     public class Display
     {
@@ -1258,8 +1262,22 @@ namespace Charamaker3
         /// <param name="cl"></param>
         protected void PreDraw(float cl, List<CP<Camera>> AddPredraws = null)
         {
+
+            //ここでテキストレンダラーを処理
+            {
+                var keys=new List<ITextRendererAble>(textRendererRequests.Keys);
+                for (int i = keys.Count - 1; i >= 0; i--)
+                {
+                    if (textRendererRequests[keys[i]].IsCanceled || textRendererRequests[keys[i]].IsFaulted|| textRendererRequests[keys[i]].IsCompleted)
+                    {
+                        textRendererRequests.Remove(keys[i]);
+                    }
+                }
+            }
             _TextRender.BitmapRender.BeginDraw();
             _TextRenderBack.BitmapRender.BeginDraw();
+
+            Semaphores.PredrawCost = 1;
             foreach (var a in new List<CP<Camera>>(cameras))
             {
                 a.c.PreDraw(a, Semaphores);
@@ -1476,16 +1494,46 @@ namespace Charamaker3
 
             return false;
         }
+
         List<TextRenderer> textRenderers = new List<TextRenderer>();
         List<TextRenderer> textRenderersRemove = new List<TextRenderer>();
+        Dictionary<ITextRendererAble, Task> textRendererRequests = new Dictionary<ITextRendererAble, Task>();
+        SemaphoreSlim MakeTextRendererSemaphore =new SemaphoreSlim(1);
         /// <summary>
         /// テキスト描画用の奴の数
         /// </summary>
         public int TextRenderesNum { get { return textRenderers.Count; } }
         public int TextRenderesRemoveNum { get { return textRenderersRemove.Count; } }
-        internal TextRenderer makeTextRenderer(float w, float h)
+        internal TextRenderer makeTextRenderer(ITextRendererAble target,float w, float h)
         {
-           //Debug.WriteLine("make TextRendere" + w + " :: " + h +" rends = "+ textRenderers.Count);
+            if (textRendererRequests.ContainsKey(target) == false)
+            {
+                textRendererRequests.Add(target,Task<TextReader>.Run(() =>
+                {
+                    TextRenderer result = null;
+                    MakeTextRendererSemaphore.Wait();
+                    try
+                    {
+                        result = _makeTextRenderer(w, h);
+                        if (result != null)
+                        {
+                            target.SetTextRenderer(result);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    MakeTextRendererSemaphore.Release();
+
+
+
+                }));
+            }
+            return null;
+        }
+        private TextRenderer _makeTextRenderer(float w, float h)
+        {
+            //Debug.WriteLine("make TextRendere" + w + " :: " + h +" rends = "+ textRenderers.Count);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
             h = Mathf.ceil(h);
@@ -1493,13 +1541,13 @@ namespace Charamaker3
             var hanteis = new List<Task>();
 
             List<Shapes.Rectangle> rects = new List<Shapes.Rectangle>();
-            SemaphoreSlim semapho = new SemaphoreSlim(1,1);
-            void addrect(FXY np) 
+            SemaphoreSlim semapho = new SemaphoreSlim(1, 1);
+            void addrect(FXY np)
             {
                 float maxx = 0, maxy = 0;
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, np.x, np.y-1f
+                    if (onHani(b.rendZone, np.x, np.y - 1f
                         , np.x - _TextRender.BitmapRender.Size.Width, np.y))
                     {
                         maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w, 0).x, maxx);
@@ -1507,8 +1555,8 @@ namespace Charamaker3
                 }
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, np.x-1f, np.y
-                        , np.x , np.y - _TextRender.BitmapRender.Size.Height))
+                    if (onHani(b.rendZone, np.x - 1f, np.y
+                        , np.x, np.y - _TextRender.BitmapRender.Size.Height))
                     {
                         maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
                     }
@@ -1526,13 +1574,13 @@ namespace Charamaker3
             addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1));
 
             int preT = 0;
-            int Range = Math.Max(textRenderers.Count / 10,1);
-            for ( int t=Range;t< textRenderers.Count+Range;t+=Range)
+            int Range = Math.Max(textRenderers.Count / 10, 1);
+            for (int t = Range; t < textRenderers.Count + Range; t += Range)
             {
                 int tt = Math.Min(t, textRenderers.Count);
                 int preTT = preT;
 
-                hanteis.Add(Task.Run(() =>
+             //   hanteis.Add(Task.Run(() =>
                 {
                     for (int ttt = preTT; ttt < tt; ++ttt)
                     {
@@ -1583,15 +1631,15 @@ namespace Charamaker3
                         }
                     }
                 }
-                ));
+              //  ));
                 preT = t;
             }
-            foreach (var a in hanteis) 
+            foreach (var a in hanteis)
             {
                 a.Wait();
             }
             hanteis.Clear();
-            
+
             Shapes.Rectangle res = null;
             //右下度で制限。
             float rightleft = 0;
@@ -1610,7 +1658,7 @@ namespace Charamaker3
                 if (a != null)
                 {
                     //なるべく面積の大きいやつを選ぶ
-                    if (res == null || (res.menseki < a.menseki && (a.x + a.y + a.w + a.h) >rightleft*0.75f))
+                    if (res == null || (res.menseki < a.menseki && (a.x + a.y + a.w + a.h) > rightleft * 0.75f))
                     {
                         if (a.w > w && a.h > h)
                         {
@@ -1630,7 +1678,7 @@ namespace Charamaker3
                 res = new Shapes.Rectangle(Mathf.max(fxy.x - w, 0), Mathf.max(fxy.y - h, 0)
                     , w, h);
             }
-            var returns = new TextRenderer(this, _TextRender,_TextRenderBack, res);
+            var returns = new TextRenderer(this, _TextRender, _TextRenderBack, res);
             //右下順に並べる
             var ss = new supersort<TextRenderer>();
             ss.add(returns, returns.rendZone.x + returns.rendZone.y);
@@ -1644,7 +1692,14 @@ namespace Charamaker3
 
             return returns;
         }
-
+        /// <summary>
+        /// コピー用のテキストレンダーを足す。消すときはひとつづつ消すので実質所有権みてぇなもんだと思います。
+        /// </summary>
+        /// <param name="D"></param>
+        internal void AddTextRenderer(TextRenderer D)
+        {
+            textRenderers.Add(D);
+        }
         internal void ReleaseTextRenderer(TextRenderer D)
         {
             textRenderersRemove.Add(D);

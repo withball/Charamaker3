@@ -325,6 +325,8 @@ namespace Charamaker3
             return Mathf.min(Mathf.max(value, min), max);
         }
 
+
+
         /// <summary>
         /// 最も大きい値を返す
         /// </summary>
