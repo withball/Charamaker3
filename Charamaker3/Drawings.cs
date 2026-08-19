@@ -2298,7 +2298,7 @@ namespace Charamaker3
     /// <summary>
     /// bmp上の領域を確保して文字を書くためのクラス
     /// </summary>
-    public class TextRenderer
+    public class TextRenderer 
     {
         internal C3BitmapRenderSet render;
         internal C3BitmapRenderSet renderBack;
@@ -2307,6 +2307,16 @@ namespace Charamaker3
         /// Rectangleだが、回転は無視される。
         /// </summary>
         public Shapes.Rectangle rendZone;
+
+
+        /// <summary>
+        /// 実際のメモリ上に配置されてる矩形
+        /// </summary>
+        public Shapes.Rectangle rendZoneTenti;
+        /// <summary>
+        /// 横>縦にするための回転
+        /// </summary>
+        public bool Tenti = false;
 
         bool _MustReset = false;
         /// <summary>
@@ -2331,18 +2341,27 @@ namespace Charamaker3
         /// <param name="parent"></param>
         /// <param name="render"></param>
         /// <param name="drawto">回転は無しね</param>
-        public TextRenderer(Display parent, C3BitmapRenderSet render, C3BitmapRenderSet renderBack, Shapes.Rectangle drawto)
+        public TextRenderer(Display parent, C3BitmapRenderSet render, C3BitmapRenderSet renderBack, Shapes.Rectangle drawto,bool tenti)
         {
             this.parent = parent;
             this.render = render;
             this.renderBack = renderBack;
-            rendZone = drawto;
-     
+            this.rendZone = (Rectangle)drawto.clone();
+            this.rendZoneTenti = (Rectangle)drawto.clone();
+            this.Tenti =tenti;
+
+            if (tenti == true)
+            {
+                this.rendZone.w = this.rendZoneTenti.h;
+                this.rendZone.h = this.rendZoneTenti.w;
+            }
+
         }
         ~TextRenderer()
         {
-           Release();//ここ、マジ意味ない
+            Debug.WriteLine(this+"TEXTRENDERER REleased!");
         }
+
         /// <summary>
         /// こいつを管理している親
         /// </summary>
@@ -2394,17 +2413,7 @@ namespace Charamaker3
         }
 
 
-        public void Release()
-        {
-            parent.ReleaseTextRenderer(this);
-        }
-        /// <summary>
-        /// コピー用のテキストレンダーを追加する。
-        /// </summary>
-        public void Add()
-        {
-            parent.AddTextRenderer(this);
-        }
+
 
         /// <summary>
         /// 新しく作る
@@ -2480,22 +2489,32 @@ namespace Charamaker3
 
             if (NoChange == false)
             {
-                Display.ThreadNum +=1;
+                Display.ThreadNum += 1;
                 //Debug.WriteLine(Text + " Drawed!");
                 //  Text+= "\n->"+rendZone.gettxy(0, 0) + " :TO: " + rendZone.gettxy(rendZone.w, rendZone.h);
-                var Clip = (RawRectF)rendZone;
+                var Clip = (RawRectF)rendZoneTenti;
 
                 Clip = new RawRectF(Clip.Left - 1, Clip.Top - 1, Clip.Right + 1, Clip.Bottom + 1);
 
 
                 semaphores.TextRender.Wait();
 
-                render.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
+                //CLipもTransForm影響するらしい。
                 render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
-
-                renderBack.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
                 renderBack.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
 
+                render.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
+                renderBack.BitmapRender.PushAxisAlignedClip(Clip, AntialiasMode.PerPrimitive);
+                if (Tenti == true)
+                {
+                    render.BitmapRender.Transform = new Matrix3x2(0, 1, 1, 0, rendZoneTenti.x-rendZoneTenti.y, rendZoneTenti.y - rendZoneTenti.x);
+                    renderBack.BitmapRender.Transform = new Matrix3x2(0, 1, 1, 0, rendZoneTenti.x - rendZoneTenti.y, rendZoneTenti.y - rendZoneTenti.x);
+                }
+                else
+                {
+                    render.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
+                    renderBack.BitmapRender.Transform = Matrix3x2.CreateTranslation(0, 0);
+                }
                 float R = 1, G = 0.98f, B = 0.97f;
                 {
 
@@ -2892,8 +2911,8 @@ namespace Charamaker3
         public int ChangeTextSoundCount = -1;
         internal TextRenderer Trender { get { return _Trender; }
 
-            set {
-                _Trender?.Release();
+            set
+            {
                 _Trender = value;
             }
         }
@@ -2922,6 +2941,7 @@ namespace Charamaker3
             cc.ChangeTextSound = this.ChangeTextSound;
             cc.ChangeTextSoundVolume = this.ChangeTextSoundVolume;
             cc.ChangeTextSoundCount = this.ChangeTextSoundCount;
+            cc._Trender = this._Trender;
 
             this.font.copy(cc.font);
         }
@@ -3067,9 +3087,19 @@ namespace Charamaker3
                 //文字数が多いほどコストを消費する。
                 semaphores.PredrawCost -= 0.00f;
             }
-
+           
             D_rect = rectRectF(cam);
             D_trans = rectTrans(cam);
+            if (Trender.Tenti == true)
+            {
+                float w = D_rect.Right - D_rect.Left;
+                float h = D_rect.Bottom - D_rect.Top;
+                D_rect = new RawRectF(D_rect.Left, D_rect.Top,
+                    D_rect.Left + h, D_rect.Top + w);
+
+                D_trans = Matrix3x2.Multiply(new Matrix3x2(0, 1, 1, 0, D_rect.Left - D_rect.Top, D_rect.Top - D_rect.Left), D_trans);
+
+            }
             kousokuDraw = blur.Standard == 0;
         }
         public override void draw(Camera cam, DisplaySemaphores semaphores)
@@ -3099,9 +3129,16 @@ namespace Charamaker3
                 default:
                     break;
             }
-           
 
-            var zure = new FXY(0, yZure);
+            FXY zure;
+            if (Trender.Tenti == false)
+            {
+                zure = new FXY(0, yZure);
+            }
+            else
+            {
+                zure = new FXY(yZure, 0);
+            }
             zure = camsoutai(cam, zure + cam.watchRect.gettxy(0, 0));
             zure.degree += e.degree;
             var rect = new RawRectF(D_rect.Left + zure.x, D_rect.Top + zure.y, D_rect.Right + zure.x, D_rect.Bottom + zure.y);
@@ -3123,6 +3160,11 @@ namespace Charamaker3
                 mode3 = InterpolationMode.NearestNeighbor;
             }
 
+            Rectangle sourceRect = new Rectangle();
+            Trender.rendZoneTenti.copy(sourceRect);
+
+
+
             if (kousokuDraw == false)
             {
                 semaphores.Draw.Wait();
@@ -3134,8 +3176,6 @@ namespace Charamaker3
 
 
                 /////////////////////////////クロップ
-                Rectangle sourceRect = new Rectangle();
-                Trender.rendZone.copy(sourceRect);
                 {
                     var crop0 = cam.render.ECrop0;
                     crop0.SetInput(0, Trender.renderBack.BitmapRender.Bitmap, new SharpGen.Runtime.RawBool(true));
@@ -3154,6 +3194,7 @@ namespace Charamaker3
                     crop0.InterPolationMode = mode2;
                     crop2.SetInputEffect(0, crop1, new SharpGen.Runtime.RawBool(false));
 
+                    
                     crop2.TransformMatrix = Matrix3x2.CreateTranslation(-sourceRect.x, -sourceRect.y);
                     //crop.Rectangle = new Vector4(0, 0, 5, 5);
                 }
@@ -3176,34 +3217,44 @@ namespace Charamaker3
 
                     blend.Matrix = colormatrix;
 
-                   var blur = cam.render.EBlur;
+                    var blur = cam.render.EBlur;
                     blur.SetInputEffect(0, blend, new SharpGen.Runtime.RawBool(false));
-                    
+
                     blur.StandardDeviation = this.blur.Standard;
                     blur.Optimization = (GaussianBlurOptimization)this.blur.Optimization;
-                    blur.BorderMode = this.blur.BorderMode== BlurC.BlurBorder.Hard ? BorderMode.Hard : BorderMode.Soft;
+                    blur.BorderMode = this.blur.BorderMode == BlurC.BlurBorder.Hard ? BorderMode.Hard : BorderMode.Soft;
 
                     trans.SetInputEffect(0, blur, new SharpGen.Runtime.RawBool(false));
                 }
-                Matrix3x2 transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h,zure.x,zure.y);
-                
-                //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
-                trans.TransformMatrix = transmatrix;
-                //_BlendRender.BeginDraw();
+                if (Trender.Tenti == true)
+                {
+                    Matrix3x2 transmatrix = rectTransMax(cam, sourceRect.h, sourceRect.w, zure.y, zure.x);
+                  
+
+                    transmatrix = Matrix3x2.Multiply(new Matrix3x2(0, 1, 1, 0, 0, 0), transmatrix);
+
+                    trans.TransformMatrix = transmatrix;
+                }
+                else 
+                {
+                    Matrix3x2 transmatrix = rectTransMax(cam, sourceRect.w, sourceRect.h, zure.x, zure.y);
+
+                    trans.TransformMatrix = transmatrix;
+                }
+                    //Debug.WriteLine($"{bitmap.PixelSize.Width},asd {bitmap.PixelSize.Height}");
+                    //_BlendRender.BeginDraw();
 
 
-                //d2dContext.Clear(new ColorC(0, 0, 0, 0));
-                //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
-                //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
-                cam.render.DeviceContext.DrawImage(trans, mode3
-                    , CompositeMode.SourceOver);
+                    //d2dContext.Clear(new ColorC(0, 0, 0, 0));
+                    //_BlendRender.Clear(new ColorC(0, 0, 0, 0));
+                    //d2dContext.PushAxisAlignedClip(rect, AntialiasMode.PerPrimitive);
+                    cam.render.DeviceContext.DrawImage(trans, mode3
+                        , CompositeMode.SourceOver);
 
                 semaphores.Draw.Release();
             }
-            else 
+            else
             {
-                var source = new Rectangle();
-                Trender.rendZone.copy(source);
                 /*source.x += 1;
                 source.w -= 2;
                 source.y += 1;
@@ -3218,14 +3269,12 @@ namespace Charamaker3
                     render.DrawBitmap(Trender.renderBack.BitmapRender.Bitmap
                       , rect
                       , this.col.opa, mode
-                        , source);
+                        , sourceRect);
                     semaphores.Draw.Release();
                 }
             }
             //両方描画する
             {
-                var source = new Rectangle();
-                Trender.rendZone.copy(source);
                 /*source.x += 1;
                 source.w -= 2;
                 source.y += 1;
@@ -3240,7 +3289,7 @@ namespace Charamaker3
                     render.DrawBitmap(Trender.render.BitmapRender.Bitmap
                       , rect
                       , this.col.opa, mode
-                        , source);
+                        , sourceRect);
                     semaphores.Draw.Release();
                 }
             }
@@ -3265,8 +3314,8 @@ namespace Charamaker3
         }
         ~Text()
         {
-            _Trender?.Release();
-            _Trender = null;
+            //Debug.WriteLine(_Trender+"TextReleased! ");
+            Trender = null;
         }
     }
 

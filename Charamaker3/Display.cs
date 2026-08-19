@@ -1266,14 +1266,14 @@ namespace Charamaker3
 
             //ここでテキストレンダラーを処理
             {
-                //var keys=new List<ITextRendererAble>(textRendererRequests.Keys);
-                //for (int i = keys.Count - 1; i >= 0; i--)
-                //{
-                //    if (textRendererRequests[keys[i]].IsCanceled || textRendererRequests[keys[i]].IsFaulted|| textRendererRequests[keys[i]].IsCompleted)
-                //    {
-                //        textRendererRequests.Remove(keys[i]);
-                //    }
-                //}
+                var keys = new List<ITextRendererAble>(textRendererRequests.Keys);
+                for (int i = keys.Count - 1; i >= 0; i--)
+                {
+                    if (textRendererRequests[keys[i]].IsCanceled || textRendererRequests[keys[i]].IsFaulted || textRendererRequests[keys[i]].IsCompleted)
+                    {
+                        textRendererRequests.Remove(keys[i]);
+                    }
+                }
             }
             _TextRender.BitmapRender.BeginDraw();
             _TextRenderBack.BitmapRender.BeginDraw();
@@ -1290,7 +1290,8 @@ namespace Charamaker3
                     a.c.PreDraw(a, Semaphores);
                 }
             }
-            //ここで占有地を解放
+            /*
+            //ここで占有地を解放 もう開放はしない。ガベージコレクタに回収させ、回収されたのは自動的に消す。
             for (int i = textRenderersRemove.Count - 1; i >= 0; i--)
             {
 
@@ -1323,7 +1324,7 @@ namespace Charamaker3
 
                 textRenderers.Remove(textRenderersRemove[i]);
                 textRenderersRemove.RemoveAt(i);
-            }
+            }*/
 
             _TextRender.BitmapRender.EndDraw();
             _TextRenderBack.BitmapRender.EndDraw();
@@ -1353,7 +1354,8 @@ namespace Charamaker3
                 cam.render = render;
             }
             screenShot(_SCSRender,render);
-            //screenShot(_TextRender,render);
+            screenShot(_TextRender,render);
+            //screenShot(_TextRenderBack, render);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);
         }
@@ -1526,15 +1528,13 @@ namespace Charamaker3
             return false;
         }
 
-        List<TextRenderer> textRenderers = new List<TextRenderer>();
-        List<TextRenderer> textRenderersRemove = new List<TextRenderer>();
+        List<WeakReference<TextRenderer>> _textRenderers = new List<WeakReference<TextRenderer>>();
         Dictionary<ITextRendererAble, Task> textRendererRequests = new Dictionary<ITextRendererAble, Task>();
         SemaphoreSlim MakeTextRendererSemaphore =new SemaphoreSlim(1);
         /// <summary>
         /// テキスト描画用の奴の数
         /// </summary>
-        public int TextRenderesNum { get { return textRenderers.Count; } }
-        public int TextRenderesRemoveNum { get { return textRenderersRemove.Count; } }
+        public int TextRenderesNum { get { return _textRenderers.Count; } }
         internal TextRenderer makeTextRenderer(ITextRendererAble target, float w, float h)
         {
             if (textRendererRequests.ContainsKey(target) == false)
@@ -1564,6 +1564,30 @@ namespace Charamaker3
         }
         private TextRenderer _makeTextRenderer(float w, float h)
         {
+            bool tenti = false;
+            if (h>w) 
+            {
+                float a = w;
+                w = h;
+                h = a;
+                tenti = true;
+            }
+
+
+            List<TextRenderer> textRenderers = new List<TextRenderer>();
+            foreach (var a in _textRenderers) 
+            {
+                TextRenderer b;
+                if (a.TryGetTarget(out b) && a != null)
+                {
+                    textRenderers.Add(b);
+                }
+            }
+            if (textRenderers.Count < _textRenderers.Count)
+            {
+                Debug.WriteLine(textRenderers.Count + " :countaHETTAZE: " + _textRenderers.Count);
+            }
+
             //Debug.WriteLine("make TextRendere" + w + " :: " + h +" rends = "+ textRenderers.Count);
             //右下から順に確保していく。
             w = Mathf.ceil(w);
@@ -1578,18 +1602,26 @@ namespace Charamaker3
                 float maxx = 0, maxy = 0;
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, np.x, np.y - 1f
+                    if (onHani(b.rendZoneTenti, np.x, np.y - 1f
                         , np.x - _TextRender.BitmapRender.Size.Width, np.y))
                     {
-                        maxx = Mathf.max(b.rendZone.gettxy(b.rendZone.w, 0).x, maxx);
+                        maxx = Mathf.max(b.rendZoneTenti.gettxy(b.rendZoneTenti.w, 0).x, maxx);
+                        if (maxx < w) 
+                        {
+                            return;
+                        }
                     }
                 }
                 foreach (var b in textRenderers)
                 {
-                    if (onHani(b.rendZone, np.x - 1f, np.y
+                    if (onHani(b.rendZoneTenti, np.x - 1f, np.y
                         , np.x, np.y - _TextRender.BitmapRender.Size.Height))
                     {
-                        maxy = Mathf.max(b.rendZone.gettxy(0, b.rendZone.h).y, maxy);
+                        maxy = Mathf.max(b.rendZoneTenti.gettxy(0, b.rendZoneTenti.h).y, maxy); 
+                        if (maxy < h)
+                        {
+                            return;
+                        }
                     }
                 }
                 if ((np.x - maxx) > w && (np.y - maxy) > h)
@@ -1619,14 +1651,14 @@ namespace Charamaker3
                         FXY left = null, up = null;
                         //上に追加
                         {
-                            var np = a.rendZone.gettxy(a.rendZone.w, 0) - new FXY(0, 1);
+                            var np = a.rendZoneTenti.gettxy(a.rendZoneTenti.w, 0) - new FXY(0, 1);
                             if (np.x > 0 && np.y > 0)
                             {
                                 bool ok = true;
                                 for (int i = 0; i < textRenderers.Count; i++)
                                 {
                                     var b = textRenderers[i];
-                                    if (onHani(b.rendZone, np.x, np.y))
+                                    if (onHani(b.rendZoneTenti, np.x, np.y))
                                     {
                                         ok = false;
                                         break;
@@ -1640,7 +1672,7 @@ namespace Charamaker3
                         }
                         //左に追加
                         {
-                            var np = a.rendZone.gettxy(0, a.rendZone.h) - new FXY(1, 0);
+                            var np = a.rendZoneTenti.gettxy(0, a.rendZoneTenti.h) - new FXY(1, 0);
                             if (np.x > 0 && np.y > 0)
                             {
                                 bool ok = true;
@@ -1648,7 +1680,7 @@ namespace Charamaker3
                                 for (int i = 0; i < textRenderers.Count; i++)
                                 {
                                     var b = textRenderers[i];
-                                    if (onHani(b.rendZone, np.x, np.y))
+                                    if (onHani(b.rendZoneTenti, np.x, np.y))
                                     {
                                         ok = false;
                                         break;
@@ -1709,41 +1741,62 @@ namespace Charamaker3
                 res = new Shapes.Rectangle(Mathf.max(fxy.x - w, 0), Mathf.max(fxy.y - h, 0)
                     , w, h);
             }
-            var returns = new TextRenderer(this, _TextRender, _TextRenderBack, res);
+
+            var returns = new TextRenderer(this, _TextRender, _TextRenderBack, res,tenti);
             //右下順に並べる
             var ss = new supersort<TextRenderer>();
-            ss.add(returns, returns.rendZone.x + returns.rendZone.y);
+            ss.add(returns, returns.rendZoneTenti.x + returns.rendZoneTenti.y);
             foreach (var a in textRenderers)
             {
-                ss.add(a, a.rendZone.x + a.rendZone.y);
+                ss.add(a, a.rendZoneTenti.x + a.rendZoneTenti.y);
             }
-            ss.sort(true);
-            textRenderers = ss.getresult();
+            ss.sort(false);
+            
+            _textRenderers.Clear();
+            foreach (var a in ss.getresult()) 
+            {
+                _textRenderers.Add(new WeakReference<TextRenderer>(a));
+            }
+
+
+            foreach (var a in ss.getresult())
+            {
+                if (a != returns)
+                {
+                    var dR = (Rectangle)returns.rendZoneTenti.clone();
+                    var aR = (Rectangle)a.rendZoneTenti.clone();
+
+                    if (onHani(dR, aR))
+                    {
+                        a.Changed();
+
+                    }
+                }
+            }
+
             // Debug.WriteLine("returns "+returns.rendZone.ToSave().getData());
 
             return returns;
         }
-        /// <summary>
-        /// コピー用のテキストレンダーを足す。消すときはひとつづつ消すので実質所有権みてぇなもんだと思います。
-        /// </summary>
-        /// <param name="D"></param>
-        internal void AddTextRenderer(TextRenderer D)
-        {
-            textRenderers.Add(D);
-        }
-        internal void ReleaseTextRenderer(TextRenderer D)
-        {
-            textRenderersRemove.Add(D);
-        }
+ 
         internal void Drawed(TextRenderer D)
         {
-            var lis = new List<TextRenderer>(textRenderers);
-            foreach (var a in lis)
+            /*
+            List<TextRenderer> textRenderers = new List<TextRenderer>();
+            foreach (var a in new List<WeakReference<TextRenderer>>(_textRenderers))
+            {
+                TextRenderer b;
+                if (a.TryGetTarget(out b))
+                {
+                    textRenderers.Add(b);
+                }
+            }
+            foreach (var a in textRenderers)
             {
                 if (a != D)
                 {
-                    var dR = (Rectangle)D.rendZone.clone();
-                    var aR = (Rectangle)a.rendZone.clone();
+                    var dR = (Rectangle)D.rendZoneTenti.clone();
+                    var aR = (Rectangle)a.rendZoneTenti.clone();
                     
                     if (onHani(dR,aR))
                     {
@@ -1751,7 +1804,7 @@ namespace Charamaker3
                         
                     }
                 }
-            }
+            }*/
         }
 
         /// <summary>
