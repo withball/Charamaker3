@@ -2318,7 +2318,15 @@ namespace Charamaker3
         /// </summary>
         public bool Tenti = false;
 
+        /// <summary>
+        /// これの右側にあるメモリの大きさ
+        /// </summary>
+        public int RightMemory = 0;
+        
         bool _MustReset = false;
+
+
+
         /// <summary>
         /// 領域がかぶってしまったので別の場所に確保すべきフラグ
         /// </summary>

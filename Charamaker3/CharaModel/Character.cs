@@ -737,7 +737,17 @@ namespace Charamaker3.CharaModel
 
         public Entity getEntity(string name)
         {
-            if (name == ""||(e!=null&&name==e.name)) return e;
+            if (name == "" || (e != null && name == e.name)) 
+            {
+                if (e != null)
+                {
+                    return e;
+                }
+                else //Entityに追加されてない場合はJointの親。
+                {
+                    return _joints[0].parent;
+                }
+            }
             foreach (var a in joints)
             {
                 foreach (var b in a.childs)

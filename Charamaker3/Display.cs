@@ -1064,7 +1064,7 @@ namespace Charamaker3
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible));
 
-            var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution)*3, (int)((wi + hei) * resolution)*3);
+            var TextRSize = new System.Drawing.Size((int)((wi + hei) * resolution)*3, (int)((wi + hei) * resolution)*6);
             {
                 _TextRender = new C3BitmapRenderSet(render.Render.CreateCompatibleRenderTarget(TextRSize, TextRSize
                     , fom
@@ -1089,7 +1089,9 @@ namespace Charamaker3
                 , fom
                 , CompatibleRenderTargetOptions.GdiCompatible));
             
-            setupTextureLoader(); 
+            setupTextureLoader();
+
+            _textRenderers= new TextRendererMemory(TextRSize.Width, TextRSize.Height, this,_TextRender,_TextRenderBack);
         }
 
         /// <summary>
@@ -1528,7 +1530,8 @@ namespace Charamaker3
             return false;
         }
 
-        List<WeakReference<TextRenderer>> _textRenderers = new List<WeakReference<TextRenderer>>();
+        //List<WeakReference<TextRenderer>> _textRenderers = new List<WeakReference<TextRenderer>>();
+        TextRendererMemory _textRenderers;
         Dictionary<ITextRendererAble, Task> textRendererRequests = new Dictionary<ITextRendererAble, Task>();
         SemaphoreSlim MakeTextRendererSemaphore =new SemaphoreSlim(1);
         /// <summary>
@@ -1539,245 +1542,241 @@ namespace Charamaker3
         {
             if (textRendererRequests.ContainsKey(target) == false)
             {
-                textRendererRequests.Add(target, Task<TextReader>.Run(() =>
-                {
+                //textRendererRequests.Add(target, Task<TextReader>.Run(() =>
+                //{
                     TextRenderer result = null;
                     MakeTextRendererSemaphore.Wait();
-                    try
-                    {
-                        result = _makeTextRenderer(w, h);
+                  
+                        result = _textRenderers.Alloc((int)Mathf.ceil(w), (int)Mathf.ceil(h));//_makeTextRenderer(w, h);
                         if (result != null)
                         {
                             target.SetTextRenderer(result);
                         }
-                    }
-                    catch (Exception)
-                    {
-                    }
+                   
                     MakeTextRendererSemaphore.Release();
 
 
 
-                }));
+                //}));
             }
             return null;
         }
-        private TextRenderer _makeTextRenderer(float w, float h)
-        {
-            bool tenti = false;
-            if (h>w) 
-            {
-                float a = w;
-                w = h;
-                h = a;
-                tenti = true;
-            }
+        //private TextRenderer _makeTextRenderer(float w, float h)
+        //{
+        //    bool tenti = false;
+        //    if (h>w) 
+        //    {
+        //        float a = w;
+        //        w = h;
+        //        h = a;
+        //        tenti = true;
+        //    }
 
 
-            List<TextRenderer> textRenderers = new List<TextRenderer>();
-            foreach (var a in _textRenderers) 
-            {
-                TextRenderer b;
-                if (a.TryGetTarget(out b) && a != null)
-                {
-                    textRenderers.Add(b);
-                }
-            }
-            if (textRenderers.Count < _textRenderers.Count)
-            {
-                Debug.WriteLine(textRenderers.Count + " :countaHETTAZE: " + _textRenderers.Count);
-            }
+        //    List<TextRenderer> textRenderers = new List<TextRenderer>();
+        //    foreach (var a in _textRenderers) 
+        //    {
+        //        TextRenderer b;
+        //        if (a.TryGetTarget(out b) && a != null)
+        //        {
+        //            textRenderers.Add(b);
+        //        }
+        //    }
+        //    if (textRenderers.Count < _textRenderers.Count)
+        //    {
+        //        Debug.WriteLine(textRenderers.Count + " :countaHETTAZE: " + _textRenderers.Count);
+        //    }
 
-            //Debug.WriteLine("make TextRendere" + w + " :: " + h +" rends = "+ textRenderers.Count);
-            //右下から順に確保していく。
-            w = Mathf.ceil(w);
-            h = Mathf.ceil(h);
+        //    //Debug.WriteLine("make TextRendere" + w + " :: " + h +" rends = "+ textRenderers.Count);
+        //    //右下から順に確保していく。
+        //    w = Mathf.ceil(w);
+        //    h = Mathf.ceil(h);
 
-            var hanteis = new List<Task>();
+        //    var hanteis = new List<Task>();
 
-            List<Shapes.Rectangle> rects = new List<Shapes.Rectangle>();
-            SemaphoreSlim semapho = new SemaphoreSlim(1, 1);
-            void addrect(FXY np)
-            {
-                float maxx = 0, maxy = 0;
-                foreach (var b in textRenderers)
-                {
-                    if (onHani(b.rendZoneTenti, np.x, np.y - 1f
-                        , np.x - _TextRender.BitmapRender.Size.Width, np.y))
-                    {
-                        maxx = Mathf.max(b.rendZoneTenti.gettxy(b.rendZoneTenti.w, 0).x, maxx);
-                        if (maxx < w) 
-                        {
-                            return;
-                        }
-                    }
-                }
-                foreach (var b in textRenderers)
-                {
-                    if (onHani(b.rendZoneTenti, np.x - 1f, np.y
-                        , np.x, np.y - _TextRender.BitmapRender.Size.Height))
-                    {
-                        maxy = Mathf.max(b.rendZoneTenti.gettxy(0, b.rendZoneTenti.h).y, maxy); 
-                        if (maxy < h)
-                        {
-                            return;
-                        }
-                    }
-                }
-                if ((np.x - maxx) > w && (np.y - maxy) > h)
-                {
-                    var rect = new Shapes.Rectangle(maxx, maxy, np.x - maxx, np.y - maxy);
-                    semapho.Wait();
-                    rects.Add(rect);
-                    semapho.Release();
+        //    List<Shapes.Rectangle> rects = new List<Shapes.Rectangle>();
+        //    SemaphoreSlim semapho = new SemaphoreSlim(1, 1);
+        //    void addrect(FXY np)
+        //    {
+        //        float maxx = 0, maxy = 0;
+        //        foreach (var b in textRenderers)
+        //        {
+        //            if (onHani(b.rendZoneTenti, np.x, np.y - 1f
+        //                , np.x - _TextRender.BitmapRender.Size.Width, np.y))
+        //            {
+        //                maxx = Mathf.max(b.rendZoneTenti.gettxy(b.rendZoneTenti.w, 0).x, maxx);
+        //                if (maxx < w) 
+        //                {
+        //                    return;
+        //                }
+        //            }
+        //        }
+        //        foreach (var b in textRenderers)
+        //        {
+        //            if (onHani(b.rendZoneTenti, np.x - 1f, np.y
+        //                , np.x, np.y - _TextRender.BitmapRender.Size.Height))
+        //            {
+        //                maxy = Mathf.max(b.rendZoneTenti.gettxy(0, b.rendZoneTenti.h).y, maxy); 
+        //                if (maxy < h)
+        //                {
+        //                    return;
+        //                }
+        //            }
+        //        }
+        //        if ((np.x - maxx) > w && (np.y - maxy) > h)
+        //        {
+        //            var rect = new Shapes.Rectangle(maxx, maxy, np.x - maxx, np.y - maxy);
+        //            semapho.Wait();
+        //            rects.Add(rect);
+        //            semapho.Release();
 
-                }
-            }
+        //        }
+        //    }
 
-            addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1));
+        //    addrect(new FXY(_TextRender.BitmapRender.Bitmap.Size.Width - 1, _TextRender.BitmapRender.Bitmap.Size.Height - 1));
 
-            int preT = 0;
-            int Range = Math.Max(textRenderers.Count / 10, 1);
-            for (int t = Range; t < textRenderers.Count + Range; t += Range)
-            {
-                int tt = Math.Min(t, textRenderers.Count);
-                int preTT = preT;
+        //    int preT = 0;
+        //    int Range = Math.Max(textRenderers.Count / 10, 1);
+        //    for (int t = Range; t < textRenderers.Count + Range; t += Range)
+        //    {
+        //        int tt = Math.Min(t, textRenderers.Count);
+        //        int preTT = preT;
 
-                //hanteis.Add(Task.Run(() =>
-                {
-                    for (int ttt = preTT; ttt < tt; ++ttt)
-                    {
-                        var a = textRenderers[ttt];
-                        FXY left = null, up = null;
-                        //上に追加
-                        {
-                            var np = a.rendZoneTenti.gettxy(a.rendZoneTenti.w, 0) - new FXY(0, 1);
-                            if (np.x > 0 && np.y > 0)
-                            {
-                                bool ok = true;
-                                for (int i = 0; i < textRenderers.Count; i++)
-                                {
-                                    var b = textRenderers[i];
-                                    if (onHani(b.rendZoneTenti, np.x, np.y))
-                                    {
-                                        ok = false;
-                                        break;
-                                    }
-                                }
-                                if (ok)
-                                {
-                                    addrect(np);
-                                }
-                            }
-                        }
-                        //左に追加
-                        {
-                            var np = a.rendZoneTenti.gettxy(0, a.rendZoneTenti.h) - new FXY(1, 0);
-                            if (np.x > 0 && np.y > 0)
-                            {
-                                bool ok = true;
+        //        //hanteis.Add(Task.Run(() =>
+        //        {
+        //            for (int ttt = preTT; ttt < tt; ++ttt)
+        //            {
+        //                var a = textRenderers[ttt];
+        //                FXY left = null, up = null;
+        //                //上に追加
+        //                {
+        //                    var np = a.rendZoneTenti.gettxy(a.rendZoneTenti.w, 0) - new FXY(0, 1);
+        //                    if (np.x > 0 && np.y > 0)
+        //                    {
+        //                        bool ok = true;
+        //                        for (int i = 0; i < textRenderers.Count; i++)
+        //                        {
+        //                            var b = textRenderers[i];
+        //                            if (onHani(b.rendZoneTenti, np.x, np.y))
+        //                            {
+        //                                ok = false;
+        //                                break;
+        //                            }
+        //                        }
+        //                        if (ok)
+        //                        {
+        //                            addrect(np);
+        //                        }
+        //                    }
+        //                }
+        //                //左に追加
+        //                {
+        //                    var np = a.rendZoneTenti.gettxy(0, a.rendZoneTenti.h) - new FXY(1, 0);
+        //                    if (np.x > 0 && np.y > 0)
+        //                    {
+        //                        bool ok = true;
 
-                                for (int i = 0; i < textRenderers.Count; i++)
-                                {
-                                    var b = textRenderers[i];
-                                    if (onHani(b.rendZoneTenti, np.x, np.y))
-                                    {
-                                        ok = false;
-                                        break;
-                                    }
-                                }
-                                if (ok)
-                                {
-                                    addrect(np);
-                                }
-                            }
-                        }
-                    }
-                }
-              //    ));
-                preT = t;
-            }
-            foreach (var a in hanteis)
-            {
-                a.Wait();
-            }
-            hanteis.Clear();
+        //                        for (int i = 0; i < textRenderers.Count; i++)
+        //                        {
+        //                            var b = textRenderers[i];
+        //                            if (onHani(b.rendZoneTenti, np.x, np.y))
+        //                            {
+        //                                ok = false;
+        //                                break;
+        //                            }
+        //                        }
+        //                        if (ok)
+        //                        {
+        //                            addrect(np);
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //        }
+        //      //    ));
+        //        preT = t;
+        //    }
+        //    foreach (var a in hanteis)
+        //    {
+        //        a.Wait();
+        //    }
+        //    hanteis.Clear();
 
-            Shapes.Rectangle res = null;
-            //右下度で制限。
-            float rightleft = 0;
-            foreach (var a in rects)
-            {
-                if (a != null)
-                {
-                    if (a.w > w && a.h > h)
-                    {
-                        rightleft = Mathf.max(a.x + a.y + a.w + a.h, rightleft);
-                    }
-                }
-            }
-            foreach (var a in rects)
-            {
-                if (a != null)
-                {
-                    //なるべく面積の大きいやつを選ぶ
-                    if (res == null || (res.menseki < a.menseki && (a.x + a.y + a.w + a.h) > rightleft * 0.75f))
-                    {
-                        if (a.w > w && a.h > h)
-                        {
-                            res = a;
-                        }
-                    }
-                }
-            }
-            rects.Clear();
-            //何もなかったら無理やり左上の点を取る。
-            if (res == null)
-            {
-                res = new Shapes.Rectangle(0, 0, w, h);
-            }
-            {
-                var fxy = res.gettxy(res.w, res.h);
-                res = new Shapes.Rectangle(Mathf.max(fxy.x - w, 0), Mathf.max(fxy.y - h, 0)
-                    , w, h);
-            }
+        //    Shapes.Rectangle res = null;
+        //    //右下度で制限。
+        //    float rightleft = 0;
+        //    foreach (var a in rects)
+        //    {
+        //        if (a != null)
+        //        {
+        //            if (a.w > w && a.h > h)
+        //            {
+        //                rightleft = Mathf.max(a.x + a.y + a.w + a.h, rightleft);
+        //            }
+        //        }
+        //    }
+        //    foreach (var a in rects)
+        //    {
+        //        if (a != null)
+        //        {
+        //            //なるべく面積の大きいやつを選ぶ
+        //            if (res == null || (res.menseki < a.menseki && (a.x + a.y + a.w + a.h) > rightleft * 0.75f))
+        //            {
+        //                if (a.w > w && a.h > h)
+        //                {
+        //                    res = a;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    rects.Clear();
+        //    //何もなかったら無理やり左上の点を取る。
+        //    if (res == null)
+        //    {
+        //        res = new Shapes.Rectangle(0, 0, w, h);
+        //    }
+        //    {
+        //        var fxy = res.gettxy(res.w, res.h);
+        //        res = new Shapes.Rectangle(Mathf.max(fxy.x - w, 0), Mathf.max(fxy.y - h, 0)
+        //            , w, h);
+        //    }
 
-            var returns = new TextRenderer(this, _TextRender, _TextRenderBack, res,tenti);
-            //右下順に並べる
-            var ss = new supersort<TextRenderer>();
-            ss.add(returns, returns.rendZoneTenti.x + returns.rendZoneTenti.y);
-            foreach (var a in textRenderers)
-            {
-                ss.add(a, a.rendZoneTenti.x + a.rendZoneTenti.y);
-            }
-            ss.sort(false);
+        //    var returns = new TextRenderer(this, _TextRender, _TextRenderBack, res,tenti);
+        //    //右下順に並べる
+        //    var ss = new supersort<TextRenderer>();
+        //    ss.add(returns, returns.rendZoneTenti.x + returns.rendZoneTenti.y);
+        //    foreach (var a in textRenderers)
+        //    {
+        //        ss.add(a, a.rendZoneTenti.x + a.rendZoneTenti.y);
+        //    }
+        //    ss.sort(false);
             
-            _textRenderers.Clear();
-            foreach (var a in ss.getresult()) 
-            {
-                _textRenderers.Add(new WeakReference<TextRenderer>(a));
-            }
+        //    _textRenderers.Clear();
+        //    foreach (var a in ss.getresult()) 
+        //    {
+        //        _textRenderers.Add(new WeakReference<TextRenderer>(a));
+        //    }
 
 
-            foreach (var a in ss.getresult())
-            {
-                if (a != returns)
-                {
-                    var dR = (Rectangle)returns.rendZoneTenti.clone();
-                    var aR = (Rectangle)a.rendZoneTenti.clone();
+        //    foreach (var a in ss.getresult())
+        //    {
+        //        if (a != returns)
+        //        {
+        //            var dR = (Rectangle)returns.rendZoneTenti.clone();
+        //            var aR = (Rectangle)a.rendZoneTenti.clone();
 
-                    if (onHani(dR, aR))
-                    {
-                        a.Changed();
+        //            if (onHani(dR, aR))
+        //            {
+        //                a.Changed();
 
-                    }
-                }
-            }
+        //            }
+        //        }
+        //    }
 
-            // Debug.WriteLine("returns "+returns.rendZone.ToSave().getData());
+        //    // Debug.WriteLine("returns "+returns.rendZone.ToSave().getData());
 
-            return returns;
-        }
+        //    return returns;
+        //}
  
         internal void Drawed(TextRenderer D)
         {
@@ -1861,6 +1860,318 @@ namespace Charamaker3
 
             return _BlendRender.BitmapRender.Bitmap;
 
+        }
+    }
+    class TextRendererMemoryRow
+    {
+        public int x, y, w, h;
+        Display parent;
+        C3BitmapRenderSet render;
+        C3BitmapRenderSet renderBack;
+
+        //絶対消えない奴を列の先頭に置く。
+        TextRenderer StartFlag;
+        List<WeakReference<TextRenderer>> _textRenderers = new List<WeakReference<TextRenderer>>();
+        List<TextRenderer> textRenderers = new List<TextRenderer>();
+        List<int> MemoryPointSize = new List<int>();
+        /// <summary>
+        /// 対応するtextRenderesのインデックスが詰まっている。 -1で先頭って感じ
+        /// </summary>
+        List<WeakReference<TextRenderer>>[] MemoryPoint;
+        public TextRendererMemoryRow(int x, int y, int w, int h, Display parent, C3BitmapRenderSet render, C3BitmapRenderSet renderBack)
+        {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+
+         
+
+            this.parent = parent;
+            this.render = render;
+            this.renderBack = renderBack;
+
+            StartFlag = new TextRenderer(parent, render, renderBack, new Rectangle(x, y, 0, 0), false);
+            StartFlag.RightMemory = w;
+            _textRenderers.Add(new WeakReference<TextRenderer>(StartFlag));
+
+            MemoryPoint = new List<WeakReference<TextRenderer>>[TextRendererMemory.CalcMemory(w, false)+1];
+            for (int i = 0; i < MemoryPoint.Length; ++i)
+            {
+                MemoryPoint[i] = new List<WeakReference<TextRenderer>>();
+            }
+            var a = TextRendererMemory.CalcMemory(StartFlag.RightMemory, false);
+            MemoryPoint[a].Add(new WeakReference<TextRenderer>(StartFlag));
+        }
+        int GoodMemory(int RequestW, out int LeftIdx)
+        {
+            for (int i = TextRendererMemory.CalcMemory(RequestW,true); i < MemoryPoint.Length; ++i) 
+            {
+                if (MemoryPoint[i].Count > 0)
+                {
+                    for (int t = 0; t < MemoryPoint[i].Count; ++t) 
+                    {
+                        if (MemoryPoint[i][t].TryGetTarget(out var res)) 
+                        {
+                            var idx=textRenderers.IndexOf(res);
+                            LeftIdx = idx;
+
+                            return idx + 1;
+                        }
+                    }
+                  
+                }
+            }
+            /*
+            for (int i = 0; i < textRenderers.Count - 1; ++i)
+            {
+                float memoryW = textRenderers[i + 1].rendZoneTenti.x - (textRenderers[i].rendZoneTenti.x + textRenderers[i].rendZoneTenti.w);
+                if (RequestW < memoryW)
+                {
+                    outX = textRenderers[i].rendZoneTenti.x + textRenderers[i].rendZoneTenti.w;
+                    return i + 1;
+                }
+            }
+            if (textRenderers.Count > 0)
+            {
+                float memoryW = w - (textRenderers[textRenderers.Count - 1].rendZoneTenti.x + textRenderers[textRenderers.Count - 1].rendZoneTenti.w);
+                if (RequestW < memoryW)
+                {
+                    outX = textRenderers[textRenderers.Count - 1].rendZoneTenti.x + textRenderers[textRenderers.Count - 1].rendZoneTenti.w;
+                    return textRenderers.Count;
+                }
+            }
+            else
+            {
+                if (RequestW < w)
+                {
+                    outX = 0;
+                    return 0;
+                }
+            }
+            */
+
+            LeftIdx = -1;
+            return -1;
+        }
+        public TextRenderer Alloc(int RequestW, int RequestH, bool Tenti)
+        {
+            textRenderers.Clear();
+            {
+                int deleteStart = -1;
+                for (int i = 0; i < _textRenderers.Count; ++i)
+                {
+                    TextRenderer b;
+                    if (_textRenderers[i].TryGetTarget(out b))
+                    {
+                        if (deleteStart != -1)
+                        {
+                            var leftBox = textRenderers[textRenderers.Count-1];
+                            var leftMemoryPoint = TextRendererMemory.CalcMemory(leftBox.RightMemory, false);
+                            for (int iii = MemoryPoint[leftMemoryPoint].Count - 1; iii >= 0; --iii)
+                            {
+                                if (MemoryPoint[leftMemoryPoint][iii].TryGetTarget(out var memory))
+                                {
+                                    if (memory == leftBox)
+                                    {
+                                        MemoryPoint[leftMemoryPoint].RemoveAt(iii);
+                                    }
+                                }
+                                else
+                                {
+                                    MemoryPoint[leftMemoryPoint].RemoveAt(iii);
+                                }
+                            }
+                            leftBox.RightMemory = (int)Math.Ceiling(b.rendZoneTenti.x - (leftBox.rendZoneTenti.x + leftBox.rendZone.w));
+                            MemoryPoint[TextRendererMemory.CalcMemory(leftBox.RightMemory, false)].Add(new WeakReference<TextRenderer>(leftBox));
+                            deleteStart = -1;
+                        }
+                        textRenderers.Add(b);
+                    }
+                    else
+                    {
+                        if (deleteStart == -1)
+                        {
+                            deleteStart = i;
+                        }
+                    }
+                }
+
+                if (deleteStart != -1)
+                {
+                    var leftBox = textRenderers[textRenderers.Count - 1];
+                    var leftMemoryPoint = TextRendererMemory.CalcMemory(leftBox.RightMemory, false);
+                    for (int iii = MemoryPoint[leftMemoryPoint].Count - 1; iii >= 0; --iii)
+                    {
+                        if (MemoryPoint[leftMemoryPoint][iii].TryGetTarget(out var memory))
+                        {
+                            if (memory == leftBox)
+                            {
+                                MemoryPoint[leftMemoryPoint].RemoveAt(iii);
+                            }
+                        }
+                        else
+                        {
+                            MemoryPoint[leftMemoryPoint].RemoveAt(iii);
+                        }
+                    }
+                    leftBox.RightMemory = (int)Math.Ceiling(w - (leftBox.rendZoneTenti.x + leftBox.rendZone.w));
+                    MemoryPoint[TextRendererMemory.CalcMemory(leftBox.RightMemory, false)].Add(new WeakReference<TextRenderer>(leftBox));
+                    deleteStart = -1;
+                }
+            }
+            int idx = GoodMemory(RequestW + 1, out var leftIdx);
+            if (idx < 0)
+            {
+                return null;
+            }
+
+            TextRenderer leftRender = null;
+                leftRender = textRenderers[leftIdx];
+            int outX = (int)Math.Ceiling(leftRender.rendZoneTenti.x + leftRender.rendZoneTenti.w);
+           
+
+            Rectangle res = new Rectangle(x + outX + 1, y, RequestW, RequestH, 0);
+
+
+            var returns = new TextRenderer(parent, render, renderBack, res, Tenti);
+            {
+                var leftMemoryPoint = TextRendererMemory.CalcMemory(leftRender.RightMemory, false);
+                for (int i = MemoryPoint[leftMemoryPoint].Count - 1; i >= 0; --i)
+                {
+                    if (MemoryPoint[leftMemoryPoint][i].TryGetTarget(out var memory))
+                    {
+                        if (memory == leftRender)
+                        {
+                            MemoryPoint[leftMemoryPoint].RemoveAt(i);
+                        }
+                    }
+                    else
+                    {
+                        MemoryPoint[leftMemoryPoint].RemoveAt(i);
+                    }
+                }
+            }
+
+            if (0 < idx)
+            {
+                returns.RightMemory = (int)Math.Ceiling(leftRender.RightMemory - returns.rendZoneTenti.w);
+                MemoryPoint[TextRendererMemory.CalcMemory(returns.RightMemory,false)].Add(new WeakReference<TextRenderer>(returns));
+
+                leftRender.RightMemory = 0;
+                MemoryPoint[TextRendererMemory.CalcMemory(leftRender.RightMemory, false)].Add(new WeakReference<TextRenderer>(leftRender));
+            }
+            
+            _textRenderers.Clear();
+
+            foreach (var a in textRenderers)
+            {
+                _textRenderers.Add(new WeakReference<TextRenderer>(a));
+            }
+
+            _textRenderers.Insert(idx, new WeakReference<TextRenderer>(returns));
+
+            //Debug.WriteLine(textRenderers.Count + " KAKUHO222 " + _textRenderers.Count);
+            textRenderers.Clear();
+            return returns;
+        }
+    }
+    class TextRendererMemory 
+    {
+        public const float MemoryDivide = 64;
+        public static int CalcMemory(int size,bool need)
+        {
+            if (need == true)
+            {
+                return (int)Math.Ceiling(size / MemoryDivide);
+            }
+            return (int)Math.Floor(size / MemoryDivide);
+        }
+        public static int CalcMemory(float size,bool need)
+        {
+            if (need == true)
+            {
+                return (int)Math.Ceiling(size / MemoryDivide);
+            }
+            return (int)Math.Floor(size / MemoryDivide);
+        }
+        int w, h;
+        List<TextRendererMemoryRow>Memory;
+
+        Display parent;
+        C3BitmapRenderSet render;
+        C3BitmapRenderSet renderBack;
+
+        public int Count { get { return Memory.Count; } }
+
+        public TextRendererMemory(int w, int h, Display parent, C3BitmapRenderSet render, C3BitmapRenderSet renderBack)
+        {
+            Memory = new List<TextRendererMemoryRow>();
+            this.w = w;
+            this.h = h;
+
+            this.parent = parent;
+            this.render = render;
+            this.renderBack = renderBack;
+        }
+        public TextRenderer Alloc(int RequestW, int RequestH)
+        {
+            bool Tenti = RequestW < RequestH;
+            if (Tenti) 
+            {
+                var a = RequestW;
+                RequestW = RequestH;
+                RequestH = a;
+            }
+
+
+            foreach (var a in Memory) 
+            {
+                if (((a.h - MemoryDivide) <= RequestH) && RequestH <= a.h)
+                {
+                    var ptr = a.Alloc(RequestW, RequestH, Tenti);
+                    if (ptr != null)
+                    {
+                        return ptr;
+                    }
+                }
+
+            }
+
+            if (Memory.Count == 0)
+            {
+                int Takasa = (int)(Mathf.ceil(RequestH / MemoryDivide)*MemoryDivide);
+                if (Takasa <= h)
+                {
+                    var newRow = new TextRendererMemoryRow(0, 0, w,Takasa, parent, render, renderBack);
+                    Memory.Add(newRow);
+
+                    var ptr = newRow.Alloc(RequestW, RequestH, Tenti);
+                    if (ptr != null)
+                    {
+                        return ptr;
+                    }
+                }
+            }
+            else 
+            {
+                int Takasa = (int)(Mathf.ceil(RequestH / MemoryDivide) * MemoryDivide);
+                var last = Memory.Last();
+                if (Takasa <= (h - (last.y + last.h)))
+                {
+                    var newRow = new TextRendererMemoryRow(0, last.y+last.h+1, w, Takasa, parent, render, renderBack);
+                    Memory.Add(newRow);
+
+                    var ptr = newRow.Alloc(RequestW, RequestH, Tenti);
+                    if (ptr != null)
+                    {
+                        return ptr;
+                    }
+                }
+               
+            }
+
+            return null;
         }
     }
 }

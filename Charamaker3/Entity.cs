@@ -541,7 +541,7 @@ namespace Charamaker3
             {
                 return cs[0];
             }
-            return new CharaModel.Character(new CharaModel.Joint("coreJ",0,0,this,new List<Entity>()));
+            return new CharaModel.Character(new CharaModel.Joint("coreJ",0,0,this,new List<Entity> {}));
         }
 
         /// <summary>
