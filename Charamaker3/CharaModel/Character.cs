@@ -303,6 +303,8 @@ namespace Charamaker3.CharaModel
             }
             return res;
         }
+
+
         //先頭のジョイントはEntityがコアの特別なジョイント
         List<Joint> _joints = new List<Joint>();
         public List<Joint> joints { get { return new List<Joint>(_joints); } }
@@ -503,7 +505,7 @@ namespace Charamaker3.CharaModel
                     //Debug.WriteLine(newEntity.ToString());
                     //Debug.WriteLine("OK!");
 
-                    childs.Add(b.clone());
+                    childs.Add(newEntity);
 
                 }
                 njoi.childs = childs;
@@ -871,6 +873,7 @@ namespace Charamaker3.CharaModel
         /// </summary>
         public void SetBaseCharacter()
         {
+            if (e == null) return;
             var nm = e.name;
             
             e.name = BaseCharacterEName;
@@ -904,7 +907,96 @@ namespace Charamaker3.CharaModel
 
         #endregion
     }
+    /// <summary>
+    /// 元エンテティの見た目だけコピーしたやつを生み出すのだ。Textとは相性悪いと思う。
+    /// </summary>
+    public class Kagemusya 
+    {
+        Entity _E;
+        Entity _Kage;
+        /// <summary>
+        /// 影の元
+        /// </summary>
+        public Entity E { get { return _E; } }
+        /// <summary>
+        /// 影
+        /// </summary>
+        public Entity Kage { get { return _Kage; } }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="e"></param>
+        /// <param name="kage"></param>
+        public Kagemusya(Entity e, Entity kage)
+        {
+            _E = e;
+            _Kage = kage;
+        }
+        /// <summary>
+        /// 影開始
+        /// </summary>
+        public void Start()
+        {
+            if (E.world == null || E.added == false) return;
+
+            _Kage = E.clone();
+            foreach (var a in Kage.getCharacter().getTree(""))
+            {
+                foreach (var b in a.getcompos<Component>())
+                {
+                    if (Mathf.isSubClassOf(b.GetType(), typeof(Drawable)) == false &&
+                        Mathf.isSubClassOf(b.GetType(), typeof(Character)) == false &&
+                        Mathf.isSubClassOf(b.GetType(), typeof(Haikei)) == false)
+                    {
+                        //特殊な削除。OnRemoveなどは発生しない。
+                        //b.remove();
+                        Kage.comporemove(b);
+                    }
+                }
+            }
+            Kage.add(E.world);
+            foreach (var a in E.getCharacter().getTree(""))
+            {
+                a.IsIgnoreDraw = true;
+            }
+           
+            //Kage.world.Hennyu(Kage.getCharacter().getTree(""));
+
+        }
+
+
+        /// <summary>
+        /// 影終了
+        /// </summary>
+        public void End()
+        {
+            if (Kage.world != null)
+            {
+                //Kage.world.Hensyutu(Kage.getCharacter().getTree(""));
+            } 
+            Kage.remove();
+            foreach (var a in E.getCharacter().getTree(""))
+            {
+                a.IsIgnoreDraw = false;
+            }
+        }
+        /// <summary>
+        /// 影に変化をつけるとき、現在の影をベースにする。
+        /// </summary>
+        public void KageBase() 
+        {
+            Kage.getCharacter().SetBaseCharacter();
+        }
+        /// <summary>
+        /// 影から元に戻したりコピーするとき、エンテティのベースをベースにする。
+        /// </summary>
+
+        public void BaseBase()
+        {
+            Kage.getCharacter().SetBaseCharacter((Character)E.getCharacter().BaseCharacter);
+        }
+    }
 
 
 

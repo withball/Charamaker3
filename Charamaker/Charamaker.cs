@@ -257,64 +257,69 @@ namespace Charamaker
             //BGMのテスト
             if (km.ok(new IButton(MouseButtons.Right), itype.down))
             {
-                var lis = w.staticEntity.getcompos<SoundComponent>(SoundComponent.BGMname);
-                if (lis.Count == 0)
-                {
-                    var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\inami2", 0.5f, 30, 30);
-                    newbgm.updated += (aa, bb) =>
-                    {
-                        var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
+                kage?.End();
+                //影武者のテスト
+                kage = new Kagemusya(sel.c.e, new Entity());
+                kage.Start();
+                EntityMove.XYD(100, "", -50, 0).addAndRemove(kage.Kage, 100);
+                //var lis = w.staticEntity.getcompos<SoundComponent>(SoundComponent.BGMname);
+                //if (lis.Count == 0)
+                //{
+                //    var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\inami2", 0.5f, 30, 30);
+                //    newbgm.updated += (aa, bb) =>
+                //    {
+                //        var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
 
-                        len = Mathf.max(1 - len, 0);
-                        newbgm.volume = len;
-                    };
-                    if (lis.Count > 0)
-                    {
+                //        len = Mathf.max(1 - len, 0);
+                //        newbgm.volume = len;
+                //    };
+                //    if (lis.Count > 0)
+                //    {
 
-                        var oldbgm = lis[0];
-                        if (oldbgm.sound.path != newbgm.sound.path)
-                        {
-                            oldbgm.Stop();
-                            oldbgm.afters.Clear();
-                            oldbgm.afters.Add(newbgm);
-                        }
-                    }
-                    else
-                    {
-                        newbgm.add(w.staticEntity);
-                    }
-                }
-                else if (lis[0].sound.path == @"BGM\inami2")
-                {
-                    var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\tim", 0.5f, 30, 30);
-                    newbgm.updated += (aa, bb) =>
-                    {
+                //        var oldbgm = lis[0];
+                //        if (oldbgm.sound.path != newbgm.sound.path)
+                //        {
+                //            oldbgm.Stop();
+                //            oldbgm.afters.Clear();
+                //            oldbgm.afters.Add(newbgm);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        newbgm.add(w.staticEntity);
+                //    }
+                //}
+                //else if (lis[0].sound.path == @"BGM\inami2")
+                //{
+                //    var newbgm = SoundComponent.MakeBGM(FileMan.BGM, @"BGM\tim", 0.5f, 30, 30);
+                //    newbgm.updated += (aa, bb) =>
+                //    {
 
-                        var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
+                //        var len = Mathf.abs((sel.c.e.gettxy() - cam.watchRect.gettxy()).length / cam.watchRect.bigs);
 
-                        len = Mathf.max(1 - len, 0);
-                        newbgm.volume = len;
-                    };
-                    if (lis.Count > 0)
-                    {
+                //        len = Mathf.max(1 - len, 0);
+                //        newbgm.volume = len;
+                //    };
+                //    if (lis.Count > 0)
+                //    {
 
-                        var oldbgm = lis[0];
-                        if (oldbgm.sound.path != newbgm.sound.path)
-                        {
-                            oldbgm.Stop();
-                            oldbgm.afters.Clear();
-                            oldbgm.afters.Add(newbgm);
-                        }
-                    }
-                    else
-                    {
-                        newbgm.add(w.staticEntity);
-                    }
-                }
-                else
-                {
-                    lis[0].Stop();
-                }
+                //        var oldbgm = lis[0];
+                //        if (oldbgm.sound.path != newbgm.sound.path)
+                //        {
+                //            oldbgm.Stop();
+                //            oldbgm.afters.Clear();
+                //            oldbgm.afters.Add(newbgm);
+                //        }
+                //    }
+                //    else
+                //    {
+                //        newbgm.add(w.staticEntity);
+                //    }
+                //}
+                //else
+                //{
+                //    lis[0].Stop();
+                //}
             }
 
 
@@ -645,6 +650,7 @@ namespace Charamaker
 
         }
         string LastLoad = "";
+        Kagemusya kage;
         void LoadCharacter(string load)
         {
             Debug.WriteLine(load + " LOADED");
@@ -653,13 +659,13 @@ namespace Charamaker
             LastLoad = load;
             var newe = FileMan.loadCharacter(textB.Text, true);
             //縁取りテスト
-           /* Character.Hutidori(newe
-               , new ColorC(1,1,1,1, ColorType.Absolute)
-             , new BlurC(1, minOpacity: 0.2f)
-               );
-        
-                Character.SetupCharacter(newe, newe.name,1,1,1);
-           */
+            /* Character.Hutidori(newe
+                , new ColorC(1,1,1,1, ColorType.Absolute)
+              , new BlurC(1, minOpacity: 0.2f)
+                );
+
+                 Character.SetupCharacter(newe, newe.name,1,1,1);
+            */
             if (newe.getcompos<Character>().Count > 0)
             {
                 newe.add(w);
@@ -670,6 +676,7 @@ namespace Charamaker
                 messageB.Text = textB.Text + Environment.NewLine + "は存在しないか、キャラクターのファイルではない！！！";
             }
 
+      
             Save();
         }
         void ChangeRootpath(string newPath)

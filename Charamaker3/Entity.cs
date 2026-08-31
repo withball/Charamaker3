@@ -50,6 +50,10 @@ namespace Charamaker3
         bool _added = false;
         WeakReference<World> _world = null;
         public string name="";
+        /// <summary>
+        /// このエンテティは描画をしない
+        /// </summary>
+        public bool IsIgnoreDraw=false;
 
         /// <summary>
         /// エンテティの辺の長さの平均
@@ -253,6 +257,7 @@ namespace Charamaker3
             e.degree = this.degree;
             e.name=this.name;
             e.mirror = this.mirror;
+            e.IsIgnoreDraw = this.IsIgnoreDraw;
         }
 
         /// <summary>
@@ -279,7 +284,7 @@ namespace Charamaker3
             res.linechange();
             res.packAdd("mirror", this.mirror);
             res.linechange();
-
+            res.packAdd("IsIgnoreDraw", this.IsIgnoreDraw);
 
             res.linechange();
 
@@ -310,6 +315,8 @@ namespace Charamaker3
             this.ty = d.unpackDataF("ty", 0.5f);
             this.degree = d.unpackDataF("degree", 0);
             this.mirror = d.unpackDataB("mirror", false);
+
+            this.IsIgnoreDraw = d.unpackDataB("IsIgnoreDraw", IsIgnoreDraw);
             
             var dd = d.unpackDataD("components");
             foreach (var a in dd.allUnpackDataD()) 
@@ -1283,11 +1290,14 @@ namespace Charamaker3
         protected override void onadd(float cl)
         {
             //start();
-            time = sumtime;
+            time = sumtime+cl;
 
             for (int i = 0; i <= idx && i < cs.Count; i++)
             {
-                fakeadd(cs[i],cl*speed);//ここどうなんだろうか
+                if (cs[i].ended == false)
+                {
+                    fakeadd(cs[i], 0);//ここどうなんだろうか
+                }
             }
             base.onadd(cl);
         }

@@ -445,6 +445,20 @@ namespace Charamaker3
             list.Add(new sortnode<T>(obj, value));
         }
         /// <summary>
+        /// ソートするものを削除する
+        /// </summary>
+        /// <param name="obj">物体</param>
+        public void remove(T obj)
+        {
+            for (int i = list.Count - 1; i >= 0; --i) 
+            {
+                if (IEqualityComparer<T>.ReferenceEquals( list[i].o ,obj)) 
+                {
+                   list.RemoveAt(i); 
+                } 
+            }
+        }
+        /// <summary>
         /// 同じ値をランダムに並び変える(安定ソートなのでぐちゃぐちゃにするだけ)
         /// </summary>
         public void SameRandom() 

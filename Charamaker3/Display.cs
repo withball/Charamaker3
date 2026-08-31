@@ -1356,7 +1356,7 @@ namespace Charamaker3
                 cam.render = render;
             }
             screenShot(_SCSRender,render);
-            screenShot(_TextRender,render);
+            //screenShot(_TextRender,render);
             //screenShot(_TextRenderBack, render);
             //screenShot(_BlendRender);
             //screenShot(_BlendRender2);

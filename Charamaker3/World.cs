@@ -107,6 +107,48 @@ namespace Charamaker3
         /// ここに分類したい奴を書き込んだりする。
         /// </summary>
         public event EventHandler<Entity> classifyed;
+        
+        /// <summary>
+        /// Entityを編入させる。(描画ができる。とか)
+        /// </summary>
+        /// <param name="e"></param>
+        public void Hennyu(List<Entity>e) 
+        {
+            foreach (var a in e)
+            {
+                classify(a);
+            }
+            Edic.Clear();
+            foreach (var a in _Edic)
+            {
+                a.Value.sort(false);
+                Edic.Add(a.Key, a.Value.getresult());
+            }
+            Ddic.sort(false);
+            Hdic.sort(false);
+            Pdic.sort(false);
+        }
+        /// <summary>
+        /// Entityを編出させる。(描画ができない。とか)
+        /// </summary>
+        /// <param name="e"></param>
+        public void Hensyutu(List<Entity> e)
+        {
+            foreach (var a in e)
+            {
+                classify(a, true);
+            }
+            Edic.Clear();
+            foreach (var a in _Edic)
+            {
+                a.Value.sort(false);
+                Edic.Add(a.Key, a.Value.getresult());
+            }
+            Ddic.sort(false);
+            Hdic.sort(false);
+            Pdic.sort(false);
+        }
+
 
         /// <summary>
         /// フレームを更新する
@@ -117,7 +159,6 @@ namespace Charamaker3
            // Stopwatch stopwatch = new Stopwatch();
            // stopwatch.Start();
             
-            Edic.Clear();
             _Edic.Clear();
             Ddic.Clear();
             Pdic.Clear();
@@ -127,6 +168,8 @@ namespace Charamaker3
             {
                 classify(a);
             }
+
+            Edic.Clear();
             foreach (var a in _Edic) 
             {
                 a.Value.sort(false);
@@ -304,44 +347,102 @@ namespace Charamaker3
             }
             _Edic[key].add(value,sortkey);
         }
-        void classify(Entity e) 
+        /// <summary>
+        /// Edicにエンテティを追加する。
+        /// </summary>
+        public void removeEdic(string key, Entity value)
+        {
+            if (!_Edic.ContainsKey(key))
+            {
+
+            }
+            else
+            {
+                _Edic[key].remove(value);
+            }
+        }
+        void classify(Entity e,bool remove=false) 
         {
             classifyed?.Invoke(this,e);
             addEdic("def", e,0);
+            if (e.IsIgnoreDraw == false)
             {
                 var lis = e.getcompos<Drawable>();
                 foreach (var a in lis)
                 {
-                    Ddic.add(a, a.z * a.zRatio + a.zDelta);
+                    if (remove == false)
+                    {
+                        Ddic.add(a, a.z * a.zRatio + a.zDelta);
+                    }
+                    else 
+                    {
+                        Ddic.remove(a);
+                    }
                 }
             }
             {
                 var lis = e.getcompos<Hitbox>();
-                if (lis.Count > 0) 
+                if (lis.Count > 0)
                 {
-                    addEdic("HasHitbox", e, 0);
+                    if (remove == false)
+                    {
+                        addEdic("HasHitbox", e, 0);
+                    }
+                    else 
+                    {
+                        removeEdic("HasHitbox", e);
+                    }
                 }
                 foreach (var a in lis)
                 {
-                    Hdic.add(a,0);
+                    if (remove == false)
+                    {
+                        Hdic.add(a, 0);
+                    }
+                    else
+                    {
+                        Hdic.remove(a);
+                    }
                 }
             }
             {
                 var lis = e.getcompos<PhysicsComp>();
                 if (lis.Count > 0)
                 {
-                    addEdic("HasPhysics", e,0);
+                    if (remove == false)
+                    {
+                        addEdic("HasPhysics", e, 0);
+                    }
+                    else
+                    {
+                        removeEdic("HasPhysics", e);
+                    }
                 }
                 foreach (var a in lis)
                 {
-                    Pdic.add(a, a.wei);
+                    if (remove == false)
+                    {
+                        Pdic.add(a, a.wei);
+                    }
+                    else 
+                    {
+                        Pdic.remove(a);
+                    }
                 }
             }
             {
                 var lis = e.getcompos<CharaModel.Character>();
                 if (lis.Count > 0)
                 {
-                    addEdic("HasCharacter", e, 0);
+
+                    if (remove == false)
+                    {
+                        addEdic("HasCharacter", e, 0);
+                    }
+                    else
+                    {
+                        removeEdic("HasCharacter", e);
+                    }
                 }
             }
         }

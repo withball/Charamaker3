@@ -443,7 +443,7 @@ namespace Charamaker3
         public Drawable(float z, ColorC col, float time = -1, string name = "") : base(time, name)
         {
             this.z = z;
-            this.col = col;
+            this.col = new ColorC(col);
         }
 
         public Drawable() : base()
