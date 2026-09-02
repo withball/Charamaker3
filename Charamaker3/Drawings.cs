@@ -2533,7 +2533,7 @@ namespace Charamaker3
                     renderBack.BitmapRender.Clear(new ColorC(R, G, B, 0));
                 }
                 //文字描画君
-                void DrawText(List<List<TextLayout>> ATexts,Rectangle drawR, FontC drawFont,bool back)
+                void DrawText(List<List<TextLayout>> ATexts,Rectangle drawR, FontC drawFont,bool back,float zurex,float zurey)
                 {
                     float zentaiH = 0;
                     foreach (var a in ATexts)
@@ -2629,7 +2629,8 @@ namespace Charamaker3
                                     drawRect.y += drawR.y;
                                     break;
                             }
-
+                            drawRect.x += zurex;
+                            drawRect.y += zurey;
                             using (var font = f.ToFont())
                             {
                                 if (back == true)
@@ -2778,31 +2779,9 @@ namespace Charamaker3
                         {
                             for (int y = -(int)maxzure; y <= maxzure; ++y)
                             {
-                                foreach (var a in analyze)
-                                {
-                                    foreach (var b in a)
-                                    {
-                                        float s = b.c.Size * F.size * F.hutiZure;
-                                        if (x * x + y * y < s * s)
-                                        {
-                                            b.x += x;
-                                            b.y += y;
-                                        }
-                                    }
-                                }
-                                DrawText(analyze, rendZone, F, true);
-                                foreach (var a in analyze)
-                                {
-                                    foreach (var b in a)
-                                    {
-                                        float s = b.c.Size * F.size * F.hutiZure;
-                                        if (x * x + y * y < s * s)
-                                        {
-                                            b.x -= x;
-                                            b.y -= y;
-                                        }
-                                    }
-                                }
+                                //Debug.WriteLine(x+" :: "+y+" drawhuti");
+                                DrawText(analyze, rendZone, F, true,x,y);
+                               
                             }
                         }
                          
@@ -2815,7 +2794,7 @@ namespace Charamaker3
                 List<List<TextLayout>> AnalysedTexts = TextLayout.AnalyzeText(Text, render, F, rendZone);
                 SetRayout(AnalysedTexts, F);
 
-                DrawText(AnalysedTexts, rendZone, F,false);
+                DrawText(AnalysedTexts, rendZone, F,false,0,0);
                 render.BitmapRender.PopAxisAlignedClip();
                 renderBack.BitmapRender.PopAxisAlignedClip();
                 semaphores.TextRender.Release();
