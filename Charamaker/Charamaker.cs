@@ -257,11 +257,13 @@ namespace Charamaker
             //BGMのテスト
             if (km.ok(new IButton(MouseButtons.Right), itype.down))
             {
-                kage?.End();
-                //影武者のテスト
-                kage = new Kagemusya(sel.c.e, new Entity());
-                kage.Start();
-                EntityMove.XYD(100, "", -50, 0).addAndRemove(kage.Kage, 100);
+                {
+                    kage?.End();
+                    //影武者のテスト
+                    kage = new Kagemusya(sel.c.e, new Entity());
+                    kage.Start();
+                    EntityMove.XYD(100, "", -50, 0).addAndRemove(kage.Kage, 100);
+                }
                 //var lis = w.staticEntity.getcompos<SoundComponent>(SoundComponent.BGMname);
                 //if (lis.Count == 0)
                 //{

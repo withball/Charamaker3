@@ -2321,7 +2321,7 @@ namespace Charamaker3
         /// <summary>
         /// これの右側にあるメモリの大きさ
         /// </summary>
-        public int RightMemory = 0;
+        public float RightMemory = 0;
         
         bool _MustReset = false;
 

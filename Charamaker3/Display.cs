@@ -1915,7 +1915,7 @@ namespace Charamaker3
                         {
                             var idx=textRenderers.IndexOf(res);
                             LeftIdx = idx;
-
+                                   
                             return idx + 1;
                         }
                     }
@@ -1982,7 +1982,7 @@ namespace Charamaker3
                                     MemoryPoint[leftMemoryPoint].RemoveAt(iii);
                                 }
                             }
-                            leftBox.RightMemory = (int)Math.Ceiling(b.rendZoneTenti.x - (leftBox.rendZoneTenti.x + leftBox.rendZone.w));
+                            leftBox.RightMemory = (b.rendZoneTenti.x - (leftBox.rendZoneTenti.x + leftBox.rendZone.w));
                             MemoryPoint[TextRendererMemory.CalcMemory(leftBox.RightMemory, false)].Add(new WeakReference<TextRenderer>(leftBox));
                             deleteStart = -1;
                         }
@@ -2015,7 +2015,7 @@ namespace Charamaker3
                             MemoryPoint[leftMemoryPoint].RemoveAt(iii);
                         }
                     }
-                    leftBox.RightMemory = (int)Math.Ceiling(w - (leftBox.rendZoneTenti.x + leftBox.rendZone.w));
+                    leftBox.RightMemory = (w - (leftBox.rendZoneTenti.x + leftBox.rendZone.w));
                     MemoryPoint[TextRendererMemory.CalcMemory(leftBox.RightMemory, false)].Add(new WeakReference<TextRenderer>(leftBox));
                     deleteStart = -1;
                 }
@@ -2055,10 +2055,10 @@ namespace Charamaker3
 
             if (0 < idx)
             {
-                returns.RightMemory = (int)Math.Ceiling(leftRender.RightMemory - returns.rendZoneTenti.w);
+                returns.RightMemory = leftRender.RightMemory - (returns.rendZoneTenti.w + returns.rendZoneTenti.x - (leftRender.rendZoneTenti.x + leftRender.rendZoneTenti.w));
                 MemoryPoint[TextRendererMemory.CalcMemory(returns.RightMemory,false)].Add(new WeakReference<TextRenderer>(returns));
 
-                leftRender.RightMemory = 0;
+                leftRender.RightMemory = returns.rendZoneTenti.x - (leftRender.rendZoneTenti.x + leftRender.rendZoneTenti.w);
                 MemoryPoint[TextRendererMemory.CalcMemory(leftRender.RightMemory, false)].Add(new WeakReference<TextRenderer>(leftRender));
             }
             
